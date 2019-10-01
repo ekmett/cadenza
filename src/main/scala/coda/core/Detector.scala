@@ -1,4 +1,4 @@
-package coda
+package coda.core
 
 import com.oracle.truffle.api.TruffleFile
 import java.io.IOException
@@ -7,14 +7,14 @@ import java.nio.{ ByteOrder, ByteBuffer }
 import java.nio.file.StandardOpenOption
 import scala.util.{ Try, Using }
 
-class CoreDetector extends TruffleFile.FileTypeDetector {
+class Detector extends TruffleFile.FileTypeDetector {
   @throws(classOf[IOException])
   override def findMimeType(file: TruffleFile): String = {
     val fileName = file.getName
     if (fileName == null) null
-    else if (fileName.endsWith(CoreLanguage.EXTENSION)) CoreLanguage.MIME_TYPE
-    else if ((fileName.endsWith(CoreLanguage.BYTECODE_EXTENSION)
-          && (readMagicWord(file) == CoreLanguage.BYTECODE_MAGIC_WORD))) CoreLanguage.BYTECODE_MIME_TYPE
+    else if (fileName.endsWith(Language.EXTENSION)) Language.MIME_TYPE
+    else if ((fileName.endsWith(Language.BYTECODE_EXTENSION)
+          && (readMagicWord(file) == Language.BYTECODE_MAGIC_WORD))) Language.BYTECODE_MIME_TYPE
     else null
   }
 
