@@ -1,0 +1,8 @@
+{
+        "files.exclude": {
+                "**/.bloop/**": true,
+                "**/.metals/**": true,
+                "**/target/**": true,
+                "old/**": true
+        }
+}
