@@ -1,4 +1,4 @@
-package coda.core
+package stg
 
 import com.oracle.truffle.api.TruffleFile
 import java.io.IOException
@@ -13,8 +13,7 @@ class Detector extends TruffleFile.FileTypeDetector {
     val fileName = file.getName
     if (fileName == null) null
     else if (fileName.endsWith(Language.EXTENSION)) Language.MIME_TYPE
-    else if ((fileName.endsWith(Language.BYTECODE_EXTENSION)
-          && (readMagicWord(file) == Language.BYTECODE_MAGIC_WORD))) Language.BYTECODE_MIME_TYPE
+//    else if ((fileName.endsWith(Language.BYTECODE_EXTENSION) && (readMagicWord(file) == Language.BYTECODE_MAGIC_WORD))) Language.BYTECODE_MIME_TYPE
     else null
   }
 

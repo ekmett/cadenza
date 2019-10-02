@@ -1,4 +1,4 @@
-package coda.core
+package stg
 
 import com.oracle.truffle.api.{ Truffle, TruffleLanguage }
 

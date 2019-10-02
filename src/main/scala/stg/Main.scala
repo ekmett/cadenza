@@ -1,4 +1,4 @@
-package coda.core
+package stg
 
 object Main extends App {
   println("hello")

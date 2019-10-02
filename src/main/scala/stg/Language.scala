@@ -1,4 +1,4 @@
-package coda.core
+package stg
 
 import com.oracle.truffle.api.{ CallTarget, Truffle, TruffleLanguage, Assumption }
 import com.oracle.truffle.api.TruffleLanguage.{ ContextPolicy, Env, InlineParsingRequest, ParsingRequest, Registration }
@@ -46,13 +46,13 @@ class Language extends TruffleLanguage[Context] {
 }
 
 object Language {
-  final val ID = "coda-core"
-  final val NAME = "Coda Core"
+  final val ID = "stg"
+  final val NAME = "STG"
   final val VERSION = "0"
-  final val MIME_TYPE = "application/x-coda-core"
-  final val EXTENSION = "core"
-  final val BYTECODE_MIME_TYPE = "application/x-coda-bytecode"
-  final val BYTECODE_EXTENSION = "cb"
+  final val MIME_TYPE = "application/x-stg"
+  final val EXTENSION = "stg"
+  final val BYTECODE_MIME_TYPE = "application/x-stg-binary"
+  final val BYTECODE_EXTENSION = "stgc"
   final val BYTECODE_MAGIC_WORD = 0xC0DAC0DEL
   type child = Node.Child @field
 }

@@ -2,3 +2,5 @@ target
 old
 .metals/
 .bloop/
+**/dist/**
+**/dist-newstyle/**

@@ -1,0 +1,27 @@
+cabal-version: 2.4
+name: hs2stg
+version: 0
+license: BSD-2-Clause
+license-file: LICENSE.md
+author: Edward Kmett
+maintainer: Edward Kmett <ekmett@gmail.com>
+copyright: Copyright (c) 2019 Edward Kmett
+stability: experimental
+category: Language
+build-type: Simple
+extra-doc-files:
+  README.md,
+  CHANGELOG.md
+
+executable hs2stg
+  default-language: Haskell2010
+  build-depends:
+    base >= 4.11 && < 5,
+    ghc,
+    ghc-paths,
+    mtl
+  ghc-options:
+    -Wall -Wincomplete-uni-patterns -Wincomplete-record-updates
+    -Wredundant-constraints -Widentities -Wmissing-export-lists
+    -O2 -threaded -rtsopts -with-rtsopts=-N
+  main-is: Main.hs
