@@ -3,6 +3,12 @@
                 "**/.bloop/**": true,
                 "**/.metals/**": true,
                 "**/target/**": true,
-                "old/**": true
-        }
+                "old/**": true,
+                "**/.classpath": true,
+                "**/.project": true,
+                "**/.settings": true,
+                "**/.factorypath": true
+        },
+        "editor.tabSize": 2,
+        "workbench.tree.indent": 4
 }
