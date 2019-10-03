@@ -12,7 +12,6 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
-@SuppressWarnings("SpellCheckingInspection")
 @GenerateWrapper
 @ReportPolymorphism
 @NodeInfo(language = "core", description = "Instrumentable STG nodes")

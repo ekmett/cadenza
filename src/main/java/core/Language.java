@@ -20,7 +20,7 @@ import org.graalvm.options.OptionValues;
   version = Language.VERSION,
   defaultMimeType = Language.MIME_TYPE,
   characterMimeTypes = Language.MIME_TYPE,
-  byteMimeTypes = Language.BYTECODE_MIME_TYPE,
+  //byteMimeTypes = Language.BYTECODE_MIME_TYPE,
   contextPolicy = TruffleLanguage.ContextPolicy.SHARED,
   fileTypeDetectors = Detector.class
   //interactive = false,
@@ -33,9 +33,9 @@ public class Language extends TruffleLanguage<Context> {
   public final static String VERSION = "0";
   public final static String MIME_TYPE = "application/x-core";
   public final static String EXTENSION = "core";
-  public final static String BYTECODE_MIME_TYPE = "application/x-core-binary";
-  public final static String BYTECODE_EXTENSION = "bc";
-  public final static long   BYTECODE_MAGIC_WORD = 0xC0DAC0DEL;
+  //public final static String BYTECODE_MIME_TYPE = "application/x-core-binary";
+  //public final static String BYTECODE_EXTENSION = "bc";
+  //public final static long   BYTECODE_MAGIC_WORD = 0xC0DAC0DEL;
 
   public Language() {}
 

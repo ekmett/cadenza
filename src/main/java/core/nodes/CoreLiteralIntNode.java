@@ -2,7 +2,6 @@ package core.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 @NodeInfo(shortName = "const")
 public class CoreLiteralIntNode extends CoreExpressionNode {
