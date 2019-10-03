@@ -1,7 +1,6 @@
 package core;
 
 import com.oracle.truffle.api.TruffleFile;
-import com.oracle.truffle.api.TruffleLanguage.Registration;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;

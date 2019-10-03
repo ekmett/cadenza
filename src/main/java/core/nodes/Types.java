@@ -11,7 +11,7 @@ import java.math.BigInteger;
   int.class,
   long.class
 })
-public abstract class CoreTypes {
+public abstract class Types {
   @ImplicitCast
   @TruffleBoundary
   public static CoreBigInteger castBigInteger(long value) {

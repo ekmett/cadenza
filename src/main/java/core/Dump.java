@@ -12,6 +12,7 @@ public class Dump extends RuntimeException implements TruffleException {
 
   private final Node location;
 
+  @SuppressWarnings("WeakerAccess")
   @TruffleBoundary
   public Dump(String message, Node location) {
     super(message);
@@ -51,8 +52,7 @@ public class Dump extends RuntimeException implements TruffleException {
     result.append(" not defined for");
 
     String sep = " ";
-    for (int i = 0; i < values.length; i++) {
-      Object value = values[i];
+    for (Object value : values) {
       result.append(sep);
       sep = ", ";
       if (value == null || InteropLibrary.getFactory().getUncached().isNull(value)) {

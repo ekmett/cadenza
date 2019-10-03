@@ -13,7 +13,7 @@ public class CoreRootNode extends RootNode {
     Language language,
     FrameDescriptor frameDescriptor,
     CoreStatementNode body,
-    SourceSection source,
+    SourceSection sourceSection,
     boolean cloningAllowed
   ) {
     super(language, frameDescriptor);
@@ -22,8 +22,8 @@ public class CoreRootNode extends RootNode {
     this.cloningAllowed = cloningAllowed;
   }
 
-  private CoreStatementNode body;
-  private SourceSection sourceSection;
+  private final CoreStatementNode body;
+  private final SourceSection sourceSection;
   private boolean cloningAllowed;
   
   @Override

@@ -6,17 +6,14 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
-import com.oracle.truffle.api.frame.Frame;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.nodes.ExecutableNode;
-import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
-//import java.io.IOException;
-//import java.lang.UnsupportedOperationException;
 import org.graalvm.options.OptionValues;
 
+@SuppressWarnings("SpellCheckingInspection")
 @TruffleLanguage.Registration(
   id = Language.ID,
   name = Language.NAME,
@@ -25,9 +22,9 @@ import org.graalvm.options.OptionValues;
   characterMimeTypes = Language.MIME_TYPE,
   byteMimeTypes = Language.BYTECODE_MIME_TYPE,
   contextPolicy = TruffleLanguage.ContextPolicy.SHARED,
-  fileTypeDetectors = Detector.class,
-  interactive = true, // eventually this will be false
-  internal = false // eventually this will be true
+  fileTypeDetectors = Detector.class
+  //interactive = false,
+  //internal = true
 )
 public class Language extends TruffleLanguage<Context> {
 
@@ -46,7 +43,7 @@ public class Language extends TruffleLanguage<Context> {
   
   @Override
   public Context createContext(TruffleLanguage.Env env) { 
-    return new Context(this, env) {}; 
+    return new Context(this, env);
   } // cheap and easy
   
   @Override
@@ -70,9 +67,7 @@ public class Language extends TruffleLanguage<Context> {
   @Override
   public boolean isObjectOfLanguage(Object obj) { 
     if (!(obj instanceof TruffleObject)) return false;
-    if (obj instanceof CoreBigInteger) return true;
-    // if (context.isCoreObject(object)) return true;
-    return false; 
+    return obj instanceof CoreBigInteger;
   }
 
   @Override
@@ -112,7 +107,7 @@ public class Language extends TruffleLanguage<Context> {
     InteropLibrary interop = InteropLibrary.getFactory().getUncached(value);
     if (interop.isNumber(value) || value instanceof CoreBigInteger) return "Number";
     if (interop.isBoolean(value)) return "Boolean";
-    if (interop.isString(value)) return "String";;
+    if (interop.isString(value)) return "String";
     if (interop.isNull(value)) return "NULL" ;
     if (interop.isExecutable(value)) return "Function";
     if (interop.hasMembers(value)) return "Object";

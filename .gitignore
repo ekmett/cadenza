@@ -2,7 +2,7 @@
 **/dist/**
 .bloop
 .gradle
-.metals
+.idea
 build
 old
 target
