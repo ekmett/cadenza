@@ -1,6 +1,8 @@
-target
-old
-.metals/
-.bloop/
-**/dist/**
 **/dist-newstyle/**
+**/dist/**
+.bloop
+.gradle
+.metals
+build
+old
+target
