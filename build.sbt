@@ -8,7 +8,7 @@ lazy val root = project
       version        := "0.0.0-SNAPSHOT"
       // organization   := "com.comonad"
     )),
-    name := "coda",
+    name := "core",
     description := "testing a truffle evaluator for strong beta normalization",
     licenses := Seq(("BSD 2-Clause", url("https://github.com/ekmett/core/blob/master/LICENSE.md"))),
   )

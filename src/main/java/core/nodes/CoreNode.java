@@ -1,4 +1,4 @@
-package stg.nodes;
+package core.nodes;
 
 import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -10,13 +10,14 @@ import com.oracle.truffle.api.instrumentation.StandardTags;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 
 @GenerateWrapper
 @ReportPolymorphism
-@NodeInfo(language = "stg", description = "Instrumentable STG nodes")
-public abstract class StgNode extends Node implements InstrumentableNode {
+@NodeInfo(language = "core", description = "Instrumentable STG nodes")
+public abstract class CoreNode extends Node implements InstrumentableNode {
   public static final int NO_SOURCE = -1;
   public static final int UNAVAILABLE_SOURCE = -2;
   private int sourceCharIndex = NO_SOURCE;
@@ -56,8 +57,18 @@ public abstract class StgNode extends Node implements InstrumentableNode {
   public boolean isInstrumentable() { return hasSource(); }
 
   public WrapperNode createWrapper(ProbeNode probe) {
-    return new StgNodeWrapper(this, probe);
+    return new CoreNodeWrapper(this, probe);
   }
 
   public abstract Object execute(VirtualFrame frame);
+
+  public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+    return CoreTypesGen.expectInteger(execute(frame));
+  }
+  public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
+    return CoreTypesGen.expectBoolean(execute(frame));
+  }
+  public long executeLong(VirtualFrame frame) throws UnexpectedResultException {
+    return CoreTypesGen.expectLong(execute(frame));
+  }
 }

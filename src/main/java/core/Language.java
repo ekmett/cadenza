@@ -1,10 +1,15 @@
-package stg;
+package core;
 
-import com.oracle.truffle.api.CallTarget;
+import core.values.CoreBigInteger;
 import com.oracle.truffle.api.Assumption;
+import com.oracle.truffle.api.CallTarget;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.TruffleLanguage;
 import com.oracle.truffle.api.frame.Frame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.nodes.ExecutableNode;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.SourceSection;
@@ -26,13 +31,13 @@ import org.graalvm.options.OptionValues;
 )
 public class Language extends TruffleLanguage<Context> {
 
-  public final static String ID = "stg";
-  public final static String NAME = "STG";
+  public final static String ID = "core";
+  public final static String NAME = "Core";
   public final static String VERSION = "0";
-  public final static String MIME_TYPE = "application/x-stg";
-  public final static String EXTENSION = "stg";
-  public final static String BYTECODE_MIME_TYPE = "application/x-stg-binary";
-  public final static String BYTECODE_EXTENSION = "stgc";
+  public final static String MIME_TYPE = "application/x-core";
+  public final static String EXTENSION = "core";
+  public final static String BYTECODE_MIME_TYPE = "application/x-core-binary";
+  public final static String BYTECODE_EXTENSION = "bc";
   public final static long   BYTECODE_MAGIC_WORD = 0xC0DAC0DEL;
 
   public Language() {}
@@ -63,7 +68,10 @@ public class Language extends TruffleLanguage<Context> {
   }
 
   @Override
-  public boolean isObjectOfLanguage(@SuppressWarnings("unused") Object obj) { 
+  public boolean isObjectOfLanguage(Object obj) { 
+    if (!(obj instanceof TruffleObject)) return false;
+    if (obj instanceof CoreBigInteger) return true;
+    // if (context.isCoreObject(object)) return true;
     return false; 
   }
 
@@ -93,9 +101,22 @@ public class Language extends TruffleLanguage<Context> {
   @Override
   public void disposeThread(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Thread thread) {}
   
+  // TODO: return types?
   @Override
-  public Object findMetaObject(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Object value) { 
-    return null; 
+  public Object findMetaObject(@SuppressWarnings("unused") Context ctx, Object value) { 
+    return getMetaObject(value);
+  }
+
+  public static String getMetaObject(Object value) {
+    if (value == null) return "ANY";
+    InteropLibrary interop = InteropLibrary.getFactory().getUncached(value);
+    if (interop.isNumber(value) || value instanceof CoreBigInteger) return "Number";
+    if (interop.isBoolean(value)) return "Boolean";
+    if (interop.isString(value)) return "String";;
+    if (interop.isNull(value)) return "NULL" ;
+    if (interop.isExecutable(value)) return "Function";
+    if (interop.hasMembers(value)) return "Object";
+    return "Unsupported";
   }
   
   @Override
@@ -110,7 +131,26 @@ public class Language extends TruffleLanguage<Context> {
   
   @Override
   public String toString(@SuppressWarnings("unused") Context ctx, Object value) { 
-    return value.toString(); 
+    return toString(value); 
+  }
+
+  public static String toString(Object value) {
+    try {
+      if (value == null) return "null";
+      InteropLibrary interop = InteropLibrary.getFactory().getUncached(value);
+      if (interop.fitsInLong(value)) return Long.toString(interop.asLong(value));
+      if (interop.isBoolean(value)) return Boolean.toString(interop.asBoolean(value));
+      if (interop.isString(value)) return interop.asString(value);
+      if (interop.isNull(value)) return "NULL";
+      if (interop.isExecutable(value)) return "Function";
+      if (interop.hasMembers(value)) return "Object";
+      if (value instanceof CoreBigInteger) return value.toString();
+      return "Unsupported";
+    } catch (UnsupportedMessageException e) {
+      CompilerDirectives.transferToInterpreter();
+      throw new AssertionError();
+    }
+
   }
   
   @Override

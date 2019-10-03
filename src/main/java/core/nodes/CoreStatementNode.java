@@ -1,4 +1,4 @@
-package stg.nodes;
+package core.nodes;
 
 import com.oracle.truffle.api.dsl.ReportPolymorphism;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -13,15 +13,19 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import java.math.BigInteger;
 
-@NodeInfo(shortName = "argb")
-public class StgArgBool extends StgArgNode {
-  boolean value;
-  public StgArgBool(boolean value) { this.value = value; }
+@GenerateWrapper
+@ReportPolymorphism
+@NodeInfo(language = "core", description = "The abstract base node for all STG statements")
+public abstract class CoreStatementNode extends CoreNode {
+  public boolean hasTag(Class<? extends Tag> tag) {
+    if (tag == StandardTags.StatementTag.class) return true;
+    return super.hasTag(tag);
+  }
 
-  @Override
-  public Object execute(@SuppressWarnings("unused") VirtualFrame frame) { return value; }
-
-  @Override
-  public boolean executeBoolean(@SuppressWarnings("unused") VirtualFrame frame) throws UnexpectedResultException { return value; }
+  public WrapperNode createWrapper(ProbeNode probe) {
+    return new CoreStatementNodeWrapper(this, probe);
+  }
 }
+

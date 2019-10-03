@@ -1,4 +1,4 @@
-package stg;
+package core;
 
 import com.oracle.truffle.api.TruffleFile;
 import com.oracle.truffle.api.TruffleLanguage.Registration;

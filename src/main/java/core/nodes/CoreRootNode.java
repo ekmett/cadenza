@@ -1,22 +1,28 @@
-package stg.nodes;
+package core.nodes;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.source.SourceSection;
-import stg.Language;
+import core.Language;
 
-@NodeInfo(language = "stg", description = "A root of an STG tree.")
-public class StgRootNode extends RootNode {
-  public StgRootNode(Language language, FrameDescriptor frameDescriptor, StgStatementNode body, SourceSection source, boolean cloningAllowed) {
+@NodeInfo(language = "core", description = "A root of a core tree.")
+public class CoreRootNode extends RootNode {
+  public CoreRootNode(
+    Language language,
+    FrameDescriptor frameDescriptor,
+    CoreStatementNode body,
+    SourceSection source,
+    boolean cloningAllowed
+  ) {
     super(language, frameDescriptor);
     this.body = body;
     this.sourceSection = sourceSection;
     this.cloningAllowed = cloningAllowed;
   }
 
-  private StgStatementNode body;
+  private CoreStatementNode body;
   private SourceSection sourceSection;
   private boolean cloningAllowed;
   
