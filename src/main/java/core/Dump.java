@@ -10,6 +10,7 @@ import com.oracle.truffle.api.source.SourceSection;
 // report a runtime type mismatch in the core
 public class Dump extends RuntimeException implements TruffleException {
 
+  private static final long serialVersionUID = 5682244277838705772L;
   private final Node location;
 
   @SuppressWarnings("WeakerAccess")
