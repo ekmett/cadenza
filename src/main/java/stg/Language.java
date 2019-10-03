@@ -45,7 +45,7 @@ public class Language extends TruffleLanguage<Context> {
   } // cheap and easy
   
   @Override
-  public void initializeContext(Context ctx) {} // TODO: any expensive init here, like stdlib loading
+  public void initializeContext(@SuppressWarnings("unused") Context ctx) {} // TODO: any expensive init here, like stdlib loading
   
   @Override
   public void finalizeContext(Context ctx) { 
@@ -53,17 +53,17 @@ public class Language extends TruffleLanguage<Context> {
   } // TODO: any expensive shutdown here
   
   @Override
-  public ExecutableNode parse(TruffleLanguage.InlineParsingRequest request) {
+  public ExecutableNode parse(@SuppressWarnings("unused") TruffleLanguage.InlineParsingRequest request) {
     return null; // unsupported
   }
 
   @Override
-  public CallTarget parse(TruffleLanguage.ParsingRequest request) { 
+  public CallTarget parse(@SuppressWarnings("unused") TruffleLanguage.ParsingRequest request) { 
     return null; // unsupported
   }
 
   @Override
-  public boolean isObjectOfLanguage(Object obj) { 
+  public boolean isObjectOfLanguage(@SuppressWarnings("unused") Object obj) { 
     return false; 
   }
 
@@ -73,7 +73,7 @@ public class Language extends TruffleLanguage<Context> {
   }
 
   @Override 
-  public boolean areOptionsCompatible(OptionValues a, OptionValues b) {
+  public boolean areOptionsCompatible(@SuppressWarnings("unused") OptionValues a, @SuppressWarnings("unused") OptionValues b) {
     return true; 
   } // no options!
 
@@ -83,33 +83,33 @@ public class Language extends TruffleLanguage<Context> {
   }
   
   @Override
-  public boolean isThreadAccessAllowed(Thread thread, boolean singleThreaded) { 
+  public boolean isThreadAccessAllowed(@SuppressWarnings("unused") Thread thread, @SuppressWarnings("unused") boolean singleThreaded) { 
     return true; 
   }
 
   @Override 
-  public void initializeThread(Context ctx, Thread thread) {}
+  public void initializeThread(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Thread thread) {}
 
   @Override
-  public void disposeThread(Context ctx, Thread thread) {}
+  public void disposeThread(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Thread thread) {}
   
   @Override
-  public Object findMetaObject(Context ctx, Object value) { 
+  public Object findMetaObject(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Object value) { 
     return null; 
   }
   
   @Override
-  public SourceSection findSourceLocation(Context ctx, Object value) { 
+  public SourceSection findSourceLocation(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Object value) { 
     return null; 
   }
   
   @Override
-  public boolean isVisible(Context ctx, Object value) { 
+  public boolean isVisible(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Object value) { 
     return true; 
   }
   
   @Override
-  public String toString(Context ctx, Object value) { 
+  public String toString(@SuppressWarnings("unused") Context ctx, Object value) { 
     return value.toString(); 
   }
   

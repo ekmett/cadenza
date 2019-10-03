@@ -15,18 +15,20 @@ import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import java.math.BigInteger;
 
+
 @GenerateWrapper
-@ReportPolymorphism
 @NodeInfo(language = "stg", description = "The abstract base node for all STG statements")
-public abstract class StgStatementNode extends StgNode {
+public abstract class StgArgNode extends StgNode {
   public boolean hasTag(Class<? extends Tag> tag) {
-    if (tag == StandardTags.StatementTag.class) return true;
-    return super.hasTag(tag);
+    if (tag == StandardTags.ExpressionTag.class) return true; 
+    return false;
   }
 
   public WrapperNode createWrapper(ProbeNode probe) {
-    return new StgStatementNodeWrapper(this, probe);
+    return new StgArgNodeWrapper(this, probe);
   }
+
+  public abstract Object execute(VirtualFrame frame);
 
   public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
     return StgTypesGen.expectInteger(execute(frame));
@@ -41,5 +43,3 @@ public abstract class StgStatementNode extends StgNode {
     return StgTypesGen.expectBigInteger(execute(frame));
   }
 }
-
-// todo applications, cases, etc.
