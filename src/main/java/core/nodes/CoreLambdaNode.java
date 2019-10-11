@@ -1,14 +1,12 @@
 package core.nodes;
 
 import com.oracle.truffle.api.dsl.NodeField;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import core.values.CoreClosure;
+import com.oracle.truffle.api.dsl.TypeSystemReference;
+import core.values.Closure;
 
-@NodeField(name = "function", type = CoreClosure.class)
+@SuppressWarnings("ALL")
+@NodeField(name = "function", type = Closure.class)
+@TypeSystemReference(Types.class)
 public abstract class CoreLambdaNode extends CoreNode {
-  public abstract CoreClosure getFunction();
-
-  public CoreClosure getScopedFunction(VirtualFrame frame) {
-    return this.getFunction();
-  }
+  public abstract Closure getFunction();
 }

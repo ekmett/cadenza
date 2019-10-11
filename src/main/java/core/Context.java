@@ -1,8 +1,6 @@
 package core;
 
-import com.oracle.truffle.api.Assumption;
-import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.*;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
 public final class Context {

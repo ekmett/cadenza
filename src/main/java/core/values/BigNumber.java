@@ -11,13 +11,13 @@ import java.math.BigInteger;
 
 @ValueType
 @ExportLibrary(InteropLibrary.class)
-public final class CoreBigInteger implements TruffleObject, Comparable<CoreBigInteger> {
-  public CoreBigInteger(BigInteger i) { this.value = i; }
+public final class BigNumber implements TruffleObject, Comparable<BigNumber> {
+  public BigNumber(BigInteger i) { this.value = i; }
   private final BigInteger value;
   public BigInteger getValue() { return value; }
 
   @TruffleBoundary
-  public int compareTo(CoreBigInteger o) {
+  public int compareTo(BigNumber o) {
     return value.compareTo(o.getValue());
   }
 
@@ -31,7 +31,7 @@ public final class CoreBigInteger implements TruffleObject, Comparable<CoreBigIn
   @Override
   @TruffleBoundary
   public boolean equals(Object obj) {
-    if (obj instanceof CoreBigInteger) return value.equals(((CoreBigInteger)obj).value);  
+    if (obj instanceof BigNumber) return value.equals(((BigNumber)obj).value);
     return false;
   }
  

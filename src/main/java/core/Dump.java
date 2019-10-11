@@ -21,8 +21,7 @@ public class Dump extends RuntimeException implements TruffleException {
   }
 
   @SuppressWarnings("sync-override")
-  @Override
-  public final Throwable fillInStackTrace() {
+  @Override public final Throwable fillInStackTrace() {
     return this;
   }
 
