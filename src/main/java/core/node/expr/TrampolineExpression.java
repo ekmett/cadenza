@@ -6,6 +6,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import core.TailCallException;
+import core.values.Closure;
 
 // handle TailCallExceptions
 // this should be placed inside any root where we had to set its contents to tail position
@@ -24,16 +25,16 @@ public class TrampolineExpression extends Expression {
     try {
       return body.execute(frame);
     } catch (TailCallException e) {
-      return pump(frame, e.callTarget, e.arguments);
+      return pump(frame, e.closure, e.arguments);
     }
   }
 
-  private Object pump(VirtualFrame frame, CallTarget callTarget, Object[] arguments) {
+  private Object pump(VirtualFrame frame, Closure closure, Object[] arguments) {
     for(;;) {
       try {
-        return callNode.call(callTarget, arguments);
+        return closure.execute(arguments);
       } catch (TailCallException e) {
-        callTarget = e.callTarget;
+        closure = e.closure;
         arguments = e.arguments;
       }
     }

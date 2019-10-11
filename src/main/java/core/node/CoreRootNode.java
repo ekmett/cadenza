@@ -32,11 +32,12 @@ public class CoreRootNode extends RootNode {
 
   @Child @SuppressWarnings("CanBeFinal") private Expression body;
 
+  // eventually disallow selectively when we have the equivalent of NOINLINE / top level implicitly constructed references?
   @Override public boolean isCloningAllowed() { return true; }
 
   @Override public Object execute(VirtualFrame frame) {
     assert(lookupContextReference(Language.class).get() != null);
-    // this thing should pump the body for tail calls, and check arity.
+    // to pump for tail calls insert a TrampolineExpression between this and the body
     return body.execute(frame);
   }
 

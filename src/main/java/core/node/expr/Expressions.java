@@ -16,8 +16,8 @@ public interface Expressions {
   static LamExpression lam(RootCallTarget callTarget) { return new LamExpression(noSteps, callTarget); }
   static LamExpression lam(FrameBuilder[] steps, RootCallTarget callTarget) { return new LamExpression(steps, callTarget); }
 
-  static AppExpression create(CallTarget target, Expression... argumentNodes) {
-    return new AppExpression(target, Truffle.getRuntime().createDirectCallNode(target), argumentNodes);
+  static AppExpression create(Expression target, Expression... argumentNodes) {
+    return new AppExpression(target, argumentNodes);
   }
 
   static TrampolineExpression trampoline(Expression body) {

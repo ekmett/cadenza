@@ -11,6 +11,7 @@ import core.node.expr.Expression;
 import core.node.CoreRootNode;
 import core.Language;
 
+@CompilerDirectives.ValueType // screw your reference equality
 @ExportLibrary(InteropLibrary.class)
 public class Closure implements TruffleObject {
   public final RootCallTarget target;
@@ -38,7 +39,8 @@ public class Closure implements TruffleObject {
 
   @ExportMessage
   @CompilerDirectives.TruffleBoundary
-  public Object execute(Object... arguments) throws ArityException {
+  public Object execute(Object... arguments) { // throws ArityException {
+    // this should pump and handle arity exceptions by constructing paps
     return target.call(arguments);
   }
 }
