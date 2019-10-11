@@ -8,7 +8,7 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import core.Types;
-import core.node.FrameBuilder;
+import core.frame.FrameBuilder;
 import core.values.Closure;
 
 @SuppressWarnings("ALL")
@@ -27,6 +27,6 @@ public class LamExpression extends Expression {
   public Closure execute(VirtualFrame frame) {
     MaterializedFrame newFrame = Truffle.getRuntime().createMaterializedFrame(new Object[]{}, callTarget.getRootNode().getFrameDescriptor());
     for (FrameBuilder step : steps) step.run(frame, newFrame);
-    return new Closure(newFrame, callTarget);
+    return Closure.create(newFrame, callTarget);
   }
 }

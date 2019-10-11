@@ -1,6 +1,5 @@
 package core;
 
-import com.oracle.truffle.api.frame.FrameDescriptor;
 import core.node.CoreExecutableNode;
 import core.node.CoreRootNode;
 import core.node.expr.*;
@@ -22,7 +21,7 @@ import org.graalvm.options.OptionValues;
   contextPolicy = ContextPolicy.SHARED,
   fileTypeDetectors = Detector.class
 )
-public class Language extends TruffleLanguage<Context> {
+public class Language extends TruffleLanguage<CoreContext> {
 
   public final static String ID = "core";
   public final static String NAME = "Core";
@@ -34,13 +33,13 @@ public class Language extends TruffleLanguage<Context> {
 
   public final Assumption singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active");
   
-  @Override public Context createContext(Env env) {
-    return new Context(this, env);
+  @Override public CoreContext createContext(Env env) {
+    return new CoreContext(this, env);
   } // cheap and easy
   
-  @Override public void initializeContext(@SuppressWarnings("unused") Context ctx) {} // TODO: any expensive init here, like stdlib loading
+  @Override public void initializeContext(@SuppressWarnings("unused") CoreContext ctx) {} // TODO: any expensive init here, like stdlib loading
   
-  @Override public void finalizeContext(Context ctx) {
+  @Override public void finalizeContext(CoreContext ctx) {
     ctx.shutdown(); 
   } // TODO: any expensive shutdown here
   
@@ -68,7 +67,7 @@ public class Language extends TruffleLanguage<Context> {
     return true; 
   } // no options!
 
-  @Override public void initializeMultiThreading(Context ctx) {
+  @Override public void initializeMultiThreading(CoreContext ctx) {
     ctx.singleThreadedAssumption.invalidate(); 
   }
   
@@ -76,12 +75,12 @@ public class Language extends TruffleLanguage<Context> {
     return true; 
   }
 
-  @Override public void initializeThread(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Thread thread) {}
+  @Override public void initializeThread(@SuppressWarnings("unused") CoreContext ctx, @SuppressWarnings("unused") Thread thread) {}
 
-  @Override public void disposeThread(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Thread thread) {}
+  @Override public void disposeThread(@SuppressWarnings("unused") CoreContext ctx, @SuppressWarnings("unused") Thread thread) {}
   
   // TODO: return types?
-  @Override public Object findMetaObject(@SuppressWarnings("unused") Context ctx, Object value) {
+  @Override public Object findMetaObject(@SuppressWarnings("unused") CoreContext ctx, Object value) {
     return getMetaObject(value);
   }
 
@@ -97,15 +96,15 @@ public class Language extends TruffleLanguage<Context> {
     return "Unsupported";
   }
   
-  @Override public SourceSection findSourceLocation(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Object value) {
+  @Override public SourceSection findSourceLocation(@SuppressWarnings("unused") CoreContext ctx, @SuppressWarnings("unused") Object value) {
     return null; 
   }
   
-  @Override public boolean isVisible(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Object value) {
+  @Override public boolean isVisible(@SuppressWarnings("unused") CoreContext ctx, @SuppressWarnings("unused") Object value) {
     return true; 
   }
   
-  @Override public String toString(@SuppressWarnings("unused") Context ctx, Object value) {
+  @Override public String toString(@SuppressWarnings("unused") CoreContext ctx, Object value) {
     return toString(value); 
   }
 
@@ -128,7 +127,7 @@ public class Language extends TruffleLanguage<Context> {
     }
   }
   
-  @Override public boolean patchContext(Context ctx, TruffleLanguage.Env env) {
+  @Override public boolean patchContext(CoreContext ctx, TruffleLanguage.Env env) {
     ctx.env = env;
     return true;
   }

@@ -3,8 +3,8 @@ package core;
 import com.oracle.truffle.api.*;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
-public final class Context {
-  public Context(Language language, TruffleLanguage.Env env) {
+public final class CoreContext {
+  public CoreContext(Language language, TruffleLanguage.Env env) {
     this.language = language;
     this.env = env;
   }

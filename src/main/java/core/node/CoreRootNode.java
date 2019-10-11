@@ -10,24 +10,18 @@ import core.Language;
 import core.Types;
 import core.node.expr.Expression;
 
+// root nodes are needed by Truffle.getRuntime().createCallTarget(someRoot), which is the way to manufacture callable
+// things in truffle.
 @NodeInfo(language = "core", description = "A root of a core tree.")
 @TypeSystemReference(Types.class)
 public class CoreRootNode extends RootNode {
-  public CoreRootNode(
+  protected CoreRootNode(
     Language language,
     Expression body,
     FrameDescriptor fd
   ) {
     super(language, fd);
     this.body = body;
-  }
-
-  // for top level combinators with no environment
-  public CoreRootNode(
-    Language language,
-    Expression body
-  ) {
-    this(language, body, new FrameDescriptor());
   }
 
   @Child @SuppressWarnings("CanBeFinal") private Expression body;
@@ -39,6 +33,10 @@ public class CoreRootNode extends RootNode {
     assert(lookupContextReference(Language.class).get() != null);
     // to pump for tail calls insert a TrampolineExpression between this and the body
     return body.execute(frame);
+  }
+
+  public static CoreRootNode create(Language language, Expression body, FrameDescriptor fd) {
+    return new CoreRootNode(language, body, fd);
   }
 
   public static CoreRootNode create(Language language, Expression body) {

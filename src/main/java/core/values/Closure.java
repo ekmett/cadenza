@@ -13,34 +13,35 @@ import core.Language;
 
 @CompilerDirectives.ValueType // screw your reference equality
 @ExportLibrary(InteropLibrary.class)
-public class Closure implements TruffleObject {
-  public final RootCallTarget target;
-  public final MaterializedFrame env;
-  public Closure(MaterializedFrame env, RootCallTarget target) {
-    this.env = env;
-    this.target = target;
-  }
+public abstract class Closure implements TruffleObject {
 
-  public static Closure create(Language language, MaterializedFrame env, Expression body) {
-    return new Closure(
-      env,
-      Truffle.getRuntime().createCallTarget(
-        new CoreRootNode(
-          language,
-          body,
-          env.getFrameDescriptor()
-        )
-      )
-    );
-  }
 
   @ExportMessage
-  public boolean isExecutable() { return true; }
+  public boolean isExecutable() {
+    return true;
+  }
 
   @ExportMessage
   @CompilerDirectives.TruffleBoundary
-  public Object execute(Object... arguments) { // throws ArityException {
-    // this should pump and handle arity exceptions by constructing paps
-    return target.call(arguments);
+  public abstract Object execute(Object... arguments);
+
+  public static Closure create(Language language, MaterializedFrame env, Expression body) {
+    RootCallTarget target = Truffle.getRuntime().createCallTarget(CoreRootNode.create(language, body, env.getFrameDescriptor()));
+    return new Closure() {
+      public Object execute(Object... arguments) {
+        return target.call(arguments);
+      }
+    };
   }
+
+  public static Closure create(MaterializedFrame newFrame, RootCallTarget callTarget) {
+    return new Closure() {
+      public Object execute(Object... arguments) {
+        return null; // too sleepy to finish
+        // Truffle.getRuntime().createCallTarget(CoreRootNode.create(null, Expressions.lam(callTarget)));  11111111111111``````````````````````1``````````````````````        callTarget.getRootNode().execute(newFrame);
+        //return callTarget.call(arguments);
+      }
+    };
+  }
+
 }
