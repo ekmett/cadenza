@@ -6,14 +6,14 @@ import com.oracle.truffle.api.instrumentation.Tag;
 import com.oracle.truffle.api.instrumentation.StandardTags;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
-@GenerateWrapper
+//@GenerateWrapper
 @NodeInfo(language = "core", description = "The abstract base node for all core expressions")
 public abstract class CoreExpressionNode extends CoreNode {
-  public boolean hasTag(Class<? extends Tag> tag) {
-    return tag == StandardTags.ExpressionTag.class;
-  }
+//  public boolean hasTag(Class<? extends Tag> tag) {
+//    return tag == StandardTags.ExpressionTag.class;
+//  }
 
-  public WrapperNode createWrapper(ProbeNode probe) {
-    return new CoreExpressionNodeWrapper(this, probe);
-  }
+  //public WrapperNode createWrapper(ProbeNode probe) {
+//    return new CoreExpressionNodeWrapper(this, probe);
+//  }
 }

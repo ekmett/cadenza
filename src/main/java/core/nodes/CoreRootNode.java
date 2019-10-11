@@ -1,6 +1,7 @@
 package core.nodes;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.RootNode;
@@ -11,36 +12,21 @@ import core.Language;
 public class CoreRootNode extends RootNode {
   public CoreRootNode(
     Language language,
-    FrameDescriptor frameDescriptor,
-    CoreStatementNode body,
-    SourceSection sourceSection,
-    boolean cloningAllowed
+    CoreExpressionNode body,
+    FrameDescriptor fd
   ) {
-    super(language, frameDescriptor);
+    super(language, fd);
     this.body = body;
-    this.sourceSection = sourceSection;
-    this.cloningAllowed = cloningAllowed;
   }
 
-  private final CoreStatementNode body;
-  private final SourceSection sourceSection;
-  private boolean cloningAllowed;
-  
+  @Child private CoreExpressionNode body;
+
   @Override
-  public boolean isCloningAllowed() { return cloningAllowed; }
-
-  public void setCloningAllowed(boolean cloningAllowed) {
-    this.cloningAllowed = cloningAllowed;
-  }
+  public boolean isCloningAllowed() { return true; }
 
   @Override
   public Object execute(VirtualFrame frame) {
     assert(lookupContextReference(Language.class).get() != null);
     return body.execute(frame);
-  }
-
-  @Override
-  public SourceSection getSourceSection() { 
-    return sourceSection; 
   }
 }
