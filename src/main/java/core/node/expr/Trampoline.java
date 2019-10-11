@@ -4,10 +4,12 @@ import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
+import com.oracle.truffle.api.nodes.NodeInfo;
 import core.TailCallException;
 
 // handle TailCallExceptions
 // this should be placed inside any root where we had to set its contents to tail position
+@NodeInfo(shortName = "Trampoline")
 public class Trampoline extends CoreExpressionNode {
   IndirectCallNode callNode = Truffle.getRuntime().createIndirectCallNode();
   public @Child CoreExpressionNode body;

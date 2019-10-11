@@ -17,7 +17,7 @@ dependencies {
 }
 
 application {
-  mainClassName = "core.App"
+  mainClassName = "core.Main"
   applicationDefaultJvmArgs = listOf("-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI")
 }
 

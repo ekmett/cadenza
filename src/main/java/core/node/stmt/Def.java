@@ -6,9 +6,11 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.NodeField;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.*;
+import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.node.expr.CoreExpressionNode;
 
+@NodeInfo(shortName = "Def")
 public abstract class Def extends CoreStatementNode {
   public FrameSlot slot;
   @Child public CoreExpressionNode arg;
