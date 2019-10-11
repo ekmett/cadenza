@@ -13,7 +13,7 @@ import core.*;
 @TypeSystemReference(Types.class)
 public abstract class CoreExpressionNode extends Node {
 
-  public abstract Object execute(VirtualFrame frame);
+  public abstract Object execute(VirtualFrame frame) throws TailCallException;
 
   public long executeLong(VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectLong(execute(frame));

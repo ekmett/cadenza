@@ -24,13 +24,13 @@ public abstract class App extends CoreExpressionNode {
   @Child @SuppressWarnings("CanBeFinal") private DirectCallNode callNode;
   @Children protected final CoreExpressionNode[] argumentNodes;
 
-  public Object execute(VirtualFrame frame) {
+  public Object execute(VirtualFrame frame) throws TailCallException {
     Object[] arguments = new Object[argumentNodes.length];
     for (int i=0;i<argumentNodes.length;++i) arguments[i] = argumentNodes[i].execute(frame);
     return dispatch(arguments);
   }
 
-  protected Object dispatch(Object[] arguments) {
+  protected Object dispatch(Object[] arguments) throws TailCallException {
     CompilerAsserts.partialEvaluationConstant(this.isTail);
     if (this.isTail) throw new TailCallException(target, arguments);
     return callNode.call(arguments);
