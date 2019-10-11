@@ -10,14 +10,14 @@ import core.Types;
 @TypeSystemReference(Types.class)
 @NodeInfo(shortName = "Arg")
 public class Arg extends CoreExpressionNode {
-  private int index;
+  private final int index;
   public Arg(int index) {
+    assert 0 <= index;
     this.index = index;
   }
 
   @Override public Object execute(VirtualFrame frame) {
     Object[] arguments = frame.getArguments();
-    // assert that arguments.length is a compile time constant?
     assert index < arguments.length : "insufficient arguments";
     return frame.getArguments()[index];
   }
