@@ -23,4 +23,7 @@ public abstract class CoreExpressionNode extends Node {
   }
 
   public void setTail() {}
+
+  // require opt in to adoption, not out
+  @Override public boolean isAdoptable() { return false; }
 }

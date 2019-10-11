@@ -39,4 +39,5 @@ public abstract class App extends CoreExpressionNode {
   @CompilerDirectives.CompilationFinal protected boolean isTail = false;
   // app nodes care if they are in tail position
   @Override public final void setTail() { isTail = true; }
+
 }

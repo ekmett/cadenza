@@ -19,6 +19,8 @@ public abstract class Def extends CoreStatementNode {
     this.arg = arg;
   }
 
+  @Override public boolean isAdoptable() { return false; }
+
   public void defLong(VirtualFrame frame, FrameSlot slot, CoreExpressionNode arg) {
     try {
       if (!isLongOrIllegal(frame.getFrameDescriptor())) throw new FrameSlotTypeException();
