@@ -1,15 +1,16 @@
 package core;
 
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import core.node.CoreExecutableNode;
+import core.node.CoreRootNode;
+import core.node.FrameBuilder;
+import core.node.expr.*;
 import core.values.*;
-import com.oracle.truffle.api.Assumption;
-import com.oracle.truffle.api.CallTarget;
-import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.TruffleLanguage;
+import com.oracle.truffle.api.*;
+import com.oracle.truffle.api.TruffleLanguage.*;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
-import com.oracle.truffle.api.nodes.ExecutableNode;
 import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionValues;
 
@@ -19,9 +20,8 @@ import org.graalvm.options.OptionValues;
   version = Language.VERSION,
   defaultMimeType = Language.MIME_TYPE,
   characterMimeTypes = Language.MIME_TYPE,
-  contextPolicy = TruffleLanguage.ContextPolicy.SHARED,
+  contextPolicy = ContextPolicy.SHARED,
   fileTypeDetectors = Detector.class
-  //internal = true
 )
 public class Language extends TruffleLanguage<Context> {
 
@@ -35,7 +35,7 @@ public class Language extends TruffleLanguage<Context> {
 
   public final Assumption singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active");
   
-  @Override public Context createContext(TruffleLanguage.Env env) {
+  @Override public Context createContext(Env env) {
     return new Context(this, env);
   } // cheap and easy
   
@@ -45,12 +45,16 @@ public class Language extends TruffleLanguage<Context> {
     ctx.shutdown(); 
   } // TODO: any expensive shutdown here
   
-  @Override public ExecutableNode parse(@SuppressWarnings("unused") TruffleLanguage.InlineParsingRequest request) {
-    return null; // unsupported
+  @Override public CoreExecutableNode parse(@SuppressWarnings("unused") InlineParsingRequest request) {
+    CoreExpressionNode body = null; // todo: fake a body
+    return new CoreExecutableNode(this, body);
   }
 
-  @Override public CallTarget parse(@SuppressWarnings("unused") TruffleLanguage.ParsingRequest request) {
-    return null; // unsupported
+  @Override public CallTarget parse(@SuppressWarnings("unused") ParsingRequest request) {
+    FrameDescriptor fd = new FrameDescriptor();
+    CoreExpressionNode body = null; // todo: fake a body
+    CoreRootNode root = new CoreRootNode(this, body, fd);
+    return Truffle.getRuntime().createCallTarget(root);
   }
 
   @Override public boolean isObjectOfLanguage(Object obj) {
@@ -130,4 +134,19 @@ public class Language extends TruffleLanguage<Context> {
     ctx.env = env;
     return true;
   }
+
+  // testing
+
+  // manufacture a node
+  CoreExpressionNode I() {
+    FrameDescriptor fd = new FrameDescriptor();
+    return new Lam(Truffle.getRuntime().createCallTarget(new CoreRootNode(this, new Arg(0), fd)));
+  }
+
+  // manufacture a node, notice no arity
+  CoreExpressionNode K() {
+    FrameDescriptor fd = new FrameDescriptor();
+    return new Lam(Truffle.getRuntime().createCallTarget(new CoreRootNode(this, new Arg(0), fd)));
+  }
+
 }

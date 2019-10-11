@@ -1,4 +1,4 @@
-package core.nodes;
+package core;
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.dsl.ImplicitCast;
@@ -7,7 +7,7 @@ import core.values.BigNumber;
 
 import java.math.BigInteger;
 
-@TypeSystem({long.class})
+@TypeSystem({boolean.class,long.class})
 public abstract class Types {
   @ImplicitCast
   @TruffleBoundary
