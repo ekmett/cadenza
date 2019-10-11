@@ -10,10 +10,11 @@ import core.TailCallException;
 // handle TailCallExceptions
 // this should be placed inside any root where we had to set its contents to tail position
 @NodeInfo(shortName = "Trampoline")
-public class Trampoline extends CoreExpressionNode {
+public class TrampolineExpression extends Expression {
   IndirectCallNode callNode = Truffle.getRuntime().createIndirectCallNode();
-  public @Child CoreExpressionNode body;
-  protected Trampoline(IndirectCallNode callNode, CoreExpressionNode body) {
+  public @Child
+  Expression body;
+  protected TrampolineExpression(IndirectCallNode callNode, Expression body) {
     this.callNode = callNode;
     this.body = body;
   }

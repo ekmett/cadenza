@@ -11,7 +11,7 @@ import core.*;
 
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(Types.class)
-public abstract class CoreExpressionNode extends Node {
+public abstract class Expression extends Node {
 
   public abstract Object execute(VirtualFrame frame) throws TailCallException;
 

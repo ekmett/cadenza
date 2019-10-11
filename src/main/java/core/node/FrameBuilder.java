@@ -6,23 +6,24 @@ import com.oracle.truffle.api.frame.*;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.Types;
-import core.node.expr.CoreExpressionNode;
+import core.node.expr.Expression;
 
 @TypeSystemReference(Types.class)
 public abstract class FrameBuilder extends Node {
   public abstract void run(VirtualFrame frame, MaterializedFrame newFrame);
 
-  public static FrameBuilder createSlotBuilder(FrameSlot slot, CoreExpressionNode rhs) {
+  public static FrameBuilder createSlotBuilder(FrameSlot slot, Expression rhs) {
     return new FrameSlotBuilder.FirstBuilder(slot, rhs);
   }
 }
 
 // we need to manually rebuild these because I want to pass newFrame to run and the truffle folks never imagined that
+// TODO: add a manual state machine so we can avoid the full node rewrites
 abstract class FrameSlotBuilder extends FrameBuilder {
   protected final FrameSlot slot;
-  @Child protected CoreExpressionNode rhs;
+  @Child protected Expression rhs;
 
-  FrameSlotBuilder(FrameSlot slot, CoreExpressionNode rhs) {
+  FrameSlotBuilder(FrameSlot slot, Expression rhs) {
     this.slot = slot;
     this.rhs = rhs;
   }
@@ -77,22 +78,22 @@ abstract class FrameSlotBuilder extends FrameBuilder {
 
 
   static class ObjectBuilder extends FrameSlotBuilder {
-    ObjectBuilder(FrameSlot slot, CoreExpressionNode rhs) { super(slot, rhs); }
+    ObjectBuilder(FrameSlot slot, Expression rhs) { super(slot, rhs); }
     public void run(VirtualFrame frame, MaterializedFrame newFrame) { runObject(frame, newFrame); }
   }
 
   static class BooleanBuilder extends FrameSlotBuilder {
-    BooleanBuilder(FrameSlot slot, CoreExpressionNode rhs) { super(slot, rhs); }
+    BooleanBuilder(FrameSlot slot, Expression rhs) { super(slot, rhs); }
     public void run(VirtualFrame frame, MaterializedFrame newFrame) { runBoolean(frame, newFrame); }
   }
 
   static class LongBuilder extends FrameSlotBuilder {
-    LongBuilder(FrameSlot slot, CoreExpressionNode rhs) { super(slot, rhs); }
+    LongBuilder(FrameSlot slot, Expression rhs) { super(slot, rhs); }
     public void run(VirtualFrame frame, MaterializedFrame newFrame) { runLong(frame, newFrame); }
   }
 
   static class FirstBuilder extends FrameSlotBuilder {
-    FirstBuilder(FrameSlot slot, CoreExpressionNode rhs) { super(slot, rhs); }
+    FirstBuilder(FrameSlot slot, Expression rhs) { super(slot, rhs); }
     public void run(VirtualFrame frame, MaterializedFrame newFrame) { runFirst(frame, newFrame); }
   }
 }

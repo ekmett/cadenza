@@ -3,7 +3,6 @@ package core.node.expr;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.DirectCallNode;
@@ -13,8 +12,8 @@ import core.Types;
 
 @TypeSystemReference(Types.class)
 @NodeInfo(shortName = "App")
-public class AppNode extends CoreExpressionNode {
-  protected AppNode(CallTarget target, DirectCallNode callNode, CoreExpressionNode[] argumentNodes) {
+public class AppExpression extends Expression {
+  protected AppExpression(CallTarget target, DirectCallNode callNode, Expression[] argumentNodes) {
     this.target = target;
     this.callNode = callNode;
     this.argumentNodes = argumentNodes;
@@ -22,7 +21,7 @@ public class AppNode extends CoreExpressionNode {
 
   protected final CallTarget target;
   @Child @SuppressWarnings("CanBeFinal") private DirectCallNode callNode;
-  @Children protected final CoreExpressionNode[] argumentNodes;
+  @Children protected final Expression[] argumentNodes;
 
   public Object execute(VirtualFrame frame) throws TailCallException {
     Object[] arguments = new Object[argumentNodes.length];

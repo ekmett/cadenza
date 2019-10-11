@@ -7,7 +7,7 @@ import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.interop.*;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
-import core.node.expr.CoreExpressionNode;
+import core.node.expr.Expression;
 import core.node.CoreRootNode;
 import core.Language;
 
@@ -20,7 +20,7 @@ public class Closure implements TruffleObject {
     this.target = target;
   }
 
-  public static Closure create(Language language, MaterializedFrame env, CoreExpressionNode body) {
+  public static Closure create(Language language, MaterializedFrame env, Expression body) {
     return new Closure(
       env,
       Truffle.getRuntime().createCallTarget(

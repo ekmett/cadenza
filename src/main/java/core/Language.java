@@ -45,14 +45,13 @@ public class Language extends TruffleLanguage<Context> {
   } // TODO: any expensive shutdown here
   
   @Override public CoreExecutableNode parse(@SuppressWarnings("unused") InlineParsingRequest request) {
-    CoreExpressionNode body = null; // todo: fake a body
-    return new CoreExecutableNode(this, body);
+    Expression body = null; // todo: fake a body
+    return CoreExecutableNode.create(this,body);
   }
 
   @Override public CallTarget parse(@SuppressWarnings("unused") ParsingRequest request) {
-    FrameDescriptor fd = new FrameDescriptor();
-    CoreExpressionNode body = null; // todo: fake a body
-    CoreRootNode root = new CoreRootNode(this, body, fd);
+    Expression body = null; // todo: fake a body
+    CoreRootNode root = CoreRootNode.create(this, body);
     return Truffle.getRuntime().createCallTarget(root);
   }
 
@@ -137,15 +136,13 @@ public class Language extends TruffleLanguage<Context> {
   // testing
 
   // manufacture a node
-  CoreExpressionNode I() {
-    FrameDescriptor fd = new FrameDescriptor();
-    return new LamNode(Truffle.getRuntime().createCallTarget(new CoreRootNode(this, new ArgNode(0), fd)));
+  Expression I() {
+    return Expressions.lam(Truffle.getRuntime().createCallTarget(CoreRootNode.create(this, new ArgExpression(0))));
   }
 
-  // manufacture a node, notice no arity
-  CoreExpressionNode K() {
-    FrameDescriptor fd = new FrameDescriptor();
-    return new LamNode(Truffle.getRuntime().createCallTarget(new CoreRootNode(this, new ArgNode(0), fd)));
+  // manufacture a node, notice no arity, todo: fix arity
+  Expression K() {
+    return Expressions.lam(Truffle.getRuntime().createCallTarget(CoreRootNode.create(this, new ArgExpression(0))));
   }
 
 }

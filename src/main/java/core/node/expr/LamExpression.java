@@ -13,15 +13,14 @@ import core.values.Closure;
 @SuppressWarnings("ALL")
 @TypeSystemReference(Types.class)
 @NodeInfo(shortName = "Lam")
-public class LamNode extends CoreExpressionNode {
+public class LamExpression extends Expression {
   @Children private FrameBuilder[] steps; // used to construct the closure's environment
   public final RootCallTarget callTarget;
 
-  public LamNode(FrameBuilder[] steps, RootCallTarget callTarget) {
+  public LamExpression(FrameBuilder[] steps, RootCallTarget callTarget) {
     this.steps = steps;
     this.callTarget = callTarget;
   }
-
 
   public Closure execute(VirtualFrame frame) {
     MaterializedFrame newFrame = Truffle.getRuntime().createMaterializedFrame(new Object[]{}, callTarget.getRootNode().getFrameDescriptor());
