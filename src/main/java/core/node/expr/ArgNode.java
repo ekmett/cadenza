@@ -9,9 +9,9 @@ import core.Types;
 // this node replaces the original node.
 @TypeSystemReference(Types.class)
 @NodeInfo(shortName = "Arg")
-public class Arg extends CoreExpressionNode {
+public class ArgNode extends CoreExpressionNode {
   private final int index;
-  public Arg(int index) {
+  public ArgNode(int index) {
     assert 0 <= index;
     this.index = index;
   }
@@ -21,4 +21,6 @@ public class Arg extends CoreExpressionNode {
     assert index < arguments.length : "insufficient arguments";
     return frame.getArguments()[index];
   }
+
+  @Override public boolean isAdoptable() { return false; }
 }

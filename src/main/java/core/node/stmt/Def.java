@@ -10,6 +10,7 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.node.expr.CoreExpressionNode;
 
+//TODO: use a better internal state management system like the generated code would
 @NodeInfo(shortName = "Def")
 public abstract class Def extends CoreStatementNode {
   public FrameSlot slot;

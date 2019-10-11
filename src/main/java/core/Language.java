@@ -3,7 +3,6 @@ package core;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import core.node.CoreExecutableNode;
 import core.node.CoreRootNode;
-import core.node.FrameBuilder;
 import core.node.expr.*;
 import core.values.*;
 import com.oracle.truffle.api.*;
@@ -140,13 +139,13 @@ public class Language extends TruffleLanguage<Context> {
   // manufacture a node
   CoreExpressionNode I() {
     FrameDescriptor fd = new FrameDescriptor();
-    return new Lam(Truffle.getRuntime().createCallTarget(new CoreRootNode(this, new Arg(0), fd)));
+    return new LamNode(Truffle.getRuntime().createCallTarget(new CoreRootNode(this, new ArgNode(0), fd)));
   }
 
   // manufacture a node, notice no arity
   CoreExpressionNode K() {
     FrameDescriptor fd = new FrameDescriptor();
-    return new Lam(Truffle.getRuntime().createCallTarget(new CoreRootNode(this, new Arg(0), fd)));
+    return new LamNode(Truffle.getRuntime().createCallTarget(new CoreRootNode(this, new ArgNode(0), fd)));
   }
 
 }

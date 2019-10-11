@@ -13,10 +13,10 @@ import core.Types;
 
 @TypeSystemReference(Types.class)
 @NodeInfo(shortName = "App")
-public abstract class App extends CoreExpressionNode {
-  public App(CallTarget target, CoreExpressionNode[] argumentNodes) {
+public class AppNode extends CoreExpressionNode {
+  protected AppNode(CallTarget target, DirectCallNode callNode, CoreExpressionNode[] argumentNodes) {
     this.target = target;
-    this.callNode = Truffle.getRuntime().createDirectCallNode(target);
+    this.callNode = callNode;
     this.argumentNodes = argumentNodes;
   }
 
@@ -39,5 +39,6 @@ public abstract class App extends CoreExpressionNode {
   @CompilerDirectives.CompilationFinal protected boolean isTail = false;
   // app nodes care if they are in tail position
   @Override public final void setTail() { isTail = true; }
+
 
 }

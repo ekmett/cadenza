@@ -17,9 +17,6 @@ public class Trampoline extends CoreExpressionNode {
     this.callNode = callNode;
     this.body = body;
   }
-  public static Trampoline create(CoreExpressionNode body) {
-    return new Trampoline(Truffle.getRuntime().createIndirectCallNode(), body);
-  }
 
   @Override
   public Object execute(VirtualFrame frame) {

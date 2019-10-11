@@ -7,27 +7,28 @@ import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
-// read a variable from the frame
-@NodeField(name = "slot", type = FrameSlot.class)
+
 @NodeInfo(shortName = "Read")
-public abstract class Read extends CoreExpressionNode {
-  public abstract FrameSlot getSlot();
-  //@Override String toString() {
-//    return "'" + this.getSlot().getIdentifier();
-//  }
+public abstract class ReadNode extends CoreExpressionNode {
+  // use ReadNodeGen.create(FrameSlot)
+  protected ReadNode(FrameSlot slot) { this.slot = slot; }
+  protected final FrameSlot slot;
 
   @Specialization(rewriteOn = FrameSlotTypeException.class)
   protected long readLong(VirtualFrame frame) throws FrameSlotTypeException {
-    return frame.getLong(getSlot());
+    return frame.getLong(slot);
   }
 
   @Specialization(rewriteOn = FrameSlotTypeException.class)
   protected boolean readBoolean(VirtualFrame frame) throws FrameSlotTypeException {
-    return frame.getBoolean(getSlot());
+    return frame.getBoolean(slot);
   }
 
   @Specialization(replaces = {"readLong", "readBoolean"})
   protected Object read(VirtualFrame frame) {
-    return frame.getValue(getSlot());
+    return frame.getValue(slot);
   }
+
+  // no adoption required
+  @Override public boolean isAdoptable() { return false; }
 }
