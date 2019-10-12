@@ -16,7 +16,7 @@ build:
 build-test:
 	$(GRADLE) compileTestJava
 
-run:
+run: jar
 	$(GRADLE) run
 
 test:

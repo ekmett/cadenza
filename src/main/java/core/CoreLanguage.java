@@ -11,6 +11,7 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.source.SourceSection;
+import org.graalvm.options.OptionDescriptors;
 import org.graalvm.options.OptionValues;
 
 @TruffleLanguage.Registration(
@@ -68,6 +69,9 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
   @Override public boolean areOptionsCompatible(@SuppressWarnings("unused") OptionValues a, @SuppressWarnings("unused") OptionValues b) {
     return true; 
   } // no options!
+
+  @Override
+  protected OptionDescriptors getOptionDescriptors() { return Options.DESCRIPTORS; }
 
   @Override public void initializeMultiThreading(CoreContext ctx) {
     ctx.singleThreadedAssumption.invalidate(); 
