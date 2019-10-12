@@ -8,8 +8,5 @@ import core.Types;
 
 import java.util.function.Consumer;
 
-@TypeSystemReference(Types.class)
-@NodeInfo(shortName = "FrameBuilder")
 public abstract class FrameBuilder extends Node {
-  public abstract void execute(VirtualFrame frame, MaterializedFrame newFrame);
 }

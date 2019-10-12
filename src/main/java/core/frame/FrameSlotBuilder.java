@@ -1,38 +1,35 @@
 package core.frame;
 
+import core.Types;
 import com.oracle.truffle.api.dsl.*;
 import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
+import com.oracle.truffle.api.nodes.*;
 import core.node.expr.Expression;
 
-public class FrameSlotBuilder extends FrameBuilder {
-  final FrameSlot slot;
-  @Child Expression rhs;
+@TypeSystemReference(Types.class)
+@NodeInfo(shortName = "FrameBuilder")
+//@NodeChild(type = Expression.class)
+@NodeField(name="slot", type = FrameSlot.class)
+public abstract class FrameSlotBuilder extends Node {
+  protected abstract FrameSlot getSlot();
+  public abstract void execute(VirtualFrame frame, Frame newFrame);
 
-  public FrameSlotBuilder(FrameSlot slot, Expression rhs) {
-    this.slot = slot;
-    this.rhs = rhs;
+
+//  @Specialization(rewriteOn = {FrameSlotTypeException.class, UnexpectedResultException.class})
+  void copyBoolean(VirtualFrame frame, Frame newFrame, boolean rhs) throws FrameSlotTypeException, UnexpectedResultException {
+     newFrame.setBoolean(getSlot(), rhs);
   }
 
-  // @Specialization(rewriteOn = {FrameSlotTypeException.class, UnexpectedResultException.class})
-  void executeBoolean(VirtualFrame frame, MaterializedFrame newFrame, FrameSlot slot, Expression rhs) throws FrameSlotTypeException, UnexpectedResultException {
-     newFrame.setBoolean(slot, rhs.executeBoolean(frame));
+//  @Specialization(rewriteOn = {FrameSlotTypeException.class, UnexpectedResultException.class})
+  void copyLong(VirtualFrame frame, Frame newFrame, long rhs) throws FrameSlotTypeException, UnexpectedResultException {
+    newFrame.setLong(getSlot(), rhs);
   }
 
-  // @Specialization(rewriteOn = {FrameSlotTypeException.class, UnexpectedResultException.class})
-  void executeLong(VirtualFrame frame, MaterializedFrame newFrame, FrameSlot slot, Expression rhs) throws FrameSlotTypeException, UnexpectedResultException {
-    newFrame.setLong(slot, rhs.executeLong(frame));
-  }
-
-  // @Specialization(replaces = {"executeBoolean","executeLong"})
-  void executeObject(VirtualFrame frame, MaterializedFrame newFrame, FrameSlot slot, Expression rhs) {
-    newFrame.setLong(slot, rhs.executeLong(frame));
+//  @Fallback
+  void copyObject(VirtualFrame frame, Frame newFrame, Object rhs) {
+    newFrame.setObject(getSlot(), rhs);
   }
 
   public boolean isAdoptable() { return false; }
 
-  @Override
-  public void execute(VirtualFrame frame, MaterializedFrame newFrame) {
-    // this is the workhorse
-  }
 }
