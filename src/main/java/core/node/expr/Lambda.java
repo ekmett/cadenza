@@ -14,19 +14,17 @@ import core.values.Closure;
 @TypeSystemReference(CoreTypes.class)
 @NodeInfo(shortName = "Lam")
 public class Lambda extends Expression {
+  FrameDescriptor closureFrameDescriptor; // used to manufacture the temporary copy that we freeze in the closure
   @Children private FrameBuilder[] captureSteps; // steps used to capture the closure's environment
-  FrameDescriptor closureFrameDescriptor; // used to manufacture the temporary copy we freeze with the closure
   @Child FunctionBody body; // this could well be set up as a RootNode for our language
 
-
-  public Lambda(FrameBuilder[] steps, CoreRootNode body) {
-    this.steps = steps;
+  public Lambda(FrameDescriptor closureFrameDescriptor, FrameBuilder[] steps, FunctionBody body) {
+    this.captureSteps = steps;
     this.closureFrameDescriptor = closureFrameDescriptor;
     this.body = body;
   }
 
 //  public static Closure create(MaterializedFrame env, FrameDescriptor fd, int arity, FrameBuilder[] builders, Expression body) {
-
 
   @ExplodeLoop
   public Closure execute(VirtualFrame frame) {

@@ -14,7 +14,9 @@ import core.CoreTypes;
 import core.frame.FrameBuilder;
 import core.node.expr.Expression;
 
-// and associate a callTarget with this?
+// TODO: this should probably catch TailCallExceptions and rewrite into a form that handles self-tailcalls or full tailcalls
+// when that happens.
+
 @TypeSystemReference(CoreTypes.class)
 @NodeInfo(shortName = "FunctionBody")
 public final class FunctionBody extends RootNode {
@@ -22,14 +24,14 @@ public final class FunctionBody extends RootNode {
 
   final int arity; // expected number of arguments, for eval-apply
   @Node.Children private final FrameBuilder[] envPreamble; // used to initialize the live environment from the environment
-  @Node.Children private final FrameBuilder[] argPreamble; // used to initialize the live environment from the arguments (numbered from 1)
-  @Node.Child public Expression body; // we manufacture an entire root node with a funny calling convention that arg[0] = the materialized frame, we're copying from, and arg[1..] are the actual arguments
+  @Node.Children private final FrameBuilder[] argPreamble; // used to initialize the live environment from the arguments (numbered from 1 if envPreamble != null)
+  @Node.Child public Expression body;
 
-  final boolean isCombinator() { return envPreamble == null; }
+  public final boolean hasEnv() { return envPreamble != null; }
 
   // envPreamble = null means we use arguments 0 .. as a combinator with no environment
   // if we do have an envPreamble then we use argument 0 to pass the materialized frame
-  protected FunctionBody(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] envPreamble, FrameBuilder[] argPreamble, Expression body) {
+  public FunctionBody(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] envPreamble, FrameBuilder[] argPreamble, Expression body) {
     super(language, frameDescriptor);
     this.arity = arity;
     this.envPreamble = envPreamble;
@@ -37,21 +39,29 @@ public final class FunctionBody extends RootNode {
     this.body = body;
   }
 
-  // execute our calling convention
   @ExplodeLoop
-  private VirtualFrame callingConvention(VirtualFrame frame) {
-    VirtualFrame local = Truffle.getRuntime().createVirtualFrame(noArguments,getFrameDescriptor());
-    if (!isCombinator()) { // we need environment, we're a super combinator
+  private void copyEnv(VirtualFrame frame, VirtualFrame local) {
+    if (hasEnv()) {
       MaterializedFrame env = (MaterializedFrame) frame.getArguments()[0];
       for (FrameBuilder builder : envPreamble) builder.execute(env, local);
     }
-    for (FrameBuilder builder : argPreamble) builder.execute(frame, local);
-    return local;
   }
 
-  public Object execute(VirtualFrame frame) {
-    // manufacture a new frame
-    // now local is ready for business
-    return body.execute(callingConvention(frame));
+  @ExplodeLoop
+  private void copyArgs(VirtualFrame frame, VirtualFrame local) {
+    for (FrameBuilder builder : argPreamble) builder.execute(frame, local);
   }
+
+  public final Object execute(VirtualFrame frame) {
+    VirtualFrame local = Truffle.getRuntime().createVirtualFrame(noArguments,getFrameDescriptor());
+    copyEnv(frame,local);
+    copyArgs(frame,local);
+    return body.execute(local); // TODO: call a customized execute method indicating this is in tail position
+  }
+
+  // TODO:
+  // catch a tail call check to see if it has this function body, if so it is a self-tailcall
+  // if not we're doing arbitrary tail calls
+  // in the self-tailcall case, we only need to re-run the argPreamble and can reuse the current frame
+  // in the arbitrary tailcall case we need to set up a classic trampoline
 }
