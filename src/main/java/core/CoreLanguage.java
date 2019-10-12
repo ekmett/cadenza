@@ -1,5 +1,6 @@
 package core;
 
+import com.oracle.truffle.api.instrumentation.ProvidedTags;
 import core.node.CoreExecutableNode;
 import core.node.CoreRootNode;
 import core.node.expr.*;
@@ -21,6 +22,7 @@ import org.graalvm.options.OptionValues;
   contextPolicy = ContextPolicy.SHARED,
   fileTypeDetectors = Detector.class
 )
+@ProvidedTags(value={})
 public class CoreLanguage extends TruffleLanguage<CoreContext> {
 
   public final static String ID = "core";
