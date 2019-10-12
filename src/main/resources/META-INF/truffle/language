@@ -1,0 +1,8 @@
+language1.characterMimeType.0=application/x-core
+language1.className=core.CoreLanguage
+language1.id=core
+language1.implementationName=
+language1.interactive=true
+language1.internal=false
+language1.name=Core
+language1.version=0.0
