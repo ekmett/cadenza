@@ -7,6 +7,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 import core.values.Closure;
 
 public class IfExpression extends Expression {
+  @SuppressWarnings("CanBeFinal")
   @Child
   private Expression bodyNode, thenNode, elseNode;
   private final ConditionProfile conditionProfile = ConditionProfile.createBinaryProfile();

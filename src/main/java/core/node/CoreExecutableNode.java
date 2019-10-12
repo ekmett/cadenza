@@ -8,6 +8,7 @@ import core.node.expr.Expression;
 
 // returned in response to an InlineParsingRequest. Not otherwise used.
 public class CoreExecutableNode extends ExecutableNode {
+  @SuppressWarnings("CanBeFinal")
   @Node.Child public Expression body;
 
   protected CoreExecutableNode(CoreLanguage language, Expression body) {

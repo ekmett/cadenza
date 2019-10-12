@@ -9,7 +9,9 @@ import core.node.expr.Expression;
 //TODO: use a better internal state management system like the generated code would
 @NodeInfo(shortName = "Def")
 public abstract class DefStatement extends Statement {
+  @SuppressWarnings("CanBeFinal")
   public FrameSlot slot;
+  @SuppressWarnings("CanBeFinal")
   @Child public Expression arg;
   public DefStatement(FrameSlot slot, Expression arg) {
     this.slot = slot;

@@ -3,6 +3,7 @@ package core.node.stmt;
 import com.oracle.truffle.api.frame.VirtualFrame;
 
 public class BlockStatement extends Statement {
+  @SuppressWarnings("CanBeFinal")
   @Children Statement[] body;
   BlockStatement(Statement[] body) { this.body = body; }
 

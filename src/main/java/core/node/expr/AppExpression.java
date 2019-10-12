@@ -18,8 +18,8 @@ public class AppExpression extends Expression {
     this.rands = rands;
   }
 
-  @Child protected Expression rator;
-  @Children protected Expression[] rands;
+  @SuppressWarnings("CanBeFinal") @Child protected Expression rator;
+  @SuppressWarnings("CanBeFinal") @Children protected Expression[] rands;
 
   @ExplodeLoop
   public Object execute(VirtualFrame frame)  {

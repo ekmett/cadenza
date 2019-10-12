@@ -14,12 +14,12 @@ public abstract class MaterialBuilder extends Node {
   public abstract void execute(VirtualFrame frame, MaterializedFrame newFrame);
 
 //  @Specialization(rewriteOn = {FrameSlotTypeException.class, UnexpectedResultException.class})
-  void executeBoolean(VirtualFrame frame, Frame newFrame, boolean rhs) throws FrameSlotTypeException, UnexpectedResultException {
+  void executeBoolean(VirtualFrame frame, Frame newFrame, boolean rhs) {
      newFrame.setBoolean(getSlot(), rhs);
   }
 
 //  @Specialization(rewriteOn = {FrameSlotTypeException.class, UnexpectedResultException.class})
-  void executeLong(VirtualFrame frame, Frame newFrame, long rhs) throws FrameSlotTypeException, UnexpectedResultException {
+  void executeLong(VirtualFrame frame, Frame newFrame, long rhs) {
     newFrame.setLong(getSlot(), rhs);
   }
 
