@@ -9,9 +9,9 @@ import com.oracle.truffle.api.nodes.*;
 @NodeInfo(shortName = "FrameBuilder")
 //@NodeChild(type = Expression.class)
 @NodeField(name="slot", type = FrameSlot.class)
-public abstract class MaterialBuilder extends Node {
+public abstract class FrameBuilder extends Node {
   protected abstract FrameSlot getSlot();
-  public abstract void execute(VirtualFrame frame, MaterializedFrame newFrame);
+  public abstract void execute(VirtualFrame frame, Frame newFrame);
 
 //  @Specialization(rewriteOn = {FrameSlotTypeException.class, UnexpectedResultException.class})
   void executeBoolean(VirtualFrame frame, Frame newFrame, boolean rhs) {

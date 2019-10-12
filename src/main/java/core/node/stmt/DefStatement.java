@@ -18,8 +18,6 @@ public abstract class DefStatement extends Statement {
     this.arg = arg;
   }
 
-  @Override public boolean isAdoptable() { return false; }
-
   public void defObject(VirtualFrame frame, FrameSlot slot, Expression arg) {
     frame.setObject(slot, arg.execute(frame));
   }
