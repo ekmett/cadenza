@@ -4,11 +4,11 @@ import com.oracle.truffle.api.*;
 import com.oracle.truffle.api.nodes.NodeInfo;
 
 public final class CoreContext {
-  public CoreContext(Language language, TruffleLanguage.Env env) {
+  public CoreContext(CoreLanguage language, TruffleLanguage.Env env) {
     this.language = language;
     this.env = env;
   }
-  public final Language language;
+  public final CoreLanguage language;
   public TruffleLanguage.Env env;
   
   public final Assumption singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded");

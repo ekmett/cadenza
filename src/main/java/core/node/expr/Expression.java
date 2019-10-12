@@ -11,22 +11,23 @@ import core.values.Closure;
 // Used for expressions: variables, applications, abstractions, etc.
 
 @NodeInfo(language = "core", description = "core nodes")
-@TypeSystemReference(Types.class)
+@TypeSystemReference(CoreTypes.class)
 public abstract class Expression extends Node {
+  public abstract Object execute(VirtualFrame frame);
 
-  public abstract Object execute(VirtualFrame frame) throws TailCallException;
-
-  public Closure executeClosure(VirtualFrame frame) throws TailCallException, UnexpectedResultException {
-    return TypesGen.expectClosure(execute(frame));
+  public Closure executeClosure(VirtualFrame frame) throws  UnexpectedResultException {
+    return CoreTypesGen.expectClosure(execute(frame));
   }
 
   public long executeLong(VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectLong(execute(frame));
+    return CoreTypesGen.expectLong(execute(frame));
   }
 
   public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
-    return TypesGen.expectBoolean(execute(frame));
+    return CoreTypesGen.expectBoolean(execute(frame));
   }
 
-  public void setTail() {}
+  //public void setInTailPosition() {} // do nothing
+  //@Override public boolean requiresTrampoline() { return false; }
+
 }

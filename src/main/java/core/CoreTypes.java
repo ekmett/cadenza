@@ -6,8 +6,8 @@ import core.values.*;
 import java.math.BigInteger;
 import java.util.function.Consumer;
 
-@TypeSystem({boolean.class,long.class, Closure.class, BigNumber.class, Consumer.class})
-public abstract class Types {
+@TypeSystem({boolean.class,long.class, Closure.class, BigNumber.class})
+public abstract class CoreTypes {
   @ImplicitCast
   @TruffleBoundary
   public static BigNumber castBig(long value) {

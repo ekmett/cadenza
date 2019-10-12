@@ -13,15 +13,15 @@ import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionValues;
 
 @TruffleLanguage.Registration(
-  id = Language.ID,
-  name = Language.NAME,
-  version = Language.VERSION,
-  defaultMimeType = Language.MIME_TYPE,
-  characterMimeTypes = Language.MIME_TYPE,
+  id = CoreLanguage.ID,
+  name = CoreLanguage.NAME,
+  version = CoreLanguage.VERSION,
+  defaultMimeType = CoreLanguage.MIME_TYPE,
+  characterMimeTypes = CoreLanguage.MIME_TYPE,
   contextPolicy = ContextPolicy.SHARED,
   fileTypeDetectors = Detector.class
 )
-public class Language extends TruffleLanguage<CoreContext> {
+public class CoreLanguage extends TruffleLanguage<CoreContext> {
 
   public final static String ID = "core";
   public final static String NAME = "Core";
@@ -29,7 +29,7 @@ public class Language extends TruffleLanguage<CoreContext> {
   public final static String MIME_TYPE = "application/x-core";
   public final static String EXTENSION = "core";
 
-  public Language() {}
+  public CoreLanguage() {}
 
   public final Assumption singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active");
   
@@ -133,15 +133,15 @@ public class Language extends TruffleLanguage<CoreContext> {
   }
 
   // testing
-
-  // manufacture a node
-  Expression I() {
-    return Expressions.lam(Truffle.getRuntime().createCallTarget(CoreRootNode.create(this, new ArgExpression(0))));
-  }
-
-  // manufacture a node, notice no arity, todo: fix arity
-  Expression K() {
-    return Expressions.lam(Truffle.getRuntime().createCallTarget(CoreRootNode.create(this, new ArgExpression(0))));
-  }
+//
+//  // manufacture a node
+//  TailExpression I() {
+//    return Expressions.lam(Truffle.getRuntime().createCallTarget(CoreRootNode.create(this, new ArgExpression(0))));
+//  }
+//
+//  // manufacture a node, notice no arity, todo: fix arity
+//  TailExpression K() {
+//    return Expressions.lam(Truffle.getRuntime().createCallTarget(CoreRootNode.create(this, new ArgExpression(0))));
+//  }
 
 }

@@ -6,7 +6,7 @@ import java.nio.charset.Charset;
 public class Detector implements TruffleFile.FileTypeDetector {
   @Override public String findMimeType(TruffleFile file) {
     String name = file.getName();
-    if (name != null && name.endsWith(Language.EXTENSION)) return Language.MIME_TYPE;
+    if (name != null && name.endsWith(CoreLanguage.EXTENSION)) return CoreLanguage.MIME_TYPE;
     return null;
   }
 
