@@ -11,7 +11,7 @@ public interface ExpressionInterface extends NodeInterface, Cloneable {
 
   // these _should_ just have defaults, but see oracle/graal#1745
   Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException;
-  long executeLong(VirtualFrame frame) throws UnexpectedResultException;
+  int executeInteger(VirtualFrame frame) throws UnexpectedResultException;
   boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException;
 
   static interface WithDefaults extends ExpressionInterface {
@@ -19,8 +19,8 @@ public interface ExpressionInterface extends NodeInterface, Cloneable {
       return CoreTypesGen.expectClosure(execute(frame));
     }
 
-    default long executeLong(VirtualFrame frame) throws UnexpectedResultException {
-      return CoreTypesGen.expectLong(execute(frame));
+    default int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+      return CoreTypesGen.expectInteger(execute(frame));
 
     }
     default boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {

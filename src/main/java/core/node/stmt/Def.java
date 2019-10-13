@@ -56,7 +56,7 @@ public abstract class Def extends Statement {
     @Override public void execute(VirtualFrame frame) {
       try {
         if (!isLongOrIllegal(frame.getFrameDescriptor())) throw new FrameSlotTypeException();
-        frame.setLong(slot, arg.executeLong(frame));
+        frame.setLong(slot, arg.executeInteger(frame));
       } catch (FrameSlotTypeException|UnexpectedResultException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
         this.replace(new DefObject(slot,arg)).defObject(frame,slot,arg);
@@ -69,7 +69,7 @@ public abstract class Def extends Statement {
     @Override public void execute(VirtualFrame frame) {
       try {
         if (!isBooleanOrIllegal(frame.getFrameDescriptor())) throw new FrameSlotTypeException();
-        frame.setLong(slot, arg.executeLong(frame));
+        frame.setInt(slot, arg.executeInteger(frame));
       } catch (FrameSlotTypeException|UnexpectedResultException e) {
         CompilerDirectives.transferToInterpreterAndInvalidate();
         this.replace(new DefObject(slot,arg)).defObject(frame,slot,arg);

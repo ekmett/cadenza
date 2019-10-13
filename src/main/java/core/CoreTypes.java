@@ -7,7 +7,7 @@ import core.values.*;
 @TypeSystem({
   Closure.class,
   boolean.class,
-  long.class,
+  int.class,
   BigNumber.class
 })
 public abstract class CoreTypes {

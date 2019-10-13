@@ -35,7 +35,7 @@ public abstract class FrameBuilder extends Node {
     return currentKind == kind;
   }
   boolean allowsBooleanSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Boolean); }
-  boolean allowsLongSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Long); }
+  boolean allowsIntSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Int); }
 
   // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
   @Specialization(guards = "allowsBooleanSlot(frame)", rewriteOn = {UnexpectedResultException.class})
@@ -51,11 +51,11 @@ public abstract class FrameBuilder extends Node {
     return result;
   }
 
-  @Specialization(guards = "allowsLongSlot(frame)", rewriteOn = {UnexpectedResultException.class})
-  long buildLong(VirtualFrame frame, final int hack, VirtualFrame oldFrame) throws UnexpectedResultException {
-    long result;
+  @Specialization(guards = "allowsIntSlot(frame)", rewriteOn = {UnexpectedResultException.class})
+  int buildInt(VirtualFrame frame, final int hack, VirtualFrame oldFrame) throws UnexpectedResultException {
+    int result;
     try {
-      result = rhs.executeLong(oldFrame);
+      result = rhs.executeInteger(oldFrame);
     } catch (UnexpectedResultException e) {
       frame.setObject(slot, e);
       throw e;

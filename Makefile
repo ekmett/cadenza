@@ -17,7 +17,7 @@ build-test:
 	$(GRADLE) compileTestJava
 
 run: jar
-	$(GRADLE) run
+	$(GRADLE) run --args="Foo.core"
 
 test:
 	$(GRADLE) test

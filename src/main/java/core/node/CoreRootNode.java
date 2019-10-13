@@ -8,7 +8,6 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.CoreLanguage;
 import core.CoreTypes;
-import core.CoreTypesGen;
 import core.node.expr.Expression;
 import core.node.expr.ExpressionInterface;
 import core.values.Closure;
@@ -52,8 +51,8 @@ public class CoreRootNode extends RootNode implements ExpressionInterface {
     return body.executeClosure(frame);
   }
 
-  public long executeLong(VirtualFrame frame) throws UnexpectedResultException {
-    return body.executeLong(frame);
+  public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+    return body.executeInteger(frame);
   }
 
   public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {

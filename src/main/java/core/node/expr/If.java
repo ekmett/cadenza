@@ -24,10 +24,10 @@ public class If extends Expression {
   }
 
   @Override
-  public long executeLong(VirtualFrame frame) throws UnexpectedResultException {
+  public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
     return conditionProfile.profile(branch(frame))
-      ? this.thenNode.executeLong(frame)
-      : this.elseNode.executeLong(frame);
+      ? this.thenNode.executeInteger(frame)
+      : this.elseNode.executeInteger(frame);
   }
 
 

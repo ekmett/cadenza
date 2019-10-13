@@ -17,8 +17,8 @@ public abstract class Expression extends Node implements ExpressionInterface {
     return CoreTypesGen.expectClosure(execute(frame));
   }
 
-  public long executeLong(VirtualFrame frame) throws UnexpectedResultException {
-    return CoreTypesGen.expectLong(execute(frame));
+  public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+    return CoreTypesGen.expectInteger(execute(frame));
   }
 
   public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {

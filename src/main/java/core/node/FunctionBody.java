@@ -58,8 +58,8 @@ public final class FunctionBody extends RootNode implements ExpressionInterface 
   }
 
   @Override
-  public final long executeLong(VirtualFrame frame) throws UnexpectedResultException {
-    return body.executeLong(preamble(frame));
+  public final int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+    return body.executeInteger(preamble(frame));
   }
 
   @Override

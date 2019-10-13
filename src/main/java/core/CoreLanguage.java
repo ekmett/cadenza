@@ -17,6 +17,7 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionDescriptors;
 import org.graalvm.options.OptionValues;
+import org.graalvm.polyglot.Context;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +38,6 @@ import java.util.stream.Stream;
 )
 @ProvidedTags(value={})
 public class CoreLanguage extends TruffleLanguage<CoreContext> {
-
   public final static String ID = "core";
   public final static String NAME = "Core";
   public final static String VERSION = "0";
@@ -59,6 +59,7 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
   } // TODO: any expensive shutdown here
   
   @Override public CoreExecutableNode parse(@SuppressWarnings("unused") InlineParsingRequest request) {
+    System.out.println("parse0");
     Expression body = K();
     return CoreExecutableNode.create(this,body);
   }
@@ -66,20 +67,21 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
   @Override public CallTarget parse(@SuppressWarnings("unused") ParsingRequest request) {
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot[] argSlots = request.getArgumentNames().stream().map(x -> fd.addFrameSlot(x)).toArray(n -> new FrameSlot[n]);
-    if (argSlots.length == 0) {
-      Expression content = Expressions.booleanLiteral(false); // no arguments -- maybe this should build a sequence of statements?
-      // we then need to wrap all of this up in a CoreRootNode
-      CoreRootNode root = CoreRootNode.create(this, content, fd);
-      return Truffle.getRuntime().createCallTarget(root);
-    } else {
+    //if (argSlots.length == 0) {
+//      Expression content = Expressions.booleanLiteral(false); // no arguments -- maybe this should build a sequence of statements?
+//      // we then need to wrap all of this up in a CoreRootNode
+//      CoreRootNode root = CoreRootNode.create(this, content, fd);
+//      return Truffle.getRuntime().createCallTarget(root);
+//    } else {
       // we're building a function and the outer lambda is described by us
+    // if we're asked for no arguments, we return a 0-closure.
       FrameBuilder[] preamble = IntStream.range(0, argSlots.length).mapToObj(i -> put(argSlots[i], arg(i))).toArray(n -> new FrameBuilder[n]);
       int arity = argSlots.length;
       // now we need to parse the body
       Expression content = Expressions.booleanLiteral(true); // do something better here
       FunctionBody body = FunctionBody.create(this, arity, preamble, content);
       return Truffle.getRuntime().createCallTarget(body);
-    }
+  //  }
   }
 
   @Override public boolean isObjectOfLanguage(Object obj) {
@@ -139,6 +141,7 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
     return toString(value); 
   }
 
+
   public static String toString(Object value) {
     try {
       if (value == null) return "null";
@@ -162,6 +165,17 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
     ctx.env = env;
     return true;
   }
+
+  public Object findExportedSymbol(Context context, String globalName, boolean onlyExplicit) {
+    switch (globalName) {
+      case "S": return S();
+      case "K": return K();
+      case "I": return I();
+      case "main": return 42;
+      default: return null;
+    }
+  }
+
 
   // build a convenient edsl
   static App app(Expression x, Expression... xs) { return Expressions.app(x,xs); }
