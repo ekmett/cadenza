@@ -61,7 +61,7 @@ public abstract class FrameBuilder extends Node {
       frame.setObject(slot, e);
       throw e;
     }
-    frame.setLong(slot,result);
+    frame.setInt(slot,result);
     return result;
   }
 
