@@ -214,9 +214,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
     private MaterializedFrame captureEnv(VirtualFrame frame) {
       if (!isSuperCombinator()) return null;
       VirtualFrame env = Truffle.getRuntime().createMaterializedFrame(new Object[]{}, closureFrameDescriptor);
-      int len = captureSteps.length;
-      CompilerAsserts.partialEvaluationConstant(len);
-      for (int i=0;i<len;++i) captureSteps[i].build(env, frame);
+      for (FrameBuilder captureStep : captureSteps) captureStep.build(env, frame);
       return env.materialize();
     }
 
@@ -231,7 +229,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
 
     // package a foreign root call target with known arity
     public static Lambda create(final int arity, final RootCallTarget callTarget) {
-      return create(null, noSteps, arity, callTarget);
+      return create(null, FrameBuilder.noFrameBuilders, arity, callTarget);
     }
 
     public static Lambda create(final FrameDescriptor closureFrameDescriptor, final FrameBuilder[] captureSteps, final RootCallTarget callTarget) {
@@ -247,16 +245,13 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
       assert hasCaptureSteps == isSuperCombinator(callTarget) : "mismatched calling convention";
       return new Lambda(
           hasCaptureSteps ? null
-        : closureFrameDescriptor != null ? new FrameDescriptor()
+        : closureFrameDescriptor == null ? new FrameDescriptor()
         : closureFrameDescriptor,
         captureSteps,
         arity,
         callTarget
       );
     }
-
-    // static helpers
-    private static final FrameBuilder[] noSteps = new FrameBuilder[]{};
 
     // utility
     public static boolean isSuperCombinator(final RootCallTarget callTarget) {
@@ -293,9 +288,6 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
 
     @Override public boolean isAdoptable() { return false; }
   }
-
-
-  public static FrameBuilder[] noSteps = new FrameBuilder[]{}; // shared empty array
 
   public static Arg arg(int i) { return new Expr.Arg(i); }
   public static Var var(FrameSlot slot) { return ExprFactory.VarNodeGen.create(slot); }
@@ -335,4 +327,5 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
       }
     };
   }
+
 }

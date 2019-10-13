@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Launcher extends AbstractLanguageLauncher {
   String[] programArgs;
@@ -106,10 +105,10 @@ public class Launcher extends AbstractLanguageLauncher {
       }
     }
     if (!path.isEmpty())
-      polyglotOptions.put("core.libraryPath", path.stream().collect(Collectors.joining(":")));
+      polyglotOptions.put("core.libraryPath", String.join(":", path));
 
     if (!path.isEmpty())
-      polyglotOptions.put("core.libraries", libs.stream().collect(Collectors.joining(":")));
+      polyglotOptions.put("core.libraries", String.join(":", libs));
 
     if (file == null && iterator.hasNext())
       file = Paths.get(iterator.next()).toFile();

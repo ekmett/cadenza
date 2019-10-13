@@ -24,6 +24,7 @@ public abstract class FrameBuilder extends Node {
   public void build(VirtualFrame frame, VirtualFrame oldFrame) {
     execute(frame,0, oldFrame);
   }
+  @SuppressWarnings("UnusedReturnValue")
   public abstract Object execute(VirtualFrame frame, final int hack, VirtualFrame oldFrame);
 
   boolean allowsSlotKind(VirtualFrame frame, FrameSlotKind kind) {

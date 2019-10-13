@@ -6,10 +6,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
 import com.oracle.truffle.api.nodes.NodeInfo;
-import core.nodes.CoreExecutableNode;
-import core.nodes.Expr;
-import core.nodes.FrameBuilder;
-import core.nodes.FunctionRoot;
+import core.nodes.*;
 import core.values.*;
 import com.oracle.truffle.api.*;
 import com.oracle.truffle.api.TruffleLanguage.*;
@@ -30,6 +27,7 @@ import org.graalvm.options.OptionKey;
 import org.graalvm.options.OptionStability;
 import org.graalvm.polyglot.Source;
 
+@SuppressWarnings("SuspiciousNameCombination")
 @Option.Group("core")
 @TruffleLanguage.Registration(
   id = CoreLanguage.ID,
@@ -68,17 +66,17 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
   } // TODO: any expensive shutdown here
 
   // stubbed: for now inline parsing requests just return 'const'
-  @Override public CoreExecutableNode parse(@SuppressWarnings("unused") InlineParsingRequest request) {
+  @Override public CoreNode.Executable parse(@SuppressWarnings("unused") InlineParsingRequest request) {
     System.out.println("parse0");
     Expr body = K();
-    return CoreExecutableNode.create(this,body);
+    return CoreNode.Executable.create(this,body);
   }
 
   // stubbed: returns a calculation that adds two numbers
   @Override public CallTarget parse(@SuppressWarnings("unused") ParsingRequest request) {
     FrameDescriptor fd = new FrameDescriptor();
-    FrameSlot[] argSlots = request.getArgumentNames().stream().map(x -> fd.addFrameSlot(x)).toArray(n -> new FrameSlot[n]);
-      FrameBuilder[] preamble = IntStream.range(0, argSlots.length).mapToObj(i -> put(argSlots[i], arg(i))).toArray(n -> new FrameBuilder[n]);
+    FrameSlot[] argSlots = request.getArgumentNames().stream().map(fd::addFrameSlot).toArray(FrameSlot[]::new);
+      FrameBuilder[] preamble = IntStream.range(0, argSlots.length).mapToObj(i -> put(argSlots[i], arg(i))).toArray(FrameBuilder[]::new);
       int arity = argSlots.length;
       Expr content = Expr.add(Expr.intLiteral(-42), Expr.bigLiteral(new BigNumber(42)));
       FunctionRoot body = FunctionRoot.create(this, arity, preamble, content);
@@ -168,7 +166,7 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
     return true;
   }
 
-  public Object findExportedSymbol(org.graalvm.polyglot.Context context, String globalName, boolean onlyExplicit) {
+  public Object findExportedSymbol(@SuppressWarnings("unused") org.graalvm.polyglot.Context context, String globalName, @SuppressWarnings("unused") boolean onlyExplicit) {
     switch (globalName) {
       case "S": return S();
       case "K": return K();

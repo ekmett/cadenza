@@ -1,6 +1,5 @@
 package core.nodes;
 
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.*;
@@ -15,6 +14,7 @@ public abstract class Stmt extends CoreNode.Simple {
   public static Def def(FrameSlot slot, Expr body) { return StmtFactory.DefNodeGen.create(slot, body); }
   public static Print print(Expr body) { return StmtFactory.PrintNodeGen.create(body); }
 
+  @SuppressWarnings("unused")
   @GenerateWrapper.OutgoingConverter
   Object convertOutgoing(@SuppressWarnings("unused") Object object) {
     return null;
@@ -51,8 +51,9 @@ public abstract class Stmt extends CoreNode.Simple {
       this.arg = arg;
     }
 
-    final void execute(VirtualFrame frame) { executeDef(frame); }
+    public final void execute(VirtualFrame frame) { executeDef(frame); }
 
+    @SuppressWarnings("UnusedReturnValue")
     protected abstract Object executeDef(VirtualFrame frame);
 
     @Specialization(guards = "allowsIntegerSlot(frame)", rewriteOn = {UnexpectedResultException.class})

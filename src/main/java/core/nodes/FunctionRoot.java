@@ -21,6 +21,7 @@ public class FunctionRoot extends RootNode implements ExpressionInterface, Instr
   @Children private final FrameBuilder[] envPreamble;
   @Children private final FrameBuilder[] argPreamble;
   public final int arity;
+  @SuppressWarnings("CanBeFinal")
   @Child public Body body;
   protected final TruffleLanguage<?> language;
 
@@ -104,6 +105,7 @@ public class FunctionRoot extends RootNode implements ExpressionInterface, Instr
   public boolean isInstrumentable() { return super.isInstrumentable(); }
 
   public static class Body extends Expr {
+    @SuppressWarnings("CanBeFinal")
     @Child protected Expr content;
     public Body(Expr content) {
       this.content = content;
