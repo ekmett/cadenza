@@ -1,9 +1,9 @@
-package core.node.expr;
+package core.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInterface;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import core.CoreTypesGen;
+import core.TypesGen;
 import core.values.Closure;
 
 public interface ExpressionInterface extends NodeInterface, Cloneable {
@@ -14,16 +14,16 @@ public interface ExpressionInterface extends NodeInterface, Cloneable {
   int executeInteger(VirtualFrame frame) throws UnexpectedResultException;
   boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException;
 
-  static interface WithDefaults extends ExpressionInterface {
+  interface WithDefaults extends ExpressionInterface {
     default Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
-      return CoreTypesGen.expectClosure(execute(frame));
+      return TypesGen.expectClosure(execute(frame));
     }
 
     default int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
-      return CoreTypesGen.expectInteger(execute(frame));
+      return TypesGen.expectInteger(execute(frame));
     }
     default boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
-      return CoreTypesGen.expectBoolean(execute(frame));
+      return TypesGen.expectBoolean(execute(frame));
     }
   }
 }

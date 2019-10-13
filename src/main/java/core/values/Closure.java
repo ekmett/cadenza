@@ -2,33 +2,34 @@ package core.values;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import core.node.FunctionBody;
+import core.nodes.FunctionRoot;
 
 @CompilerDirectives.ValueType // screw your reference equality
 @ExportLibrary(InteropLibrary.class)
 public class Closure implements TruffleObject {
   public final RootCallTarget callTarget;
+  public final int arity;
   public final MaterializedFrame env; // possibly null;
 
   // invariant: target should have been constructed from a FunctionBody
   // also assumes that env matches the shape expected by the function body
-  public Closure(MaterializedFrame env, RootCallTarget callTarget) {
-    assert callTarget.getRootNode() instanceof FunctionBody : "not a function body";
-    assert (env != null) == ((FunctionBody)callTarget.getRootNode()).isSuperCombinator() : "calling convention mismatch";
+  public Closure(MaterializedFrame env, int arity, RootCallTarget callTarget) {
+    assert callTarget.getRootNode() instanceof FunctionRoot : "not a function body";
+    assert (env != null) == ((FunctionRoot)callTarget.getRootNode()).isSuperCombinator() : "calling convention mismatch";
+    this.arity = arity;
     this.callTarget = callTarget;
     this.env = env;
   }
 
   // combinator
-  public Closure(RootCallTarget callTarget) {
-    this(null, callTarget);
+  public Closure(int arity, RootCallTarget callTarget) {
+    this(null, arity, callTarget);
   }
   public final boolean isSuperCombinator() {
     return env != null;
@@ -52,10 +53,10 @@ public class Closure implements TruffleObject {
   }
 
   @ExplodeLoop
-  private static final Object[] cons(Object x, Object[] xs) {
+  private static Object[] cons(Object x, Object[] xs) {
     Object[] ys = new Object[xs.length + 1];
     ys[0] = x;
-    for (int i = 0; i < xs.length; ++i) ys[i + 1] = xs[i];
+    System.arraycopy(xs, 0, ys, 1, xs.length);
     return ys;
   }
 }

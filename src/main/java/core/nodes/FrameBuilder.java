@@ -1,4 +1,4 @@
-package core.node;
+package core.nodes;
 
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -7,16 +7,16 @@ import com.oracle.truffle.api.frame.*;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import core.CoreTypes;
-import core.node.expr.Expression;
+import core.Types;
 
 // this copies information from the VirtualFrame frame into a materialized frame
-@TypeSystemReference(CoreTypes.class)
+@TypeSystemReference(Types.class)
 @NodeInfo(shortName = "FrameBuilder")
 public abstract class FrameBuilder extends Node {
   protected final FrameSlot slot;
-  @Child protected Expression rhs;
-  public FrameBuilder(FrameSlot slot, Expression rhs) {
+  @SuppressWarnings("CanBeFinal")
+  @Child protected Expr rhs;
+  public FrameBuilder(FrameSlot slot, Expr rhs) {
     this.slot = slot;
     this.rhs = rhs;
   }
@@ -73,5 +73,5 @@ public abstract class FrameBuilder extends Node {
 
   public boolean isAdoptable() { return false; }
 
-  public static FrameBuilder[] noFrameBuilders = new FrameBuilder[]{};
+  public static final FrameBuilder[] noFrameBuilders = new FrameBuilder[]{};
 }

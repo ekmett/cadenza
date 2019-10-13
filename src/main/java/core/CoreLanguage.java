@@ -3,11 +3,11 @@ package core;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
-import core.node.CoreExecutableNode;
-import core.node.CoreRootNode;
-import core.node.FrameBuilder;
-import core.node.FunctionBody;
-import core.node.expr.*;
+import com.oracle.truffle.api.nodes.NodeInfo;
+import core.nodes.CoreExecutableNode;
+import core.nodes.Expr;
+import core.nodes.FrameBuilder;
+import core.nodes.FunctionRoot;
 import core.values.*;
 import com.oracle.truffle.api.*;
 import com.oracle.truffle.api.TruffleLanguage.*;
@@ -17,16 +17,18 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionDescriptors;
 import org.graalvm.options.OptionValues;
-import org.graalvm.polyglot.Context;
 
-import java.util.Arrays;
-import java.util.List;
+import java.nio.charset.Charset;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
+import org.graalvm.options.OptionCategory;
+import org.graalvm.options.OptionKey;
+import org.graalvm.options.OptionStability;
+import org.graalvm.polyglot.Source;
+
+@Option.Group("core")
 @TruffleLanguage.Registration(
   id = CoreLanguage.ID,
   name = CoreLanguage.NAME,
@@ -34,52 +36,50 @@ import java.util.stream.Stream;
   defaultMimeType = CoreLanguage.MIME_TYPE,
   characterMimeTypes = CoreLanguage.MIME_TYPE,
   contextPolicy = ContextPolicy.SHARED,
-  fileTypeDetectors = Detector.class
+  fileTypeDetectors = CoreLanguage.Detector.class
 )
 @ProvidedTags(value={})
-public class CoreLanguage extends TruffleLanguage<CoreContext> {
+public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
   public final static String ID = "core";
   public final static String NAME = "Core";
   public final static String VERSION = "0";
   public final static String MIME_TYPE = "application/x-core";
   public final static String EXTENSION = "core";
 
+  public static final OptionDescriptors OPTION_DESCRIPTORS = new CoreLanguageOptionDescriptors();
+
+  @Option(name="tco", help = "Tail-call optimization", category = OptionCategory.USER, stability = OptionStability.EXPERIMENTAL)
+  public static final OptionKey<Boolean> TAIL_CALL_OPTIMIZATION = new OptionKey<>(false);
+
   public CoreLanguage() {}
 
   public final Assumption singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active");
   
-  @Override public CoreContext createContext(Env env) {
-    return new CoreContext(this, env);
+  @Override public Context createContext(Env env) {
+    return new Context(this, env);
   } // cheap and easy
   
-  @Override public void initializeContext(@SuppressWarnings("unused") CoreContext ctx) {} // TODO: any expensive init here, like stdlib loading
+  @Override public void initializeContext(@SuppressWarnings("unused") Context ctx) {} // TODO: any expensive init here, like stdlib loading
   
-  @Override public void finalizeContext(CoreContext ctx) {
+  @Override public void finalizeContext(Context ctx) {
     ctx.shutdown(); 
   } // TODO: any expensive shutdown here
-  
+
+  // stubbed: for now inline parsing requests just return 'const'
   @Override public CoreExecutableNode parse(@SuppressWarnings("unused") InlineParsingRequest request) {
     System.out.println("parse0");
-    Expression body = K();
+    Expr body = K();
     return CoreExecutableNode.create(this,body);
   }
 
+  // stubbed: returns a calculation that adds two numbers
   @Override public CallTarget parse(@SuppressWarnings("unused") ParsingRequest request) {
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot[] argSlots = request.getArgumentNames().stream().map(x -> fd.addFrameSlot(x)).toArray(n -> new FrameSlot[n]);
-    //if (argSlots.length == 0) {
-//      Expression content = Expressions.booleanLiteral(false); // no arguments -- maybe this should build a sequence of statements?
-//      // we then need to wrap all of this up in a CoreRootNode
-//      CoreRootNode root = CoreRootNode.create(this, content, fd);
-//      return Truffle.getRuntime().createCallTarget(root);
-//    } else {
-      // we're building a function and the outer lambda is described by us
-    // if we're asked for no arguments, we return a 0-closure.
       FrameBuilder[] preamble = IntStream.range(0, argSlots.length).mapToObj(i -> put(argSlots[i], arg(i))).toArray(n -> new FrameBuilder[n]);
       int arity = argSlots.length;
-      // now we need to parse the body
-      Expression content = Expressions.add(Expressions.intLiteral(-42),Expressions.bigLiteral(new BigNumber(42)));
-      FunctionBody body = FunctionBody.create(this, arity, preamble, content);
+      Expr content = Expr.add(Expr.intLiteral(-42), Expr.bigLiteral(new BigNumber(42)));
+      FunctionRoot body = FunctionRoot.create(this, arity, preamble, content);
       return Truffle.getRuntime().createCallTarget(body);
   //  }
   }
@@ -98,9 +98,9 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
   } // no options!
 
   @Override
-  protected OptionDescriptors getOptionDescriptors() { return Options.DESCRIPTORS; }
+  protected OptionDescriptors getOptionDescriptors() { return CoreLanguage.OPTION_DESCRIPTORS; }
 
-  @Override public void initializeMultiThreading(CoreContext ctx) {
+  @Override public void initializeMultiThreading(Context ctx) {
     ctx.singleThreadedAssumption.invalidate(); 
   }
   
@@ -108,12 +108,12 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
     return true; 
   }
 
-  @Override public void initializeThread(@SuppressWarnings("unused") CoreContext ctx, @SuppressWarnings("unused") Thread thread) {}
+  @Override public void initializeThread(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Thread thread) {}
 
-  @Override public void disposeThread(@SuppressWarnings("unused") CoreContext ctx, @SuppressWarnings("unused") Thread thread) {}
+  @Override public void disposeThread(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Thread thread) {}
   
   // TODO: return types?
-  @Override public Object findMetaObject(@SuppressWarnings("unused") CoreContext ctx, Object value) {
+  @Override public Object findMetaObject(@SuppressWarnings("unused") Context ctx, Object value) {
     return getMetaObject(value);
   }
 
@@ -129,15 +129,15 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
     return "Unsupported";
   }
   
-  @Override public SourceSection findSourceLocation(@SuppressWarnings("unused") CoreContext ctx, @SuppressWarnings("unused") Object value) {
+  @Override public SourceSection findSourceLocation(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Object value) {
     return null; 
   }
   
-  @Override public boolean isVisible(@SuppressWarnings("unused") CoreContext ctx, @SuppressWarnings("unused") Object value) {
+  @Override public boolean isVisible(@SuppressWarnings("unused") Context ctx, @SuppressWarnings("unused") Object value) {
     return true; 
   }
   
-  @Override public String toString(@SuppressWarnings("unused") CoreContext ctx, Object value) {
+  @Override public String toString(@SuppressWarnings("unused") Context ctx, Object value) {
     return toString(value); 
   }
 
@@ -161,12 +161,12 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
     }
   }
   
-  @Override public boolean patchContext(CoreContext ctx, TruffleLanguage.Env env) {
+  @Override public boolean patchContext(Context ctx, TruffleLanguage.Env env) {
     ctx.env = env;
     return true;
   }
 
-  public Object findExportedSymbol(Context context, String globalName, boolean onlyExplicit) {
+  public Object findExportedSymbol(org.graalvm.polyglot.Context context, String globalName, boolean onlyExplicit) {
     switch (globalName) {
       case "S": return S();
       case "K": return K();
@@ -178,34 +178,34 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
 
 
   // build a convenient edsl
-  static App app(Expression x, Expression... xs) { return Expressions.app(x,xs); }
-  static Arg arg(int i) { return Expressions.arg(i); }
-  static Var var(FrameSlot x) { return Expressions.var(x); }
-  static FrameBuilder put(FrameSlot x, Expression v) { return Expressions.put(x,v); }
+  static Expr.App app(Expr x, Expr... xs) { return Expr.app(x,xs); }
+  static Expr.Arg arg(int i) { return Expr.arg(i); }
+  static Expr.Var var(FrameSlot x) { return Expr.var(x); }
+  static FrameBuilder put(FrameSlot x, Expr v) { return Expr.put(x,v); }
 
   // for testing
-  Expression K() { return J(0,2); }
-  Expression I() { return J(0,1); }
+  Expr K() { return J(0,2); }
+  Expr I() { return J(0,1); }
 
   // construct the identify function by hand
   // note we only copy one thing out of the surrounding frame
-  Expression J(final int i, final int j) {
+  Expr J(@SuppressWarnings("SameParameterValue") final int i, final int j) {
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x");
-    FunctionBody body = FunctionBody.create(this, j, new FrameBuilder[]{put(x,arg(i))},var(x));
+    FunctionRoot body = FunctionRoot.create(this, j, new FrameBuilder[]{put(x,arg(i))},var(x));
     RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
-    return Expressions.lam(j, callTarget);
+    return Expr.lam(j, callTarget);
   }
 
-  Expression S() {
+  Expr S() {
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x");
     FrameSlot y = fd.addFrameSlot("y");
     FrameSlot z = fd.addFrameSlot("z");
-    Var vx = var(x);
-    Var vy = var(y);
-    Var vz = var(z);
-    FunctionBody body = FunctionBody.create(
+    Expr.Var vx = var(x);
+    Expr.Var vy = var(y);
+    Expr.Var vz = var(z);
+    FunctionRoot body = FunctionRoot.create(
       this,
       3,
       new FrameBuilder[]{
@@ -215,33 +215,67 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
       },
       app(vx, vz, app(vy, vz))
     );
-    return Expressions.lam(3, Truffle.getRuntime().createCallTarget(body));
+    return Expr.lam(3, Truffle.getRuntime().createCallTarget(body));
   }
 
-  public Expression unary(Function<Expression,Expression> f) {
+  public Expr unary(Function<Expr, Expr> f) {
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x");
-    FunctionBody body = FunctionBody.create(
+    FunctionRoot body = FunctionRoot.create(
       this,
       1,
       new FrameBuilder[]{put(x,arg(0)),},
       f.apply(var(x))
     );
     RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
-    return Expressions.lam(1, callTarget);
+    return Expr.lam(1, callTarget);
   }
   // construct a binary function
-  public Expression binary(BiFunction<Expression,Expression,Expression> f) {
+  public Expr binary(BiFunction<Expr, Expr, Expr> f) {
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x");
     FrameSlot y = fd.addFrameSlot("y");
-    FunctionBody body = FunctionBody.create(
+    FunctionRoot body = FunctionRoot.create(
       this,
       1,
       new FrameBuilder[]{put(x,arg(0)),put(y,arg(1))},
       f.apply(var(x),var(y))
     );
     RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
-    return Expressions.lam(2, callTarget);
+    return Expr.lam(2, callTarget);
+  }
+
+  public static final class Context {
+    private static final Source BUILTIN_SOURCE = Source.newBuilder(ID, "", "[core builtin]").buildLiteral();
+
+    public Context(CoreLanguage language, Env env) {
+      this.language = language;
+      this.env = env;
+    }
+    public final CoreLanguage language;
+    public Env env;
+
+    public final Assumption singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded");
+
+    public void shutdown() { }
+
+    public static NodeInfo lookupNodeInfo(Class<?> clazz) {
+      if (clazz == null) return null;
+      NodeInfo info = clazz.getAnnotation(NodeInfo.class);
+      if (info != null) return info;
+      return lookupNodeInfo(clazz.getSuperclass());
+    }
+  }
+
+  public static class Detector implements TruffleFile.FileTypeDetector {
+    @Override public String findMimeType(TruffleFile file) {
+      String name = file.getName();
+      if (name != null && name.endsWith(EXTENSION)) return MIME_TYPE;
+      return null;
+    }
+
+    @Override public Charset findEncoding(TruffleFile file) {
+      return null;
+    }
   }
 }

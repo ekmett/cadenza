@@ -13,13 +13,13 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class CoreLauncher extends AbstractLanguageLauncher {
+public class Launcher extends AbstractLanguageLauncher {
   String[] programArgs;
   private VersionAction versionAction = VersionAction.None;
   File file;
 
   public static void main(String[] args) {
-    new CoreLauncher().launch(args);
+    new Launcher().launch(args);
   }
 
   @Override
@@ -115,7 +115,7 @@ public class CoreLauncher extends AbstractLanguageLauncher {
       file = Paths.get(iterator.next()).toFile();
 
     List<String> programArgumentsList = arguments.subList(iterator.nextIndex(), arguments.size());
-    programArgs = programArgumentsList.toArray(new String[programArgumentsList.size()]);
+    programArgs = programArgumentsList.toArray(new String[0]);
     return unrecognizedOptions;
   }
 
