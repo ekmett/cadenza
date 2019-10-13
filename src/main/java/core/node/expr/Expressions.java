@@ -3,6 +3,8 @@ package core.node.expr;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
+import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.node.FrameBuilder;
 import core.node.FrameBuilderNodeGen;
 
@@ -23,4 +25,10 @@ public interface Expressions {
     return new App(rator, rands);
   }
   static FrameBuilder put(FrameSlot slot, Expression value) { return FrameBuilderNodeGen.create(slot,value); }
+  static Expression booleanLiteral(boolean b) {
+    return new Expression() {
+      @Override public Object execute(VirtualFrame frame) { return b; }
+      @Override public boolean executeBoolean(VirtualFrame frame) { return b; }
+    };
+  }
 }

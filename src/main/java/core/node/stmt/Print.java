@@ -7,7 +7,7 @@ import core.node.expr.Expression;
 
 @NodeInfo(shortName = "Print")
 @NodeChild(value = "value", type = Expression.class)
-public abstract class PrintStatement extends Statement {
+public abstract class Print extends Statement {
   @Specialization
   void print(Object value) {
     System.out.println(value);

@@ -2,10 +2,10 @@ package core.node.stmt;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 
-public class BlockStatement extends Statement {
+public class Do extends Statement {
   @SuppressWarnings("CanBeFinal")
   @Children Statement[] body;
-  BlockStatement(Statement[] body) { this.body = body; }
+  Do(Statement[] body) { this.body = body; }
 
   @Override
   void execute(VirtualFrame frame) {

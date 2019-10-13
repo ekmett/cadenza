@@ -8,12 +8,12 @@ import core.node.expr.Expression;
 
 //TODO: use a better internal state management system like the generated code would
 @NodeInfo(shortName = "Def")
-public abstract class DefStatement extends Statement {
+public abstract class Def extends Statement {
   @SuppressWarnings("CanBeFinal")
   public FrameSlot slot;
   @SuppressWarnings("CanBeFinal")
   @Child public Expression arg;
-  public DefStatement(FrameSlot slot, Expression arg) {
+  public Def(FrameSlot slot, Expression arg) {
     this.slot = slot;
     this.arg = arg;
   }
@@ -51,7 +51,7 @@ public abstract class DefStatement extends Statement {
     return false;
   }
 
-  protected static class DefLong extends DefStatement {
+  protected static class DefLong extends Def {
     protected DefLong(FrameSlot slot, Expression arg) { super(slot, arg); }
     @Override public void execute(VirtualFrame frame) {
       try {
@@ -64,7 +64,7 @@ public abstract class DefStatement extends Statement {
     }
   }
 
-  protected static class DefBoolean extends DefStatement {
+  protected static class DefBoolean extends Def {
     DefBoolean(FrameSlot slot, Expression arg) { super(slot, arg); }
     @Override public void execute(VirtualFrame frame) {
       try {
@@ -77,13 +77,13 @@ public abstract class DefStatement extends Statement {
     }
   }
 
-  protected static class DefObject extends DefStatement {
+  protected static class DefObject extends Def {
     DefObject(FrameSlot slot, Expression arg) { super(slot, arg); }
     @Override public void execute(VirtualFrame frame) { defObject(frame, slot, arg); }
   }
 
-  public static DefStatement create(FrameSlot slot, Expression arg) {
-    return new DefStatement(slot,arg) {
+  public static Def create(FrameSlot slot, Expression arg) {
+    return new Def(slot,arg) {
       @Override void execute(VirtualFrame frame) { defFirst(frame, slot, arg); }
     };
   }
