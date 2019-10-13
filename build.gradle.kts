@@ -15,7 +15,6 @@ dependencies {
   implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
   implementation("org.graalvm.sdk:launcher-common:19.2.0.1")
   testImplementation("org.testng:testng:6.14.3")
-
 }
 
 application {
@@ -29,8 +28,9 @@ val jar by tasks.getting(Jar::class) {
     attributes["Bundle-Name"] = "Core"
     attributes["Bundle-Symbolic-Name"] = "core"
     attributes["Bundle-Version"] = "0.0"
-    attributes["Bundle-RequireCapability"] = "org.graalvm; filter=\"(&(graalvm_version=19.2.0)(os_arch=amd64))\""
+    attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=19.2.0)(os_arch=amd64))\""
     attributes["x-GraalVM-Polyglot-Part"] = "True"
+    attributes["Main-Class"] = "core.Main"
   }
 }
 
