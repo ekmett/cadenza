@@ -1,5 +1,7 @@
 package core;
 
+import com.oracle.truffle.api.dsl.ImplicitCast;
+import com.oracle.truffle.api.dsl.TypeSystem;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
@@ -277,5 +279,17 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
     @Override public Charset findEncoding(TruffleFile file) {
       return null;
     }
+  }
+
+  @TypeSystem({
+    Closure.class,
+    boolean.class,
+    int.class,
+    BigNumber.class
+  })
+  public static abstract class Types {
+    @ImplicitCast
+    @CompilerDirectives.TruffleBoundary
+    public static BigNumber castBigNumber(int value) { return new BigNumber(value); }
   }
 }

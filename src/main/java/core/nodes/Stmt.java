@@ -12,13 +12,14 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 @GenerateWrapper
 public abstract class Stmt extends CoreNode.Simple {
   public static Do block(Stmt... nodes) { return new Stmt.Do(nodes); }
-  public static Def def(FrameSlot slot, Expr body) { return Stmt.Def.create(slot, body); }
+  public static Def def(FrameSlot slot, Expr body) { return StmtFactory.DefNodeGen.create(slot, body); }
   public static Print print(Expr body) { return StmtFactory.PrintNodeGen.create(body); }
 
   @GenerateWrapper.OutgoingConverter
   Object convertOutgoing(@SuppressWarnings("unused") Object object) {
     return null;
   }
+
   abstract void execute(VirtualFrame frame);
   public boolean isAdoptable() { return true; }
   public InstrumentableNode.WrapperNode createWrapper(ProbeNode probe) {
@@ -42,8 +43,7 @@ public abstract class Stmt extends CoreNode.Simple {
   //TODO: use a better internal state management system like the generated code would
   @NodeInfo(shortName = "Def")
   public abstract static class Def extends Stmt {
-    @SuppressWarnings("CanBeFinal")
-    public FrameSlot slot;
+    public final FrameSlot slot;
     @SuppressWarnings("CanBeFinal")
     @Child public Expr arg;
     public Def(FrameSlot slot, Expr arg) {
@@ -51,75 +51,49 @@ public abstract class Stmt extends CoreNode.Simple {
       this.arg = arg;
     }
 
-    public void defObject(VirtualFrame frame, FrameSlot slot, Expr arg) {
+    final void execute(VirtualFrame frame) { executeDef(frame); }
+
+    protected abstract Object executeDef(VirtualFrame frame);
+
+    @Specialization(guards = "allowsIntegerSlot(frame)", rewriteOn = {UnexpectedResultException.class})
+    protected int defInteger(VirtualFrame frame) throws UnexpectedResultException {
+      try {
+        int result = arg.executeInteger(frame);
+        frame.setInt(slot, result);
+        return result;
+      } catch (UnexpectedResultException e) {
+        frame.setObject(slot, e);
+        throw e;
+      }
+    }
+
+    @Specialization(guards = "allowsBooleanSlot(frame)", rewriteOn = {UnexpectedResultException.class})
+    protected boolean defBoolean(VirtualFrame frame) throws UnexpectedResultException {
+      try {
+        boolean result = arg.executeBoolean(frame);
+        frame.setBoolean(slot, result);
+        return result;
+      } catch (UnexpectedResultException e) {
+        frame.setObject(slot, e);
+        throw e;
+      }
+    }
+
+    @Specialization(replaces={"defInteger","defBoolean"})
+    protected void defObject(VirtualFrame frame) {
       frame.setObject(slot, arg.execute(frame));
     }
 
-    public void defFirst(VirtualFrame frame, FrameSlot slot, Expr arg) {
-      CompilerDirectives.transferToInterpreterAndInvalidate();
-      FrameDescriptor fd = frame.getFrameDescriptor();
-      this.replace
-        ( isKindOrIllegal(fd, FrameSlotKind.Boolean) ? new DefBoolean(slot, arg)
-        : isKindOrIllegal(fd, FrameSlotKind.Long) ? new DefLong(slot, arg)
-        : new DefObject(slot, arg)
-        ).execute(frame);
-    }
-
-    protected boolean isLongOrIllegal(FrameDescriptor fd) {
-      return isKindOrIllegal(fd, FrameSlotKind.Long);
-    }
-
-    protected boolean isBooleanOrIllegal(FrameDescriptor fd) {
-      return isKindOrIllegal(fd, FrameSlotKind.Boolean);
-    }
-
-    protected boolean isKindOrIllegal(FrameDescriptor fd, FrameSlotKind kind) {
-      FrameSlotKind slotKind = fd.getFrameSlotKind(slot); // the frameSlot.getKind() deprecation is bullshit
-      if (kind == slotKind) return true;
-      if (slotKind == FrameSlotKind.Illegal) {
-        CompilerDirectives.transferToInterpreterAndInvalidate(); // bail and set up the slot
-        fd.setFrameSlotKind(slot, kind);
+    boolean allowsSlotKind(VirtualFrame frame, FrameSlotKind kind) {
+      FrameSlotKind currentKind = frame.getFrameDescriptor().getFrameSlotKind(slot);
+      if (currentKind == FrameSlotKind.Illegal) {
+        frame.getFrameDescriptor().setFrameSlotKind(slot,kind);
         return true;
       }
-      return false;
+      return currentKind == kind;
     }
-
-    protected static class DefLong extends Def {
-      protected DefLong(FrameSlot slot, Expr arg) { super(slot, arg); }
-      @Override public void execute(VirtualFrame frame) {
-        try {
-          if (!isLongOrIllegal(frame.getFrameDescriptor())) throw new FrameSlotTypeException();
-          frame.setLong(slot, arg.executeInteger(frame));
-        } catch (FrameSlotTypeException| UnexpectedResultException e) {
-          CompilerDirectives.transferToInterpreterAndInvalidate();
-          this.replace(new DefObject(slot,arg)).defObject(frame,slot,arg);
-        }
-      }
-    }
-
-    protected static class DefBoolean extends Def {
-      DefBoolean(FrameSlot slot, Expr arg) { super(slot, arg); }
-      @Override public void execute(VirtualFrame frame) {
-        try {
-          if (!isBooleanOrIllegal(frame.getFrameDescriptor())) throw new FrameSlotTypeException();
-          frame.setInt(slot, arg.executeInteger(frame));
-        } catch (FrameSlotTypeException|UnexpectedResultException e) {
-          CompilerDirectives.transferToInterpreterAndInvalidate();
-          this.replace(new DefObject(slot,arg)).defObject(frame,slot,arg);
-        }
-      }
-    }
-
-    protected static class DefObject extends Def {
-      DefObject(FrameSlot slot, Expr arg) { super(slot, arg); }
-      @Override public void execute(VirtualFrame frame) { defObject(frame, slot, arg); }
-    }
-
-    public static Def create(FrameSlot slot, Expr arg) {
-      return new Def(slot,arg) {
-        @Override void execute(VirtualFrame frame) { defFirst(frame, slot, arg); }
-      };
-    }
+    boolean allowsBooleanSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Boolean); }
+    boolean allowsIntegerSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Int); }
   }
 
   @NodeInfo(shortName = "Print")

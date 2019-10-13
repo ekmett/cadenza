@@ -19,7 +19,7 @@ import core.values.Closure;
 
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
-@TypeSystemReference(Types.class)
+@TypeSystemReference(CoreLanguage.Types.class)
 public abstract class Expr extends CoreNode.Simple implements ExpressionInterface {
   public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectClosure(execute(frame));
@@ -55,7 +55,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
     }
   }
 
-  @TypeSystemReference(Types.class)
+  @TypeSystemReference(CoreLanguage.Types.class)
   @NodeInfo(shortName = "App")
   public static final class App extends Expr {
 
@@ -112,7 +112,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
   // once a variable binding has been inferred to refer to the local arguments of the current frame and mapped to an actual arg index
   // this node replaces the original node.
   // used during frame materialization to access numbered arguments. otherwise not available
-  @TypeSystemReference(Types.class)
+  @TypeSystemReference(CoreLanguage.Types.class)
   @NodeInfo(shortName = "Arg")
   public static class Arg extends Expr {
     private final int index;
@@ -181,7 +181,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
   }
 
   // lambdas can be constructed from foreign calltargets, you just need to supply an arity
-  @TypeSystemReference(Types.class)
+  @TypeSystemReference(CoreLanguage.Types.class)
   @NodeInfo(shortName = "Lambda")
   public static class Lambda extends Expr {
 

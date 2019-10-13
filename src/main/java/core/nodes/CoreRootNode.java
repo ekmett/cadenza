@@ -7,13 +7,12 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.CoreLanguage;
-import core.Types;
 import core.values.Closure;
 
 // root nodes are needed by Truffle.getRuntime().createCallTarget(someRoot), which is the way to manufacture callable
 // things in truffle.
 @NodeInfo(language = "core", description = "A root of a core tree.")
-@TypeSystemReference(Types.class)
+@TypeSystemReference(CoreLanguage.Types.class)
 public class CoreRootNode extends RootNode implements ExpressionInterface {
   protected CoreRootNode(
     CoreLanguage language,

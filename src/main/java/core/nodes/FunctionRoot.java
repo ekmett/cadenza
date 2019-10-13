@@ -10,12 +10,12 @@ import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import core.Types;
+import core.CoreLanguage;
 import core.values.Closure;
 
 // this node implements RootTag, because it contains a preamble in which the current frame is only partially set up
 @GenerateWrapper
-@TypeSystemReference(Types.class)
+@TypeSystemReference(CoreLanguage.Types.class)
 public class FunctionRoot extends RootNode implements ExpressionInterface, InstrumentableNode {
   private static final Object[] noArguments = new Object[]{};
   @Children private final FrameBuilder[] envPreamble;

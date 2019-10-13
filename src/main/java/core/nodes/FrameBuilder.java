@@ -7,10 +7,10 @@ import com.oracle.truffle.api.frame.*;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import core.Types;
+import core.CoreLanguage;
 
 // this copies information from the VirtualFrame frame into a materialized frame
-@TypeSystemReference(Types.class)
+@TypeSystemReference(CoreLanguage.Types.class)
 @NodeInfo(shortName = "FrameBuilder")
 public abstract class FrameBuilder extends Node {
   protected final FrameSlot slot;
@@ -35,7 +35,7 @@ public abstract class FrameBuilder extends Node {
     return currentKind == kind;
   }
   boolean allowsBooleanSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Boolean); }
-  boolean allowsIntSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Int); }
+  boolean allowsIntegerSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Int); }
 
   // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
   @Specialization(guards = "allowsBooleanSlot(frame)", rewriteOn = {UnexpectedResultException.class})
@@ -51,8 +51,8 @@ public abstract class FrameBuilder extends Node {
     return result;
   }
 
-  @Specialization(guards = "allowsIntSlot(frame)", rewriteOn = {UnexpectedResultException.class})
-  int buildInt(VirtualFrame frame, final int hack, VirtualFrame oldFrame) throws UnexpectedResultException {
+  @Specialization(guards = "allowsIntegerSlot(frame)", rewriteOn = {UnexpectedResultException.class})
+  int buildInteger(VirtualFrame frame, final int hack, VirtualFrame oldFrame) throws UnexpectedResultException {
     int result;
     try {
       result = rhs.executeInteger(oldFrame);
