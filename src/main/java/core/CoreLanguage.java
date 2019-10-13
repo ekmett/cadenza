@@ -1,8 +1,12 @@
 package core;
 
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
 import core.node.CoreExecutableNode;
 import core.node.CoreRootNode;
+import core.node.FrameBuilder;
+import core.node.FunctionBody;
 import core.node.expr.*;
 import core.values.*;
 import com.oracle.truffle.api.*;
@@ -13,6 +17,9 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.source.SourceSection;
 import org.graalvm.options.OptionDescriptors;
 import org.graalvm.options.OptionValues;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @TruffleLanguage.Registration(
   id = CoreLanguage.ID,
@@ -137,6 +144,75 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
     ctx.env = env;
     return true;
   }
+
+  // build a convenient edsl
+  static App app(Expression x, Expression... xs) { return Expressions.app(x,xs); }
+  static Arg arg(int i) { return Expressions.arg(i); }
+  static Var var(FrameSlot x) { return Expressions.var(x); }
+  static FrameBuilder put(FrameSlot x, Expression v) { return Expressions.put(x,v); }
+
+  // for testing
+  Expression K() { return J(0,2); }
+  Expression I() { return J(0,1); }
+
+  // construct the identify function by hand
+  // note we only copy one thing out of the surrounding frame
+  Expression J(final int i, final int j) {
+    FrameDescriptor fd = new FrameDescriptor();
+    FrameSlot x = fd.addFrameSlot("x");
+    FunctionBody body = FunctionBody.create(this, j, new FrameBuilder[]{put(x,arg(i))},var(x));
+    RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
+    return Expressions.lam(j, callTarget);
+  }
+
+  Expression S() {
+    FrameDescriptor fd = new FrameDescriptor();
+    FrameSlot x = fd.addFrameSlot("x");
+    FrameSlot y = fd.addFrameSlot("y");
+    FrameSlot z = fd.addFrameSlot("z");
+    Var vx = var(x);
+    Var vy = var(y);
+    Var vz = var(z);
+    FunctionBody body = FunctionBody.create(
+      this,
+      3,
+      new FrameBuilder[]{
+        put(x,arg(0)),
+        put(y,arg(1)),
+        put(z,arg(2))
+      },
+      app(vx, vz, app(vy, vz))
+    );
+    return Expressions.lam(3, Truffle.getRuntime().createCallTarget(body));
+  }
+
+  public Expression unary(Function<Expression,Expression> f) {
+    FrameDescriptor fd = new FrameDescriptor();
+    FrameSlot x = fd.addFrameSlot("x");
+    FunctionBody body = FunctionBody.create(
+      this,
+      1,
+      new FrameBuilder[]{put(x,arg(0)),},
+      f.apply(var(x))
+    );
+    RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
+    return Expressions.lam(1, callTarget);
+  }
+  // construct a binary function
+  public Expression binary(BiFunction<Expression,Expression,Expression> f) {
+    FrameDescriptor fd = new FrameDescriptor();
+    FrameSlot x = fd.addFrameSlot("x");
+    FrameSlot y = fd.addFrameSlot("y");
+    FunctionBody body = FunctionBody.create(
+      this,
+      1,
+      new FrameBuilder[]{put(x,arg(0)),put(y,arg(1))},
+      f.apply(var(x),var(y))
+    );
+    RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
+    return Expressions.lam(2, callTarget);
+  }
+
 
   // testing
 //

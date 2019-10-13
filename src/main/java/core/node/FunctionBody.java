@@ -10,7 +10,6 @@ import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.CoreTypes;
-import core.frame.FrameBuilder;
 import core.node.expr.Expression;
 import core.node.expr.ExpressionInterface;
 import core.values.Closure;
@@ -68,5 +67,16 @@ public final class FunctionBody extends RootNode implements ExpressionInterface 
     return body.executeClosure(preamble(frame));
   }
 
+  public static FunctionBody create(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] envPreamble, FrameBuilder[] argPreamble, Expression body) {
+    return new FunctionBody(language, frameDescriptor, arity, envPreamble, argPreamble, body);
+  }
+
+  public static FunctionBody create(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] argPreamble, Expression body) {
+    return new FunctionBody(language, frameDescriptor, arity, FrameBuilder.noFrameBuilders, argPreamble, body);
+  }
+
+  public static FunctionBody create(TruffleLanguage<?> language, int arity, FrameBuilder[] argPreamble, Expression body) {
+    return new FunctionBody(language, new FrameDescriptor(), arity, FrameBuilder.noFrameBuilders, argPreamble, body);
+  }
 
 }

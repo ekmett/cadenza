@@ -7,13 +7,13 @@ import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.*;
 import com.oracle.truffle.api.nodes.*;
 import core.CoreTypes;
-import core.frame.FrameBuilder;
+import core.node.FrameBuilder;
 import core.node.FunctionBody;
 import core.values.Closure;
 
 // lambdas can be constructed from foreign calltargets, you just need to supply an arity
 @TypeSystemReference(CoreTypes.class)
-@NodeInfo(shortName = "Lam")
+@NodeInfo(shortName = "Lambda")
 public class Lambda extends Expression {
 
   final FrameDescriptor closureFrameDescriptor; // used to manufacture the temporary copy that we freeze in the closure

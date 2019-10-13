@@ -1,4 +1,4 @@
-package core.frame;
+package core.node;
 
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -72,4 +72,6 @@ public abstract class FrameBuilder extends Node {
   }
 
   public boolean isAdoptable() { return false; }
+
+  public static FrameBuilder[] noFrameBuilders = new FrameBuilder[]{};
 }
