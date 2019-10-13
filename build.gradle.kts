@@ -15,13 +15,14 @@ dependencies {
   implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
   implementation("org.graalvm.sdk:launcher-common:19.2.0.1")
   testImplementation("org.testng:testng:6.14.3")
+
 }
 
 application {
-  mainClassName = "core.CoreLauncher"
+  // mainClassName = "core.CoreLauncher"
+  mainClassName = "core.Main"
   applicationDefaultJvmArgs = listOf("-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=build/libs/core.jar")
 }
-
 
 val jar by tasks.getting(Jar::class) {
   manifest {
@@ -36,3 +37,4 @@ val jar by tasks.getting(Jar::class) {
 val test by tasks.getting(Test::class) {
   useTestNG()
 }
+

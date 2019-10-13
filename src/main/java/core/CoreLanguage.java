@@ -78,7 +78,7 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
       FrameBuilder[] preamble = IntStream.range(0, argSlots.length).mapToObj(i -> put(argSlots[i], arg(i))).toArray(n -> new FrameBuilder[n]);
       int arity = argSlots.length;
       // now we need to parse the body
-      Expression content = Expressions.booleanLiteral(true); // do something better here
+      Expression content = Expressions.add(Expressions.intLiteral(-42),Expressions.bigLiteral(new BigNumber(42)));
       FunctionBody body = FunctionBody.create(this, arity, preamble, content);
       return Truffle.getRuntime().createCallTarget(body);
   //  }
@@ -244,18 +244,4 @@ public class CoreLanguage extends TruffleLanguage<CoreContext> {
     RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
     return Expressions.lam(2, callTarget);
   }
-
-
-  // testing
-//
-//  // manufacture a node
-//  TailExpression I() {
-//    return Expressions.lam(Truffle.getRuntime().createCallTarget(CoreRootNode.create(this, new ArgExpression(0))));
-//  }
-//
-//  // manufacture a node, notice no arity, todo: fix arity
-//  TailExpression K() {
-//    return Expressions.lam(Truffle.getRuntime().createCallTarget(CoreRootNode.create(this, new ArgExpression(0))));
-//  }
-
 }

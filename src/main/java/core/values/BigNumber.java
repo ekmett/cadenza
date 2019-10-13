@@ -15,12 +15,11 @@ public final class BigNumber implements TruffleObject, Comparable<BigNumber> {
   public BigNumber(BigInteger i) { this.value = i; }
   public BigNumber(long value) { this(BigInteger.valueOf(value)); }
 
-  private final BigInteger value;
-  public BigInteger getValue() { return value; }
+  public final BigInteger value;
 
   @TruffleBoundary
   public int compareTo(BigNumber o) {
-    return value.compareTo(o.getValue());
+    return value.compareTo(o.value);
   }
 
   @Override
@@ -39,77 +38,77 @@ public final class BigNumber implements TruffleObject, Comparable<BigNumber> {
  
   @ExportMessage
   @TruffleBoundary
-  boolean fitsInByte() { return value.bitLength() < 8; }
+  public boolean fitsInByte() { return value.bitLength() < 8; }
 
   @ExportMessage
   @TruffleBoundary
-  boolean fitsInShort() { return value.bitLength() < 16; }
+  public boolean fitsInShort() { return value.bitLength() < 16; }
 
   @ExportMessage
   @TruffleBoundary
-  boolean fitsInInt() { return value.bitLength() < 32; }
+  public boolean fitsInInt() { return value.bitLength() < 32; }
   
   @ExportMessage
   @TruffleBoundary
-  boolean fitsInLong() { return value.bitLength() < 64; }
+  public boolean fitsInLong() { return value.bitLength() < 64; }
 
   @ExportMessage
   @TruffleBoundary
-  boolean fitsInFloat() {
+  public boolean fitsInFloat() {
     return fitsInInt() && inSafeFloatRange(value.intValue());
   }
 
   @ExportMessage
   @TruffleBoundary
-  boolean fitsInDouble() {
+  public boolean fitsInDouble() {
     return fitsInLong() && inSafeDoubleRange(value.longValue());
   }
 
   @ExportMessage
   @TruffleBoundary
-  byte asByte() throws UnsupportedMessageException {
+  public byte asByte() throws UnsupportedMessageException {
     if (fitsInByte()) return value.byteValue();
     throw UnsupportedMessageException.create();
   }
 
   @ExportMessage
   @TruffleBoundary
-  short asShort() throws UnsupportedMessageException { 
+  public short asShort() throws UnsupportedMessageException {
     if (fitsInShort()) return value.shortValue();
     throw UnsupportedMessageException.create();
   }
 
   @ExportMessage
   @TruffleBoundary
-  int asInt() throws UnsupportedMessageException { 
+  public int asInt() throws UnsupportedMessageException {
     if (fitsInInt()) return value.intValue();
     throw UnsupportedMessageException.create();
   }
 
   @ExportMessage
   @TruffleBoundary
-  long asLong() throws UnsupportedMessageException { 
+  public long asLong() throws UnsupportedMessageException {
     if (fitsInLong()) return value.longValue();
     throw UnsupportedMessageException.create();
   }
 
   @ExportMessage
   @TruffleBoundary
-  float asFloat() throws UnsupportedMessageException {
+  public float asFloat() throws UnsupportedMessageException {
     if (fitsInFloat()) return value.floatValue();
     throw UnsupportedMessageException.create();
   }
 
   @ExportMessage
   @TruffleBoundary
-  double asDouble() throws UnsupportedMessageException {
+  public double asDouble() throws UnsupportedMessageException {
     if (fitsInDouble()) return value.doubleValue();
     throw UnsupportedMessageException.create();
   }
 
   @ExportMessage
   @TruffleBoundary
-  boolean isNumber() { return fitsInLong(); } // this is small enough to marshal
+  public boolean isNumber() { return fitsInLong(); } // this is small enough to marshal
 
   private static final long LONG_MAX_SAFE_DOUBLE = 9007199254740991L; // 2 ** 53 - 1
   private static final int INT_MAX_SAFE_FLOAT = 16777215; // 2 ** 24 - 1
