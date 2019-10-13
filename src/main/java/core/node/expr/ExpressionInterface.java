@@ -21,7 +21,6 @@ public interface ExpressionInterface extends NodeInterface, Cloneable {
 
     default int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
       return CoreTypesGen.expectInteger(execute(frame));
-
     }
     default boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
       return CoreTypesGen.expectBoolean(execute(frame));

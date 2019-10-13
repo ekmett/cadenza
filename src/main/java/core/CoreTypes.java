@@ -13,5 +13,5 @@ import core.values.*;
 public abstract class CoreTypes {
   @ImplicitCast
   @TruffleBoundary
-  public static BigNumber castBigNumber(long value) { return new BigNumber(value); }
+  public static BigNumber castBigNumber(int value) { return new BigNumber(value); }
 }
