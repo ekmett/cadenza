@@ -13,6 +13,8 @@ import java.math.BigInteger;
 @ExportLibrary(InteropLibrary.class)
 public final class BigNumber implements TruffleObject, Comparable<BigNumber> {
   public BigNumber(BigInteger i) { this.value = i; }
+  public BigNumber(long value) { this(BigInteger.valueOf(value)); }
+
   private final BigInteger value;
   public BigInteger getValue() { return value; }
 

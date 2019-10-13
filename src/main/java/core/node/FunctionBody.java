@@ -7,30 +7,24 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.Node;
-import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.RootNode;
+import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.CoreTypes;
 import core.frame.FrameBuilder;
 import core.node.expr.Expression;
-
-// TODO: this should probably catch TailCallExceptions and rewrite into a form that handles self-tailcalls or full tailcalls
-// when that happens.
+import core.node.expr.ExpressionInterface;
+import core.values.Closure;
 
 @TypeSystemReference(CoreTypes.class)
-@NodeInfo(shortName = "FunctionBody")
-public final class FunctionBody extends RootNode {
+public final class FunctionBody extends RootNode implements ExpressionInterface {
   private static final Object[] noArguments = new Object[]{};
+  @Children private final FrameBuilder[] envPreamble;
+  @Children private final FrameBuilder[] argPreamble;
+  public final int arity;
+  @Child public Expression body;
 
-  final int arity; // expected number of arguments, for eval-apply
-  @Node.Children private final FrameBuilder[] envPreamble; // used to initialize the live environment from the environment
-  @Node.Children private final FrameBuilder[] argPreamble; // used to initialize the live environment from the arguments (numbered from 1 if envPreamble != null)
-  @Node.Child public Expression body;
+  public final boolean isSuperCombinator() { return envPreamble.length != 0; }
 
-  public final boolean hasEnv() { return envPreamble != null; }
-
-  // envPreamble = null means we use arguments 0 .. as a combinator with no environment
-  // if we do have an envPreamble then we use argument 0 to pass the materialized frame
   public FunctionBody(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] envPreamble, FrameBuilder[] argPreamble, Expression body) {
     super(language, frameDescriptor);
     this.arity = arity;
@@ -40,28 +34,39 @@ public final class FunctionBody extends RootNode {
   }
 
   @ExplodeLoop
-  private void copyEnv(VirtualFrame frame, VirtualFrame local) {
-    if (hasEnv()) {
+  private final VirtualFrame preamble(VirtualFrame frame) {
+    VirtualFrame local = Truffle.getRuntime().createVirtualFrame(noArguments,getFrameDescriptor());
+    for (FrameBuilder builder : argPreamble) builder.build(local,frame);
+    if (isSuperCombinator()) { // supercombinator, needs environment
       MaterializedFrame env = (MaterializedFrame) frame.getArguments()[0];
-      for (FrameBuilder builder : envPreamble) builder.execute(env, local);
+      for (FrameBuilder builder : envPreamble) builder.build(local,env);
     }
+    return local;
   }
 
-  @ExplodeLoop
-  private void copyArgs(VirtualFrame frame, VirtualFrame local) {
-    for (FrameBuilder builder : argPreamble) builder.execute(frame, local);
-  }
+  // TODO: rewrite on execute throwing a tail call exception?
+  // * if it is for the same FunctionBody, we can reuse the frame, just refilling it with their args
+  // * if it is for a different FunctionBody, we can use a traditional trampoline
+  // * pass the special execute method a tailcall count and have it blow only once it exceeds some threshold?
 
   public final Object execute(VirtualFrame frame) {
-    VirtualFrame local = Truffle.getRuntime().createVirtualFrame(noArguments,getFrameDescriptor());
-    copyEnv(frame,local);
-    copyArgs(frame,local);
-    return body.execute(local); // TODO: call a customized execute method indicating this is in tail position
+    return body.execute(preamble(frame));
   }
 
-  // TODO:
-  // catch a tail call check to see if it has this function body, if so it is a self-tailcall
-  // if not we're doing arbitrary tail calls
-  // in the self-tailcall case, we only need to re-run the argPreamble and can reuse the current frame
-  // in the arbitrary tailcall case we need to set up a classic trampoline
+  @Override
+  public final boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
+    return body.executeBoolean(preamble(frame));
+  }
+
+  @Override
+  public final long executeLong(VirtualFrame frame) throws UnexpectedResultException {
+    return body.executeLong(preamble(frame));
+  }
+
+  @Override
+  public final Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
+    return body.executeClosure(preamble(frame));
+  }
+
+
 }

@@ -1,17 +1,16 @@
 package core.node.expr;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.Node.Child;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import core.values.Closure;
 
-public class IfExpression extends Expression {
+public class If extends Expression {
   @SuppressWarnings("CanBeFinal")
   @Child
   private Expression bodyNode, thenNode, elseNode;
   private final ConditionProfile conditionProfile = ConditionProfile.createBinaryProfile();
-  public IfExpression(Expression bodyNode, Expression thenNode, Expression elseNode) {
+  public If(Expression bodyNode, Expression thenNode, Expression elseNode) {
     this.bodyNode = bodyNode;
     this.thenNode = thenNode;
     this.elseNode = elseNode;

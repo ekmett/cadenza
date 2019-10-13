@@ -12,10 +12,8 @@ import core.values.Closure;
 
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(CoreTypes.class)
-public abstract class Expression extends Node {
-  public abstract Object execute(VirtualFrame frame);
-
-  public Closure executeClosure(VirtualFrame frame) throws  UnexpectedResultException {
+public abstract class Expression extends Node implements ExpressionInterface {
+  public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
     return CoreTypesGen.expectClosure(execute(frame));
   }
 
@@ -26,8 +24,5 @@ public abstract class Expression extends Node {
   public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
     return CoreTypesGen.expectBoolean(execute(frame));
   }
-
-  //public void setInTailPosition() {} // do nothing
-  //@Override public boolean requiresTrampoline() { return false; }
 
 }

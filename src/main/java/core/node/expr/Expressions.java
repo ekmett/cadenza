@@ -1,26 +1,24 @@
 package core.node.expr;
 
+import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import core.frame.FrameBuilder;
-import core.node.CoreRootNode;
-import core.node.FunctionBody;
 
 // expression factory, sweeping under the rug what is supplied by an annotation processor, by convention, by constructor.
 public interface Expressions {
   static FrameBuilder[] noSteps = new FrameBuilder[]{}; // shared empty array
 
-  static ArgExpression arg(int i) { return new ArgExpression(i); }
-  static ReadExpression read(FrameSlot slot) { return ReadExpressionNodeGen.create(slot); }
+  static Arg arg(int i) { return new Arg(i); }
+  static Var read(FrameSlot slot) { return VarNodeGen.create(slot); }
 
   // by convention the body here is a combinator, and c
-  static Lambda lam(FunctionBody node) {
-    assert !node.hasEnv() : "body uses environment, none supplied";
-    return new Lambda(null, noSteps, node); // TODO: make two types of lambdas, closures, functionbodies? one with, one without env?
-  }
-  static Lambda lam(FrameDescriptor closureDescriptor, FrameBuilder[] steps, FunctionBody node) { return new Lambda(closureDescriptor, steps, node); }
+  static Lambda lam(RootCallTarget callTarget) { return Lambda.create(callTarget); }
+  static Lambda lam(int arity, RootCallTarget callTarget) { return Lambda.create(arity, callTarget); }
+  static Lambda lam(FrameDescriptor closureFrameDescriptor, FrameBuilder[] captureSteps, RootCallTarget callTarget) { return Lambda.create(closureFrameDescriptor, captureSteps, callTarget); }
+  static Lambda lam(FrameDescriptor closureFrameDescriptor, FrameBuilder[] captureSteps, int arity, RootCallTarget callTarget) { return Lambda.create(closureFrameDescriptor, captureSteps, arity, callTarget); }
 
-  static AppExpression create(Expression target, Expression... argumentNodes) {
-    return new AppExpression(target, argumentNodes);
+  static App app(Expression rator, Expression... rands) {
+    return new App(rator, rands);
   }
 }

@@ -8,14 +8,16 @@ import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.CoreLanguage;
 import core.CoreTypes;
+import core.CoreTypesGen;
 import core.node.expr.Expression;
+import core.node.expr.ExpressionInterface;
 import core.values.Closure;
 
 // root nodes are needed by Truffle.getRuntime().createCallTarget(someRoot), which is the way to manufacture callable
 // things in truffle.
 @NodeInfo(language = "core", description = "A root of a core tree.")
 @TypeSystemReference(CoreTypes.class)
-public class CoreRootNode extends RootNode {
+public class CoreRootNode extends RootNode implements ExpressionInterface {
   protected CoreRootNode(
     CoreLanguage language,
     Expression body,
@@ -34,9 +36,20 @@ public class CoreRootNode extends RootNode {
   @Override public boolean isCloningAllowed() { return true; }
 
   @Override public Object execute(VirtualFrame frame) {
-    assert(lookupContextReference(CoreLanguage.class).get() != null);
-    // to pump for tail calls insert a TrampolineExpression between this and the body
     return body.execute(frame);
+  }
+
+  public static CoreRootNode create(CoreLanguage language, Expression body, FrameDescriptor fd) {
+    return new CoreRootNode(language, body, fd);
+  }
+
+  public static CoreRootNode create(CoreLanguage language, Expression body) {
+    return new CoreRootNode(language, body, new FrameDescriptor());
+  }
+
+  // default ExpressionInterface non
+  public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
+    return body.executeClosure(frame);
   }
 
   public long executeLong(VirtualFrame frame) throws UnexpectedResultException {
@@ -47,15 +60,4 @@ public class CoreRootNode extends RootNode {
     return body.executeBoolean(frame);
   }
 
-  public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
-    return body.executeClosure(frame);
-  }
-
-  public static CoreRootNode create(CoreLanguage language, Expression body, FrameDescriptor fd) {
-    return new CoreRootNode(language, body, fd);
-  }
-
-  public static CoreRootNode create(CoreLanguage language, Expression body) {
-    return new CoreRootNode(language, body, new FrameDescriptor());
-  }
 }

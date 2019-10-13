@@ -1,69 +1,61 @@
 package core.values;
 
-import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.frame.*;
-import com.oracle.truffle.api.interop.*;
+import com.oracle.truffle.api.frame.MaterializedFrame;
+import com.oracle.truffle.api.interop.InteropLibrary;
+import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
-import com.oracle.truffle.api.nodes.DirectCallNode;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import core.CoreTypesGen;
-import core.frame.FrameBuilder;
 import core.node.FunctionBody;
-import core.node.expr.Expression;
 
 @CompilerDirectives.ValueType // screw your reference equality
 @ExportLibrary(InteropLibrary.class)
-public final class Closure implements TruffleObject {
-  // supercombinator referencing the environment
-  public Closure(MaterializedFrame env, FunctionBody body) {
+public class Closure implements TruffleObject {
+  public final RootCallTarget callTarget;
+  public final MaterializedFrame env; // possibly null;
+
+  // invariant: target should have been constructed from a FunctionBody
+  // also assumes that env matches the shape expected by the function body
+  public Closure(MaterializedFrame env, RootCallTarget callTarget) {
+    assert callTarget.getRootNode() instanceof FunctionBody : "not a function body";
+    assert (env != null) == ((FunctionBody)callTarget.getRootNode()).isSuperCombinator() : "calling convention mismatch";
+    this.callTarget = callTarget;
     this.env = env;
-    this.directCallNode = Truffle.getRuntime().createDirectCallNode(Truffle.getRuntime().createCallTarget(body));
   }
 
   // combinator
-  public Closure(FunctionBody body) { this(null, body); }
-
-  // null implies that this is a simple combinator with no environment
-  private MaterializedFrame env;
-  private DirectCallNode directCallNode;
-
-  @ExplodeLoop
-  private Object[] passEnv(Object[] arguments) {
-    Object[] newArguments = new Object[arguments.length + 1];
-    newArguments[0] = env;
-    for (int i = 0; i < arguments.length; ++i) newArguments[i + 1] = arguments[i];
-    return newArguments;
+  public Closure(RootCallTarget callTarget) {
+    this(null, callTarget);
+  }
+  public final boolean isSuperCombinator() {
+    return env != null;
   }
 
   @ExportMessage
   public final boolean isExecutable() { return true; }
 
+  // allow the use of our closures from other polyglot languages
   @ExportMessage
   @CompilerDirectives.TruffleBoundary
   public final Object execute(Object... arguments) {
     return call(arguments);
   }
-  // NOT a truffle boundary
+
+  // not a truffle boundary, this code will likely wind up inlined into App, so KISS
   public final Object call(Object... arguments) {
-    return env == null
-      ? directCallNode.call(arguments)
-      : directCallNode.call(passEnv(arguments));
+    return isSuperCombinator()
+      ? callTarget.call(cons(env,arguments))
+      : callTarget.call(arguments);
   }
 
-  public long callLong(Object... arguments) throws UnexpectedResultException {
-    return CoreTypesGen.expectLong(call(arguments));
-  }
-
-  public boolean callBoolean(Object... arguments) throws UnexpectedResultException {
-    return CoreTypesGen.expectBoolean(call(arguments));
-  }
-
-  public Closure callClosure(Object... arguments) throws UnexpectedResultException {
-    return CoreTypesGen.expectClosure(call(arguments));
+  @ExplodeLoop
+  private static final Object[] cons(Object x, Object[] xs) {
+    Object[] ys = new Object[xs.length + 1];
+    ys[0] = x;
+    for (int i = 0; i < xs.length; ++i) ys[i + 1] = xs[i];
+    return ys;
   }
 }
