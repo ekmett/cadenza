@@ -7,7 +7,7 @@ import com.oracle.truffle.api.instrumentation.InstrumentableNode;
 import com.oracle.truffle.api.nodes.*;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
-import core.CoreLanguage;
+import core.Language;
 import core.values.Closure;
 
 // CoreNode is just an instrumentable node that is also a Node
@@ -59,7 +59,7 @@ public abstract class CoreNode extends Node implements InstrumentableNode {
     @SuppressWarnings("CanBeFinal")
     @Child public Expr body;
 
-    protected Executable(CoreLanguage language, Expr body) {
+    protected Executable(Language language, Expr body) {
       super(language);
       this.body = body;
     }
@@ -68,7 +68,7 @@ public abstract class CoreNode extends Node implements InstrumentableNode {
       return body.execute(frame);
     }
 
-    public static Executable create(CoreLanguage language, Expr body) {
+    public static Executable create(Language language, Expr body) {
       return new Executable(language, body);
     }
   }
@@ -76,10 +76,10 @@ public abstract class CoreNode extends Node implements InstrumentableNode {
   // root nodes are needed by Truffle.getRuntime().createCallTarget(someRoot), which is the way to manufacture callable
   // things in truffle.
   @NodeInfo(language = "core", description = "A root of a core tree.")
-  @TypeSystemReference(CoreLanguage.Types.class)
+  @TypeSystemReference(Language.Types.class)
   public static class Root extends RootNode implements ExpressionInterface {
     protected Root(
-      CoreLanguage language,
+      Language language,
       Expr body,
       FrameDescriptor fd
     ) {
@@ -88,7 +88,7 @@ public abstract class CoreNode extends Node implements InstrumentableNode {
       this.language = language;
     }
 
-    public final CoreLanguage language;
+    public final Language language;
 
     @Child @SuppressWarnings("CanBeFinal") private Expr body;
 
@@ -99,11 +99,11 @@ public abstract class CoreNode extends Node implements InstrumentableNode {
       return body.execute(frame);
     }
 
-    public static Root create(CoreLanguage language, Expr body, FrameDescriptor fd) {
+    public static Root create(Language language, Expr body, FrameDescriptor fd) {
       return new Root(language, body, fd);
     }
 
-    public static Root create(CoreLanguage language, Expr body) {
+    public static Root create(Language language, Expr body) {
       return new Root(language, body, new FrameDescriptor());
     }
 

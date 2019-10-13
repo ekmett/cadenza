@@ -6,7 +6,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import core.values.Closure;
 import core.TypesGen;
 
-interface ExpressionInterface extends NodeInterface, Cloneable {
+public interface ExpressionInterface extends NodeInterface, Cloneable {
   Object execute(VirtualFrame frame);
 
   // these _should_ just have defaults, but see oracle/graal#1745

@@ -22,7 +22,7 @@ public class Launcher extends AbstractLanguageLauncher {
   }
 
   @Override
-  protected String getLanguageId() { return CoreLanguage.ID; }
+  protected String getLanguageId() { return Language.ID; }
 
 
   @Override protected void launch(Context.Builder contextBuilder) {

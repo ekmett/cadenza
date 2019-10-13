@@ -12,14 +12,14 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.nodes.*;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import core.*;
-import core.values.BigNumber;
+import core.values.Int;
 import core.values.Closure;
 
 // Used for expressions: variables, applications, abstractions, etc.
 
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
-@TypeSystemReference(CoreLanguage.Types.class)
+@TypeSystemReference(Language.Types.class)
 public abstract class Expr extends CoreNode.Simple implements ExpressionInterface {
   public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectClosure(execute(frame));
@@ -50,12 +50,12 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
       return x + y;
     }
     @Specialization
-    public BigNumber add(BigNumber x, BigNumber y) {
-      return new BigNumber(x.value.add(y.value));
+    public Int add(Int x, Int y) {
+      return new Int(x.value.add(y.value));
     }
   }
 
-  @TypeSystemReference(CoreLanguage.Types.class)
+  @TypeSystemReference(Language.Types.class)
   @NodeInfo(shortName = "App")
   public static final class App extends Expr {
 
@@ -112,7 +112,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
   // once a variable binding has been inferred to refer to the local arguments of the current frame and mapped to an actual arg index
   // this node replaces the original node.
   // used during frame materialization to access numbered arguments. otherwise not available
-  @TypeSystemReference(CoreLanguage.Types.class)
+  @TypeSystemReference(Language.Types.class)
   @NodeInfo(shortName = "Arg")
   public static class Arg extends Expr {
     private final int index;
@@ -181,7 +181,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
   }
 
   // lambdas can be constructed from foreign calltargets, you just need to supply an arity
-  @TypeSystemReference(CoreLanguage.Types.class)
+  @TypeSystemReference(Language.Types.class)
   @NodeInfo(shortName = "Lambda")
   public static class Lambda extends Expr {
 
@@ -223,8 +223,8 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
     // invariant callTarget points to a native function body with known arity
     public static Lambda create(final RootCallTarget callTarget) {
       RootNode root = callTarget.getRootNode();
-      assert root instanceof FunctionRoot;
-      return create(((FunctionRoot)root).arity, callTarget);
+      assert root instanceof Closure.Root;
+      return create(((Closure.Root)root).arity, callTarget);
     }
 
     // package a foreign root call target with known arity
@@ -234,8 +234,8 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
 
     public static Lambda create(final FrameDescriptor closureFrameDescriptor, final FrameBuilder[] captureSteps, final RootCallTarget callTarget) {
       RootNode root = callTarget.getRootNode();
-      assert root instanceof FunctionRoot;
-      return create(closureFrameDescriptor, captureSteps,((FunctionRoot)root).arity, callTarget);
+      assert root instanceof Closure.Root;
+      return create(closureFrameDescriptor, captureSteps,((Closure.Root)root).arity, callTarget);
     }
 
     // ensures that all the invariants for the constructor are satisfied
@@ -256,7 +256,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
     // utility
     public static boolean isSuperCombinator(final RootCallTarget callTarget) {
       RootNode root = callTarget.getRootNode();
-      return root instanceof FunctionRoot && ((FunctionRoot)root).isSuperCombinator();
+      return root instanceof Closure.Root && ((Closure.Root)root).isSuperCombinator();
     }
 
     // root to render capture steps opaque
@@ -315,7 +315,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
       @Override public int executeInteger(VirtualFrame frame) { return i; }
     };
   }
-  public static Expr bigLiteral(BigNumber i) {
+  public static Expr bigLiteral(Int i) {
     return new Expr() {
       @Override public Object execute(VirtualFrame frame) { return i; }
       @Override public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {

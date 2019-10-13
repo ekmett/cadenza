@@ -30,28 +30,28 @@ import org.graalvm.polyglot.Source;
 @SuppressWarnings("SuspiciousNameCombination")
 @Option.Group("core")
 @TruffleLanguage.Registration(
-  id = CoreLanguage.ID,
-  name = CoreLanguage.NAME,
-  version = CoreLanguage.VERSION,
-  defaultMimeType = CoreLanguage.MIME_TYPE,
-  characterMimeTypes = CoreLanguage.MIME_TYPE,
+  id = Language.ID,
+  name = Language.NAME,
+  version = Language.VERSION,
+  defaultMimeType = Language.MIME_TYPE,
+  characterMimeTypes = Language.MIME_TYPE,
   contextPolicy = ContextPolicy.SHARED,
-  fileTypeDetectors = CoreLanguage.Detector.class
+  fileTypeDetectors = Language.Detector.class
 )
 @ProvidedTags(value={})
-public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
+public class Language extends TruffleLanguage<Language.Context> {
   public final static String ID = "core";
   public final static String NAME = "Core";
   public final static String VERSION = "0";
   public final static String MIME_TYPE = "application/x-core";
   public final static String EXTENSION = "core";
 
-  public static final OptionDescriptors OPTION_DESCRIPTORS = new CoreLanguageOptionDescriptors();
+  public static final OptionDescriptors OPTION_DESCRIPTORS = new LanguageOptionDescriptors();
 
   @Option(name="tco", help = "Tail-call optimization", category = OptionCategory.USER, stability = OptionStability.EXPERIMENTAL)
   public static final OptionKey<Boolean> TAIL_CALL_OPTIMIZATION = new OptionKey<>(false);
 
-  public CoreLanguage() {}
+  public Language() {}
 
   public final Assumption singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active");
   
@@ -78,15 +78,15 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
     FrameSlot[] argSlots = request.getArgumentNames().stream().map(fd::addFrameSlot).toArray(FrameSlot[]::new);
       FrameBuilder[] preamble = IntStream.range(0, argSlots.length).mapToObj(i -> put(argSlots[i], arg(i))).toArray(FrameBuilder[]::new);
       int arity = argSlots.length;
-      Expr content = Expr.add(Expr.intLiteral(-42), Expr.bigLiteral(new BigNumber(42)));
-      FunctionRoot body = FunctionRoot.create(this, arity, preamble, content);
+      Expr content = Expr.add(Expr.intLiteral(-42), Expr.bigLiteral(new Int(42)));
+      Closure.Root body = Closure.Root.create(this, arity, preamble, content);
       return Truffle.getRuntime().createCallTarget(body);
   //  }
   }
 
   @Override public boolean isObjectOfLanguage(Object obj) {
     if (!(obj instanceof TruffleObject)) return false;
-    return (obj instanceof BigNumber) || (obj instanceof Closure);
+    return (obj instanceof Int) || (obj instanceof Closure);
   }
 
   @Override public void initializeMultipleContexts() {
@@ -98,7 +98,7 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
   } // no options!
 
   @Override
-  protected OptionDescriptors getOptionDescriptors() { return CoreLanguage.OPTION_DESCRIPTORS; }
+  protected OptionDescriptors getOptionDescriptors() { return Language.OPTION_DESCRIPTORS; }
 
   @Override public void initializeMultiThreading(Context ctx) {
     ctx.singleThreadedAssumption.invalidate(); 
@@ -192,7 +192,7 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
   Expr J(@SuppressWarnings("SameParameterValue") final int i, final int j) {
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x");
-    FunctionRoot body = FunctionRoot.create(this, j, new FrameBuilder[]{put(x,arg(i))},var(x));
+    Closure.Root body = Closure.Root.create(this, j, new FrameBuilder[]{put(x,arg(i))},var(x));
     RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
     return Expr.lam(j, callTarget);
   }
@@ -205,7 +205,7 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
     Expr.Var vx = var(x);
     Expr.Var vy = var(y);
     Expr.Var vz = var(z);
-    FunctionRoot body = FunctionRoot.create(
+    Closure.Root body = Closure.Root.create(
       this,
       3,
       new FrameBuilder[]{
@@ -221,7 +221,7 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
   public Expr unary(Function<Expr, Expr> f) {
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x");
-    FunctionRoot body = FunctionRoot.create(
+    Closure.Root body = Closure.Root.create(
       this,
       1,
       new FrameBuilder[]{put(x,arg(0)),},
@@ -235,7 +235,7 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x");
     FrameSlot y = fd.addFrameSlot("y");
-    FunctionRoot body = FunctionRoot.create(
+    Closure.Root body = Closure.Root.create(
       this,
       1,
       new FrameBuilder[]{put(x,arg(0)),put(y,arg(1))},
@@ -248,11 +248,11 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
   public static final class Context {
     private static final Source BUILTIN_SOURCE = Source.newBuilder(ID, "", "[core builtin]").buildLiteral();
 
-    public Context(CoreLanguage language, Env env) {
+    public Context(Language language, Env env) {
       this.language = language;
       this.env = env;
     }
-    public final CoreLanguage language;
+    public final Language language;
     public Env env;
 
     public final Assumption singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded");
@@ -283,11 +283,11 @@ public class CoreLanguage extends TruffleLanguage<CoreLanguage.Context> {
     Closure.class,
     boolean.class,
     int.class,
-    BigNumber.class
+    Int.class
   })
   public static abstract class Types {
     @ImplicitCast
     @CompilerDirectives.TruffleBoundary
-    public static BigNumber castBigNumber(int value) { return new BigNumber(value); }
+    public static Int castBigNumber(int value) { return new Int(value); }
   }
 }

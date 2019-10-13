@@ -7,10 +7,10 @@ import com.oracle.truffle.api.frame.*;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import core.CoreLanguage;
+import core.Language;
 
 // this copies information from the VirtualFrame frame into a materialized frame
-@TypeSystemReference(CoreLanguage.Types.class)
+@TypeSystemReference(Language.Types.class)
 @NodeInfo(shortName = "FrameBuilder")
 public abstract class FrameBuilder extends Node {
   protected final FrameSlot slot;
