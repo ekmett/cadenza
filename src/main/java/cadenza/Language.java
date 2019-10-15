@@ -44,7 +44,7 @@ public class Language extends TruffleLanguage<Language.Context> {
   public final static String NAME = "Cadenza";
   public final static String VERSION = "0";
   public final static String MIME_TYPE = "application/x-cadenza";
-  public final static String EXTENSION = "ca";
+  public final static String EXTENSION = "za";
 
   public static final OptionDescriptors OPTION_DESCRIPTORS = new LanguageOptionDescriptors();
 
