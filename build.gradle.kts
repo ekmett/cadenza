@@ -8,7 +8,14 @@ plugins {
   application
   java
   maven
-  // id("org.sonarqube") version "2.7.1"
+  id("org.sonarqube") version "2.7.1"
+}
+
+sonarqube {
+  properties {
+    property("sonar.projectKey","ekmett_cadenza")
+    property("sonar.sourceEncoding","UTF-8")
+  }
 }
 
 dependencies {
