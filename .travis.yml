@@ -1,0 +1,28 @@
+language: java
+sudo: false
+dist: trusty
+install: true
+
+before_script:
+- unset -v _JAVA_OPTIONS
+- wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+
+jobs:
+  include:
+  - stage: 🚀 Graal
+    env: JDK=graalvm-ce-1.0.0-rc2
+    script: source bin/install-jdk.sh --url https://github.com/oracle/graal/releases/download/vm-19.2.0.1/graalvm-ce-linux-amd64-19.2.0.1.tar.gz 
+
+script:
+  - ./gradlew build
+
+after_script:
+- echo JAVA_HOME = ${JAVA_HOME}
+- echo PATH = ${PATH}
+- ls ${JAVA_HOME}
+- java -version
+
+cache:
+  directories:
+    - '.$HOME/.gradle'
+    - '.gradle'
