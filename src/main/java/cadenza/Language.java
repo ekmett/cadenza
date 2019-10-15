@@ -1,7 +1,7 @@
 package cadenza;
 
-import com.oracle.truffle.api.dsl.ImplicitCast;
-import com.oracle.truffle.api.dsl.TypeSystem;
+import cadenza.types.Type;
+import cadenza.types.TypeError;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
@@ -26,6 +26,8 @@ import org.graalvm.options.OptionCategory;
 import org.graalvm.options.OptionKey;
 import org.graalvm.options.OptionStability;
 import org.graalvm.polyglot.Source;
+import static cadenza.types.Type.*;
+import static cadenza.nodes.Expr.*;
 
 @SuppressWarnings("SuspiciousNameCombination")
 @Option.Group("core")
@@ -68,7 +70,7 @@ public class Language extends TruffleLanguage<Language.Context> {
   // stubbed: for now inline parsing requests just return 'const'
   @Override public CadenzaNode.Executable parse(@SuppressWarnings("unused") InlineParsingRequest request) {
     System.out.println("parse0");
-    Expr body = K();
+    Expr body = K(nat,nat);
     return CadenzaNode.Executable.create(this,body);
   }
 
@@ -168,43 +170,33 @@ public class Language extends TruffleLanguage<Language.Context> {
 
   public Object findExportedSymbol(@SuppressWarnings("unused") org.graalvm.polyglot.Context context, String globalName, @SuppressWarnings("unused") boolean onlyExplicit) {
     switch (globalName) {
-      case "S": return S();
-      case "K": return K();
-      case "I": return I();
+      case "S": return S(arr(nat,arr(nat,nat)),arr(nat,nat), nat);
+      case "K": return K(nat,nat);
+      case "I": return I(nat);
       case "main": return 42;
       default: return null;
     }
   }
 
-
-  // build a convenient edsl
-  static Expr.App app(Expr x, Expr... xs) { return Expr.app(x,xs); }
-  static Expr.Arg arg(int i) { return Expr.arg(i); }
-  static Expr.Var var(FrameSlot x) { return Expr.var(x); }
-  static FrameBuilder put(FrameSlot x, Expr v) { return Expr.put(x,v); }
-
   // for testing
-  Expr K() { return J(0,2); }
-  Expr I() { return J(0,1); }
 
-  // construct the identify function by hand
-  // note we only copy one thing out of the surrounding frame
-  Expr J(@SuppressWarnings("SameParameterValue") final int i, final int j) {
+  Expr I(Type tx) { return unary(x -> x, tx); }
+  Expr K(Type tx, Type ty) { return binary((x, y) -> x, tx, ty); }
+  Expr S(Type tx, Type ty, Type tz) {
     FrameDescriptor fd = new FrameDescriptor();
-    FrameSlot x = fd.addFrameSlot("x");
-    Closure.Root body = Closure.Root.create(this, j, new FrameBuilder[]{put(x,arg(i))},var(x));
-    RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
-    return Expr.lam(j, callTarget);
-  }
-
-  Expr S() {
-    FrameDescriptor fd = new FrameDescriptor();
-    FrameSlot x = fd.addFrameSlot("x");
-    FrameSlot y = fd.addFrameSlot("y");
-    FrameSlot z = fd.addFrameSlot("z");
+    FrameSlot x = fd.addFrameSlot("x", tx, tx.rep);
+    FrameSlot y = fd.addFrameSlot("y", ty, ty.rep);
+    FrameSlot z = fd.addFrameSlot("z", tz, tz.rep);
     Expr.Var vx = var(x);
     Expr.Var vy = var(y);
     Expr.Var vz = var(z);
+    Expr impl = app(vx, vz, app(vy, vz));
+    Type result;
+    try {
+      result = impl.infer(fd);
+    } catch (TypeError e) {
+      throw new RuntimeException(e);
+    }
     Closure.Root body = Closure.Root.create(
       this,
       3,
@@ -213,36 +205,50 @@ public class Language extends TruffleLanguage<Language.Context> {
         put(y,arg(1)),
         put(z,arg(2))
       },
-      app(vx, vz, app(vy, vz))
+      impl
     );
-    return Expr.lam(3, Truffle.getRuntime().createCallTarget(body));
+    return Expr.lam(3, Truffle.getRuntime().createCallTarget(body), arr(tx,arr(ty,arr(tz,result))));
   }
 
-  public Expr unary(Function<Expr, Expr> f) {
+  public Expr unary(Function<Expr, Expr> f, Type argument) {
     FrameDescriptor fd = new FrameDescriptor();
-    FrameSlot x = fd.addFrameSlot("x");
+    FrameSlot x = fd.addFrameSlot("x", argument, argument.rep);
+    Expr impl = f.apply(var(x));
+    Type result;
+    try {
+      result = impl.infer(fd);
+    } catch (TypeError e) {
+      throw new RuntimeException(e);
+    }
     Closure.Root body = Closure.Root.create(
       this,
       1,
       new FrameBuilder[]{put(x,arg(0)),},
-      f.apply(var(x))
+      impl
     );
     RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
-    return Expr.lam(1, callTarget);
+    return Expr.lam(1, callTarget, arr(argument,result));
   }
   // construct a binary function
-  public Expr binary(BiFunction<Expr, Expr, Expr> f) {
+  public Expr binary(BiFunction<Expr, Expr, Expr> f, Type tx, Type ty) {
     FrameDescriptor fd = new FrameDescriptor();
-    FrameSlot x = fd.addFrameSlot("x");
-    FrameSlot y = fd.addFrameSlot("y");
+    FrameSlot x = fd.addFrameSlot("x", tx, tx.rep);
+    FrameSlot y = fd.addFrameSlot("y", ty, ty.rep);
+    Expr impl = f.apply(var(x),var(y));
+    Type result;
+    try {
+      result = impl.infer(fd);
+    } catch (TypeError e) {
+      throw new RuntimeException(e);
+    }
     Closure.Root body = Closure.Root.create(
       this,
-      1,
+      2,
       new FrameBuilder[]{put(x,arg(0)),put(y,arg(1))},
-      f.apply(var(x),var(y))
+      impl
     );
     RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
-    return Expr.lam(2, callTarget);
+    return Expr.lam(2, callTarget, arr(tx, arr(ty, result)));
   }
 
   public static final class Context {
@@ -253,7 +259,9 @@ public class Language extends TruffleLanguage<Language.Context> {
       this.env = env;
     }
     public final Language language;
-    public Env env;
+    private Env env;
+
+    public Env getEnv() { return env; }
 
     public final Assumption singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded");
 

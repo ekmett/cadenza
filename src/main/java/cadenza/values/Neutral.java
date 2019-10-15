@@ -5,7 +5,6 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
-import com.oracle.truffle.api.nodes.ControlFlowException;
 
 // neutral terms allow for normalization-by-evaluation
 
@@ -29,8 +28,8 @@ public class Neutral implements TruffleObject {
 
   // stuck application
   public static final class NApp extends Neutral {
-    Neutral rator;
-    Object[] rands; // TODO: can we give this a shape and put each entry into a new slot using a DynamicObject with Layout?
+    public final Neutral rator;
+    public final Object[] rands; // TODO: can we give this a shape and put each entry into a new slot using a DynamicObject with Layout?
 
     NApp(Neutral rator, Object... rands) {
       this.rator = rator;

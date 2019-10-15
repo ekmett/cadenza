@@ -1,6 +1,8 @@
 package cadenza.values;
 
 import cadenza.Types;
+import cadenza.types.Type;
+import cadenza.types.TypeError;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
@@ -174,6 +176,17 @@ public class Closure implements TruffleObject {
     public Body(Expr content) {
       this.content = content;
     }
+
+    @Override
+    public Type infer(FrameDescriptor fd) throws TypeError {
+      return content.infer(fd);
+    }
+
+    @Override
+    public void check(FrameDescriptor fd, Type expected) throws TypeError {
+      content.check(fd, expected);
+    }
+
     public Object execute(VirtualFrame frame) { return content.execute(frame); }
     public int executeInteger(VirtualFrame frame) throws UnexpectedResultException { return content.executeInteger(frame); }
     public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException { return content.executeClosure(frame); }
