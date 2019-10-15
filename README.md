@@ -1,3 +1,13 @@
+# cadenza
+
+This package will eventually provide a toy normalized-by-evaluation lambda calculus implementation in java using truffle.
+
+cadenza | \ kə-ˈden-zə \ (noun) 1. a solo section, usually in a concerto or similar work before the final coda, that is used to display the performer's technique, sometimes at considerable length
+
+Nothing seems to say Java to me moreso than considerable length, so that seems appropriate.
+
+## installation
+
 * [Install GraalVM](https://www.graalvm.org/downloads/)
 
 * Set your `JAVA_HOME` to point to the modified JDK you just downloaded.

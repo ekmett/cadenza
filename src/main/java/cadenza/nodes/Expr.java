@@ -1,6 +1,8 @@
 package cadenza.nodes;
 
+import cadenza.values.Neutral;
 import com.oracle.truffle.api.CompilerAsserts;
+import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
 import com.oracle.truffle.api.dsl.NodeChild;
@@ -19,8 +21,8 @@ import cadenza.values.Closure;
 
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
-@TypeSystemReference(Language.Types.class)
-public abstract class Expr extends CoreNode.Simple implements ExpressionInterface {
+@TypeSystemReference(Types.class)
+public abstract class Expr extends CadenzaNode.Simple implements ExpressionInterface {
   public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectClosure(execute(frame));
   }
@@ -55,7 +57,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
     }
   }
 
-  @TypeSystemReference(Language.Types.class)
+  @TypeSystemReference(Types.class)
   @NodeInfo(shortName = "App")
   public static final class App extends Expr {
 
@@ -112,7 +114,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
   // once a variable binding has been inferred to refer to the local arguments of the current frame and mapped to an actual arg index
   // this node replaces the original node.
   // used during frame materialization to access numbered arguments. otherwise not available
-  @TypeSystemReference(Language.Types.class)
+  @TypeSystemReference(Types.class)
   @NodeInfo(shortName = "Arg")
   public static class Arg extends Expr {
     private final int index;
@@ -143,45 +145,90 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
 
     @Override
     public Object execute(VirtualFrame frame) {
-      return conditionProfile.profile(branch(frame))
-        ? this.thenNode.execute(frame)
-        : this.elseNode.execute(frame);
+      try {
+        return conditionProfile.profile(branch(frame))
+          ? thenNode.execute(frame)
+          : elseNode.execute(frame);
+      } catch (NeutralException e) {
+        return Neutral.nif(e.term, thenNode.execute(frame), elseNode.execute(frame));
+      }
     }
 
     @Override
     public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
-      return conditionProfile.profile(branch(frame))
-        ? this.thenNode.executeInteger(frame)
-        : this.elseNode.executeInteger(frame);
+      try {
+        return conditionProfile.profile(branch(frame))
+          ? thenNode.executeInteger(frame)
+          : elseNode.executeInteger(frame);
+      } catch (NeutralException e) {
+        // try to exploit value equality in each branch
+        Neutral b = e.term;
+        int t, f;
+        try {
+          t = thenNode.executeInteger(frame);
+        } catch (UnexpectedResultException e2) {
+          throw new UnexpectedResultException(Neutral.nif(b,e2.getResult(),elseNode.execute(frame)));
+        }
+        try {
+          f = elseNode.executeInteger(frame);
+        } catch (UnexpectedResultException e3) {
+          throw new UnexpectedResultException(Neutral.nif(b,t, e3.getResult()));
+        }
+        if (t == f) return t; // look we evaluated past the sticking point.
+        throw new UnexpectedResultException(Neutral.nif(b,t,f));
+      }
     }
-
 
     @Override
     public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
-      return conditionProfile.profile(branch(frame))
-        ? this.thenNode.executeBoolean(frame)
-        : this.elseNode.executeBoolean(frame);
+      try {
+        return conditionProfile.profile(branch(frame))
+          ? thenNode.executeBoolean(frame)
+          : elseNode.executeBoolean(frame);
+      } catch (NeutralException e) {
+        // try to exploit value equality in each branch
+        Neutral b = e.term;
+        boolean t, f;
+        try {
+          t = thenNode.executeBoolean(frame);
+        } catch (UnexpectedResultException e2) {
+          throw new UnexpectedResultException(Neutral.nif(b,e2.getResult(),elseNode.execute(frame)));
+        }
+        try {
+          f = elseNode.executeBoolean(frame);
+        } catch (UnexpectedResultException e3) {
+          throw new UnexpectedResultException(Neutral.nif(b,t, e3.getResult()));
+        }
+        if (t == f) return t; // look we evaluated past the sticking point.
+        throw new UnexpectedResultException(Neutral.nif(b,t,f));
+      }
     }
 
     @Override
     public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
-      return conditionProfile.profile(branch(frame))
-        ? this.thenNode.executeClosure(frame)
-        : this.elseNode.executeClosure(frame);
+      try {
+        return conditionProfile.profile(branch(frame))
+          ? thenNode.executeClosure(frame)
+          : elseNode.executeClosure(frame);
+      } catch (NeutralException e) {
+        throw new UnexpectedResultException(Neutral.nif(e.term, thenNode.execute(frame), elseNode.execute(frame)));
+      }
     }
 
-
-    private boolean branch(VirtualFrame frame) {
+    private boolean branch(VirtualFrame frame) throws NeutralException {
       try {
         return bodyNode.executeBoolean(frame);
       } catch (UnexpectedResultException e) {
-        throw new RuntimeException("condition not boolean",e);
+        CompilerDirectives.transferToInterpreter(); // slow path, but don't invalidate
+        Neutral b = (Neutral)e.getResult();
+        if (b == null) throw new RuntimeException("bad condition",e); // fail hard
+        throw new NeutralException(b);
       }
     }
   }
 
   // lambdas can be constructed from foreign calltargets, you just need to supply an arity
-  @TypeSystemReference(Language.Types.class)
+  @TypeSystemReference(Types.class)
   @NodeInfo(shortName = "Lambda")
   public static class Lambda extends Expr {
 
@@ -315,6 +362,7 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
       @Override public int executeInteger(VirtualFrame frame) { return i; }
     };
   }
+
   public static Expr bigLiteral(Int i) {
     return new Expr() {
       @Override public Object execute(VirtualFrame frame) { return i; }
@@ -327,5 +375,4 @@ public abstract class Expr extends CoreNode.Simple implements ExpressionInterfac
       }
     };
   }
-
 }

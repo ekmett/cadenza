@@ -9,7 +9,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 // A top level core statement, definitions, imports, exports, imperative print statements, whatever.
 @GenerateWrapper
-public abstract class Stmt extends CoreNode.Simple {
+public abstract class Stmt extends CadenzaNode.Simple {
   public static Do block(Stmt... nodes) { return new Stmt.Do(nodes); }
   public static Def def(FrameSlot slot, Expr body) { return StmtFactory.DefNodeGen.create(slot, body); }
   public static Print print(Expr body) { return StmtFactory.PrintNodeGen.create(body); }

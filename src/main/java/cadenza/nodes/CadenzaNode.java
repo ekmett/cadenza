@@ -1,5 +1,6 @@
 package cadenza.nodes;
 
+import cadenza.Types;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
@@ -12,9 +13,9 @@ import cadenza.values.Closure;
 
 // CoreNode is just an instrumentable node that is also a Node
 // CoreNode.Simple is an instrumentable node that uses lazy source elaboration
-public abstract class CoreNode extends Node implements InstrumentableNode {
+public abstract class CadenzaNode extends Node implements InstrumentableNode {
 
-  public abstract static class Simple extends CoreNode {
+  public abstract static class Simple extends CadenzaNode {
     public static final int NO_SOURCE = -1;
     public static final int UNAVAILABLE_SOURCE = -2;
     private int sourceCharIndex = NO_SOURCE;
@@ -76,7 +77,7 @@ public abstract class CoreNode extends Node implements InstrumentableNode {
   // root nodes are needed by Truffle.getRuntime().createCallTarget(someRoot), which is the way to manufacture callable
   // things in truffle.
   @NodeInfo(language = "core", description = "A root of a core tree.")
-  @TypeSystemReference(Language.Types.class)
+  @TypeSystemReference(Types.class)
   public static class Root extends RootNode implements ExpressionInterface {
     protected Root(
       Language language,

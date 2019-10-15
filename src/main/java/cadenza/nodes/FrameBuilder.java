@@ -1,5 +1,6 @@
 package cadenza.nodes;
 
+import cadenza.Types;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
@@ -7,10 +8,9 @@ import com.oracle.truffle.api.frame.*;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import cadenza.Language;
 
 // this copies information from the VirtualFrame frame into a materialized frame
-@TypeSystemReference(Language.Types.class)
+@TypeSystemReference(Types.class)
 @NodeInfo(shortName = "FrameBuilder")
 public abstract class FrameBuilder extends Node {
   protected final FrameSlot slot;

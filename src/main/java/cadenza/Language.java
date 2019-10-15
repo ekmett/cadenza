@@ -66,10 +66,10 @@ public class Language extends TruffleLanguage<Language.Context> {
   } // TODO: any expensive shutdown here
 
   // stubbed: for now inline parsing requests just return 'const'
-  @Override public CoreNode.Executable parse(@SuppressWarnings("unused") InlineParsingRequest request) {
+  @Override public CadenzaNode.Executable parse(@SuppressWarnings("unused") InlineParsingRequest request) {
     System.out.println("parse0");
     Expr body = K();
-    return CoreNode.Executable.create(this,body);
+    return CadenzaNode.Executable.create(this,body);
   }
 
   // stubbed: returns a calculation that adds two numbers
@@ -279,15 +279,4 @@ public class Language extends TruffleLanguage<Language.Context> {
     }
   }
 
-  @TypeSystem({
-    Closure.class,
-    boolean.class,
-    int.class,
-    Int.class
-  })
-  public static abstract class Types {
-    @ImplicitCast
-    @CompilerDirectives.TruffleBoundary
-    public static Int castBigNumber(int value) { return new Int(value); }
-  }
 }

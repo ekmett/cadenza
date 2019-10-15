@@ -1,5 +1,6 @@
 package cadenza.values;
 
+import cadenza.Types;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
@@ -16,10 +17,10 @@ import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import cadenza.Language;
 import cadenza.nodes.*;
 
-@CompilerDirectives.ValueType // screw your reference equality
+@CompilerDirectives.ValueType // screw your reference equality?
+// can we overload == to use alpha equivalence by nbe?
 @ExportLibrary(InteropLibrary.class)
 public class Closure implements TruffleObject {
   public final RootCallTarget callTarget;
@@ -71,7 +72,7 @@ public class Closure implements TruffleObject {
 
   // this node implements RootTag, because it contains a preamble in which the current frame is only partially set up
   @GenerateWrapper
-  @TypeSystemReference(Language.Types.class)
+  @TypeSystemReference(Types.class)
   public static class Root extends RootNode implements ExpressionInterface, InstrumentableNode {
     private static final Object[] noArguments = new Object[]{};
     @Children private final FrameBuilder[] envPreamble;
@@ -160,6 +161,11 @@ public class Closure implements TruffleObject {
     @Override
     public boolean isInstrumentable() { return super.isInstrumentable(); }
 
+
+    // checking two closures for alpha equivalence equality involves using nbe to probe to see if they are the same.
+    // then converting to debruijn form.
+
+    // we'd also need to convert the hashcode to work similarly.
   }
 
   public static class Body extends Expr {
