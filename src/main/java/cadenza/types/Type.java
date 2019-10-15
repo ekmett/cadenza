@@ -5,6 +5,8 @@ import com.oracle.truffle.api.frame.FrameSlotKind;
 
 import java.util.Objects;
 
+// eventually move to a more hindley-milner style model with quantifiers, but then we need subsumption, unification, etc.
+// also this doesn't presuppose if we're heading towards dependently typed languages or towards haskell right now
 public class Type {
   public void match(Type expected) throws TypeError {
     if (!equals(expected)) throw new TypeError(this,expected);
@@ -46,14 +48,16 @@ public class Type {
     }
     @Override
     public boolean equals(Object o) {
-      Arr that = (Arr)o;
+      IO that = (IO)o;
       return that != null && result.equals(that.result);
     }
   }
 
-  public static final Type bool = new Type(FrameSlotKind.Boolean);
-  // public static final Type unit = new Type(FrameSlotKind.Illegal); // how to represent no slot usage?
-  public static final Type nat = new Type(FrameSlotKind.Int);
   public static final Type arr(Type a, Type b) { return new Arr(a,b); }
   public static final Type io(Type a) { return new IO(a); }
+  public static final Type bool = new Type(FrameSlotKind.Boolean);
+  public static final Type object = new Type(FrameSlotKind.Object);
+  public static final Type unit = new Type(FrameSlotKind.Object); // always null. use byte or something else instead?
+  public static final Type nat = new Type(FrameSlotKind.Int);
+  public static final Type action = io(unit);
 }

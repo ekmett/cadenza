@@ -1,5 +1,6 @@
 package cadenza.nodes;
 
+import cadenza.builtin.Builtin;
 import cadenza.types.Type;
 import cadenza.types.TypeError;
 import cadenza.values.Neutral;
@@ -18,8 +19,9 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 import cadenza.*;
 import cadenza.values.Int;
 import cadenza.values.Closure;
+import static cadenza.values.Neutral.*;
 
-import java.util.Arrays;
+import java.util.function.Function;
 
 // Used for expressions: variables, applications, abstractions, etc.
 
@@ -37,6 +39,10 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
 
   public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
     return TypesGen.expectBoolean(execute(frame));
+  }
+
+  public void executeVoid(VirtualFrame frame) {
+    execute(frame);
   }
 
   public abstract Type infer(FrameDescriptor fd) throws TypeError;
@@ -458,6 +464,43 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
       return body.executeClosure(frame);
     }
   }
+
+
+
+  // a fully saturated call to a builtin
+  public abstract class CallBuiltin extends Expr {
+    public final Builtin builtin;
+    public @Child Expr arg;
+    public CallBuiltin(Builtin builtin, Expr arg) {
+      this.builtin = builtin;
+      this.arg = arg;
+    }
+
+    @Override
+    public Type infer(FrameDescriptor fd) {
+      return builtin.resultType;
+    }
+
+    @Override
+    public Object execute(VirtualFrame frame) {
+      try {
+        return builtin.execute(frame, arg);
+      } catch (NeutralException n) {
+        throw new NeutralException(Neutral.ncallbuiltin(builtin, n.term));
+      }
+    }
+
+    @Override
+    public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+      try {
+        return builtin.executeInteger(frame, arg);
+      } catch (NeutralException n) {
+        throw new NeutralException(Neutral.ncallbuiltin(builtin, n.term));
+      }
+    }
+
+  }
+
 
   public static Ann ann(Expr e, Type t) { return new Ann(e,t); }
   public static Arg arg(int i) { return new Expr.Arg(i); }

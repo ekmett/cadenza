@@ -7,12 +7,18 @@ import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
-// A top level core statement, definitions, imports, exports, imperative print statements, whatever.
+// two kinds of statements, one is top level, the other is an expression?
+
+// block, print can be done at the top level or be treated as a result of IO whatever
+// def is a top level statement
+
+// these will typically be 'IO' actions
 @GenerateWrapper
 public abstract class Stmt extends CadenzaNode.Simple {
+  // execute a block of statements returning the last result, this is basically a chain of >>'s in IO. no intermediate lambda results
   public static Do block(Stmt... nodes) { return new Stmt.Do(nodes); }
   public static Def def(FrameSlot slot, Expr body) { return StmtFactory.DefNodeGen.create(slot, body); }
-  public static Print print(Expr body) { return StmtFactory.PrintNodeGen.create(body); }
+
 
   @SuppressWarnings("unused")
   @GenerateWrapper.OutgoingConverter
@@ -25,8 +31,9 @@ public abstract class Stmt extends CadenzaNode.Simple {
   public InstrumentableNode.WrapperNode createWrapper(ProbeNode probe) {
     return new StmtWrapper(this,probe);
   }
+
   public boolean hasTag(Class<? extends Tag> tag) {
-    return tag == StandardTags.StatementTag.class;
+    return tag == StandardTags.StatementTag.class || super.hasTag(tag);
   }
 
   public static class Do extends Stmt {
@@ -95,14 +102,5 @@ public abstract class Stmt extends CadenzaNode.Simple {
     }
     boolean allowsBooleanSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Boolean); }
     boolean allowsIntegerSlot(VirtualFrame frame) { return allowsSlotKind(frame, FrameSlotKind.Int); }
-  }
-
-  @NodeInfo(shortName = "Print")
-  @NodeChild(value = "value", type = Expr.class)
-  public abstract static class Print extends Stmt {
-    @Specialization
-    void print(Object value) {
-      System.out.println(value);
-    }
   }
 }

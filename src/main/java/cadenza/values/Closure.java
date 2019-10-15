@@ -140,6 +140,11 @@ public class Closure implements TruffleObject {
       return body.executeClosure(preamble(frame));
     }
 
+    @Override
+    public final void executeVoid(VirtualFrame frame) {
+      body.executeVoid(preamble(frame));
+    }
+
     public static Root create(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] envPreamble, FrameBuilder[] argPreamble, Expr body) {
       return new Root(language, frameDescriptor, arity, envPreamble, argPreamble, new Closure.Body(body));
     }

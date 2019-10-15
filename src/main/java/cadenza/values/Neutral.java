@@ -1,5 +1,6 @@
 package cadenza.values;
 
+import cadenza.builtin.Builtin;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
@@ -64,5 +65,9 @@ public class Neutral implements TruffleObject {
   }
   public static NIf nif(final Neutral condition, final Object thenValue, final Object elseValue) {
     return new NIf(condition, thenValue, elseValue);
+  }
+
+  public static Neutral ncallbuiltin(final Builtin builtin, final Neutral arg) {
+    return null; // TODO
   }
 }

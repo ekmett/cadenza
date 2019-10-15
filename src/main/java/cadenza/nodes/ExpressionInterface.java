@@ -10,6 +10,7 @@ public interface ExpressionInterface extends NodeInterface, Cloneable {
   Object execute(VirtualFrame frame);
 
   // these _should_ just have defaults, but see oracle/graal#1745
+  void executeVoid(VirtualFrame frame);
   Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException;
   int executeInteger(VirtualFrame frame) throws UnexpectedResultException;
   boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException;
@@ -22,8 +23,13 @@ public interface ExpressionInterface extends NodeInterface, Cloneable {
     default int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
       return TypesGen.expectInteger(execute(frame));
     }
+
     default boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
       return TypesGen.expectBoolean(execute(frame));
+    }
+
+    default void executeVoid(VirtualFrame frame) {
+      execute(frame);
     }
   }
 }

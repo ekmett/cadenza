@@ -121,5 +121,8 @@ public abstract class CadenzaNode extends Node implements InstrumentableNode {
       return body.executeBoolean(frame);
     }
 
+    public void executeVoid(VirtualFrame frame) {
+      body.executeVoid(frame);
+    }
   }
 }
