@@ -1,7 +1,5 @@
-package cadenza.builtin;
+package cadenza;
 
-import cadenza.NeutralException;
-import cadenza.TypesGen;
 import cadenza.nodes.Expr;
 import cadenza.types.Type;
 import cadenza.values.Closure;
@@ -18,6 +16,11 @@ public abstract class Builtin {
   }
 
   public abstract Object execute(VirtualFrame frame, Expr arg) throws NeutralException;
+
+  protected static Object neutralize(Object o) throws NeutralException {
+    if (o instanceof Neutral) throw new NeutralException((Neutral)o);
+    return o;
+  }
 
   public void executeVoid(VirtualFrame frame, Expr arg) throws NeutralException {
     execute(frame, arg);

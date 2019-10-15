@@ -1,6 +1,6 @@
 package cadenza.values;
 
-import cadenza.builtin.Builtin;
+import cadenza.Builtin;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;

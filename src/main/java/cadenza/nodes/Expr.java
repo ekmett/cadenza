@@ -1,6 +1,6 @@
 package cadenza.nodes;
 
-import cadenza.builtin.Builtin;
+import cadenza.Builtin;
 import cadenza.types.Type;
 import cadenza.types.TypeError;
 import cadenza.values.Neutral;
@@ -19,9 +19,6 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 import cadenza.*;
 import cadenza.values.Int;
 import cadenza.values.Closure;
-import static cadenza.values.Neutral.*;
-
-import java.util.function.Function;
 
 // Used for expressions: variables, applications, abstractions, etc.
 
