@@ -1,7 +1,7 @@
-grammar Core;
+grammar Cadenza;
 
 @header{
-package core.syntax;
+package cadenza.syntax;
 }
 
 expression

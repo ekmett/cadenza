@@ -1,4 +1,4 @@
-package core;
+package cadenza;
 
 import com.oracle.truffle.api.dsl.ImplicitCast;
 import com.oracle.truffle.api.dsl.TypeSystem;
@@ -6,8 +6,8 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
 import com.oracle.truffle.api.nodes.NodeInfo;
-import core.nodes.*;
-import core.values.*;
+import cadenza.nodes.*;
+import cadenza.values.*;
 import com.oracle.truffle.api.*;
 import com.oracle.truffle.api.TruffleLanguage.*;
 import com.oracle.truffle.api.interop.InteropLibrary;
@@ -40,11 +40,11 @@ import org.graalvm.polyglot.Source;
 )
 @ProvidedTags(value={})
 public class Language extends TruffleLanguage<Language.Context> {
-  public final static String ID = "core";
-  public final static String NAME = "Core";
+  public final static String ID = "cadenza";
+  public final static String NAME = "Cadenza";
   public final static String VERSION = "0";
-  public final static String MIME_TYPE = "application/x-core";
-  public final static String EXTENSION = "core";
+  public final static String MIME_TYPE = "application/x-cadenza";
+  public final static String EXTENSION = "ca";
 
   public static final OptionDescriptors OPTION_DESCRIPTORS = new LanguageOptionDescriptors();
 

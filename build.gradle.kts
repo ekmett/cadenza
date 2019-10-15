@@ -24,19 +24,19 @@ dependencies {
 }
 
 application {
-  // mainClassName = "core.CoreLauncher"
-  mainClassName = "core.Main"
-  applicationDefaultJvmArgs = listOf("-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=build/libs/core.jar")
+  // mainClassName = "cadenza.CoreLauncher"
+  mainClassName = "cadenza.Main"
+  applicationDefaultJvmArgs = listOf("-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=build/libs/cadenza.jar")
 }
 
 val jar by tasks.getting(Jar::class) {
   manifest {
-    attributes["Bundle-Name"] = "Core"
-    attributes["Bundle-Symbolic-Name"] = "core"
+    attributes["Bundle-Name"] = "Cadenza"
+    attributes["Bundle-Symbolic-Name"] = "cadenza"
     attributes["Bundle-Version"] = "0.0"
     attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=19.2.0)(os_arch=amd64))\""
     attributes["x-GraalVM-Polyglot-Part"] = "True"
-    attributes["Main-Class"] = "core.Main"
+    attributes["Main-Class"] = "cadenza.Main"
   }
 }
 

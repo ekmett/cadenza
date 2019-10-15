@@ -1,4 +1,4 @@
-package core.nodes;
+package cadenza.nodes;
 
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -7,8 +7,8 @@ import com.oracle.truffle.api.instrumentation.InstrumentableNode;
 import com.oracle.truffle.api.nodes.*;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
-import core.Language;
-import core.values.Closure;
+import cadenza.Language;
+import cadenza.values.Closure;
 
 // CoreNode is just an instrumentable node that is also a Node
 // CoreNode.Simple is an instrumentable node that uses lazy source elaboration

@@ -1,4 +1,4 @@
-package core.nodes;
+package cadenza.nodes;
 
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.RootCallTarget;
@@ -11,9 +11,9 @@ import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.nodes.*;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import core.*;
-import core.values.Int;
-import core.values.Closure;
+import cadenza.*;
+import cadenza.values.Int;
+import cadenza.values.Closure;
 
 // Used for expressions: variables, applications, abstractions, etc.
 

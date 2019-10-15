@@ -1,4 +1,4 @@
-package core.values;
+package cadenza.values;
 
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
@@ -16,8 +16,8 @@ import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.RootNode;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import core.Language;
-import core.nodes.*;
+import cadenza.Language;
+import cadenza.nodes.*;
 
 @CompilerDirectives.ValueType // screw your reference equality
 @ExportLibrary(InteropLibrary.class)

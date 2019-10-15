@@ -1,4 +1,4 @@
-package core;
+package cadenza;
 
 import org.testng.annotations.*;
 

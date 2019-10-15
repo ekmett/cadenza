@@ -1,4 +1,4 @@
-package core.nodes;
+package cadenza.nodes;
 
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
@@ -7,7 +7,7 @@ import com.oracle.truffle.api.frame.*;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import core.Language;
+import cadenza.Language;
 
 // this copies information from the VirtualFrame frame into a materialized frame
 @TypeSystemReference(Language.Types.class)

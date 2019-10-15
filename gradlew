@@ -22,7 +22,7 @@
 ##
 ##############################################################################
 
-# JAVA_OPTS='-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI -Dtruffle.class.path.append=build/libs/core.jar'
+# JAVA_OPTS='-XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI -Dtruffle.class.path.append=build/libs/cadenza.jar'
 
 # Attempt to set APP_HOME
 # Resolve links: $0 may be a link

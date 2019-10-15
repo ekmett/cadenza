@@ -21,7 +21,7 @@ build-test:
 	$(GRADLE) compileTestJava
 
 run: jar
-	$(GRADLE) run --args="Foo.core"
+	$(GRADLE) run --args="Foo.cadenza"
 
 test:
 	$(GRADLE) test
@@ -33,7 +33,7 @@ jar:
 	$(GRADLE) jar
 
 component: jar
-	$(JAVA_HOME)/bin/gu -L install build/libs/core.jar 
+	$(JAVA_HOME)/bin/gu -L install build/libs/cadenza.jar
 
 docs:
 	$(GRADLE) javadoc

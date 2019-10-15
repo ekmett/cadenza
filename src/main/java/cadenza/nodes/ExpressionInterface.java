@@ -1,10 +1,10 @@
-package core.nodes;
+package cadenza.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInterface;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
-import core.values.Closure;
-import core.TypesGen;
+import cadenza.values.Closure;
+import cadenza.TypesGen;
 
 public interface ExpressionInterface extends NodeInterface, Cloneable {
   Object execute(VirtualFrame frame);
