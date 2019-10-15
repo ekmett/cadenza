@@ -36,11 +36,6 @@ Please feel free to contact me through github or on the ##coda or #haskell IRC c
 
 -Edward Kmett
 
- [debugging-extensions]: https://code.visualstudio.com/docs/extensions/debugging-extensions
- [shake]: http://shakebuild.com/
- [travis]: http://travis-ci.org/ekmett/coda
- [travis-img]: https://secure.travis-ci.org/ekmett/coda.png?branch=master
-
  [graalvm]: https://www.graalvm.org/downloads
- [travis]: http://travis-ci.org/ekmett/coda
- [travis-img]: https://secure.travis-ci.org/ekmett/coda.png?branch=master
+ [travis]: http://travis-ci.org/ekmett/cadenza
+ [travis-img]: https://secure.travis-ci.org/ekmett/cadenza.png?branch=master
