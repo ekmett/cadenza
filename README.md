@@ -1,6 +1,7 @@
 # cadenza
 
 [![Travis Continuous Integration Status][travis-img]][travis]
+![Most used language][top-language-img]
 
 This package will eventually provide a toy normalized-by-evaluation lambda calculus implementation in java using truffle.
 
@@ -39,3 +40,4 @@ Please feel free to contact me through github or on the ##coda or #haskell IRC c
  [graalvm]: https://www.graalvm.org/downloads
  [travis]: http://travis-ci.org/ekmett/cadenza
  [travis-img]: https://secure.travis-ci.org/ekmett/cadenza.png?branch=master
+ [top-language-img]: https://img.shields.io/github/languages/top/ekmett/cadenza

@@ -1,13 +1,14 @@
+repositories {
+  jcenter()
+  mavenCentral()
+}
+
 plugins {
   antlr
   application
   java
   maven
-}
-
-repositories {
-  jcenter()
-  mavenCentral()
+  // id("org.sonarqube") version "2.7.1"
 }
 
 dependencies {
