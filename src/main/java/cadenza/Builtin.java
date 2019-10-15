@@ -3,24 +3,21 @@ package cadenza;
 import cadenza.nodes.Expr;
 import cadenza.types.Type;
 import cadenza.values.Closure;
-import cadenza.values.Neutral;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
+
+import java.io.Serializable;
+
 @NodeInfo(shortName = "print$")
 
-public abstract class Builtin {
+public abstract class Builtin implements Serializable {
   public final Type resultType;
   public Builtin(final Type resultType) {
     this.resultType = resultType;
   }
 
   public abstract Object execute(VirtualFrame frame, Expr arg) throws NeutralException;
-
-  protected static Object neutralize(Object o) throws NeutralException {
-    if (o instanceof Neutral) throw new NeutralException((Neutral)o);
-    return o;
-  }
 
   public void executeVoid(VirtualFrame frame, Expr arg) throws NeutralException {
     execute(frame, arg);
@@ -36,18 +33,15 @@ public abstract class Builtin {
     return TypesGen.expectInteger(execute(frame, arg));
   }
 
-  public static class Print extends Builtin {
-    Print() { super(Type.action); }
-
+  public static Builtin print$ = new Builtin(Type.action) {
     @Override
     public Object execute(VirtualFrame frame, Expr arg) {
       executeVoid(frame,arg);
       return null;
     }
-
     @Override
     public void executeVoid(VirtualFrame frame, Expr arg) {
       System.out.println(arg.execute(frame));
     }
-  }
+  };
 }

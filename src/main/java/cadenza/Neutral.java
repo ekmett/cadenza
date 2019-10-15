@@ -1,11 +1,7 @@
-package cadenza.values;
+package cadenza;
 
-import cadenza.Builtin;
+import cadenza.util.Arrays;
 import com.oracle.truffle.api.CompilerDirectives;
-import com.oracle.truffle.api.interop.InteropLibrary;
-import com.oracle.truffle.api.interop.TruffleObject;
-import com.oracle.truffle.api.library.ExportLibrary;
-import com.oracle.truffle.api.library.ExportMessage;
 
 // neutral terms allow for normalization-by-evaluation
 
@@ -16,14 +12,9 @@ import com.oracle.truffle.api.library.ExportMessage;
 // by materializing frames at the call sites and putting thunks that use materialized frames here instead
 // for lazier alpha equivalence checking
 @CompilerDirectives.ValueType // screw your reference equality
-@ExportLibrary(InteropLibrary.class)
-public class Neutral implements TruffleObject {
+public abstract class Neutral {
   // other people can execute this, but it just builds a bigger and bigger NApp
-  @ExportMessage
-  boolean isExecutable() { return true; }
-
-  @ExportMessage
-  NApp execute(Object... arguments) {
+  public NApp apply(Object... arguments) {
     return new NApp(this, arguments);
   }
 
@@ -37,37 +28,43 @@ public class Neutral implements TruffleObject {
       this.rands = rands;
     }
 
-    final NApp execute(Object... arguments) {
-      return new NApp(rator, add(rands,arguments));
+    public final NApp apply(Object... arguments) {
+      return napp(rator, Arrays.add(rands,arguments));
     }
+  }
 
-    private static Object[] add(final Object[] xs, final Object... ys) {
-      Object[] zs = new Object[xs.length + ys.length];
-      System.arraycopy(xs, 0, zs, 0, xs.length);
-      System.arraycopy(ys, 0, zs,  xs.length, ys.length);
-      return zs;
-    }
+  public static NApp napp(Neutral rator, Object... rands) {
+    return new NApp(rator, rands);
   }
 
   public static class NIf extends Neutral {
-    public final Neutral condition;
-    public final Object thenValue, elseValue;
-    public NIf(final Neutral condition, final Object thenValue, final Object elseValue) {
-      this.condition = condition;
+    public final Neutral body;
+    public final Object thenValue, elseValue; // lazy values?
+    NIf(Neutral body, Object thenValue, Object elseValue) {
+      this.body = body;
       this.thenValue = thenValue;
       this.elseValue = elseValue;
     }
-    //public abstract Object getThenValue();
-    //public abstract Object getElseValue();
-    //public NIf(final Neutral condition) {
-    //  this.condition = condition;
-    //}
   }
+
   public static NIf nif(final Neutral condition, final Object thenValue, final Object elseValue) {
     return new NIf(condition, thenValue, elseValue);
   }
 
-  public static Neutral ncallbuiltin(final Builtin builtin, final Neutral arg) {
-    return null; // TODO
+  public static class NCallBuiltin extends Neutral {
+    public final Builtin builtin;
+    public final Neutral arg;
+    NCallBuiltin(Builtin builtin, Neutral arg) {
+      this.builtin = builtin;
+      this.arg = arg;
+    }
   }
+
+  // stuck call to builtin
+  public static Neutral ncallbuiltin(final Builtin builtin, final Neutral arg) {
+    return new NCallBuiltin(builtin, arg);
+  }
+
+  // we'll wind up with an extra neutral form for natural numbers modeling peano arithmetic:
+  // NAdd BigInteger Neutral
 }

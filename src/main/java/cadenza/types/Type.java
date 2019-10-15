@@ -12,6 +12,10 @@ public class Type {
     if (!equals(expected)) throw new TypeError(this,expected);
   }
 
+  public void after(int n) {
+
+  }
+
   public FrameSlotKind rep; // used to set the starting frameslotkind
   Type(FrameSlotKind rep) { this.rep = rep; }
 

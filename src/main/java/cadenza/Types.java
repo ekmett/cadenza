@@ -7,10 +7,10 @@ import com.oracle.truffle.api.dsl.ImplicitCast;
 import com.oracle.truffle.api.dsl.TypeSystem;
 
 @TypeSystem({
-  Closure.class,
+  Closure.class
   boolean.class,
   int.class,
-  Int.class
+  Int.class,
 })
 public abstract class Types {
   @ImplicitCast

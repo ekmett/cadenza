@@ -3,7 +3,7 @@ package cadenza.nodes;
 import cadenza.Builtin;
 import cadenza.types.Type;
 import cadenza.types.TypeError;
-import cadenza.values.Neutral;
+import cadenza.Neutral;
 import com.oracle.truffle.api.CompilerAsserts;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
@@ -26,26 +26,39 @@ import cadenza.values.Closure;
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(Types.class)
 public abstract class Expr extends CadenzaNode.Simple implements ExpressionInterface {
-  public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
+  public static void panic(String msg) {
+    CompilerDirectives.transferToInterpreter();
+    throw new RuntimeException(msg)
+  }
+
+  public static void panic(String msg, Exception e) {
+    CompilerDirectives.transferToInterpreter();
+    throw new RuntimeException(msg, e);
+  }
+
+
+  public Object executeAny(VirtualFrame frame) {
+    try {
+      return execute(frame);
+    } catch (NeutralException e) {
+      return e.get();
+    }
+  }
+
+  public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException, NeutralException {
     return TypesGen.expectClosure(execute(frame));
   }
 
-  public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+  public int executeInteger(VirtualFrame frame) throws UnexpectedResultException, NeutralException {
     return TypesGen.expectInteger(execute(frame));
   }
 
-  public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
+  public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException, NeutralException {
     return TypesGen.expectBoolean(execute(frame));
   }
 
-  public void executeVoid(VirtualFrame frame) {
+  public void executeVoid(VirtualFrame frame) throws NeutralException {
     execute(frame);
-  }
-
-  public abstract Type infer(FrameDescriptor fd) throws TypeError;
-  public void check(FrameDescriptor fd, Type expected) throws TypeError {
-    Type actual = infer(fd);
-    actual.match(expected);
   }
 
   public InstrumentableNode.WrapperNode createWrapper(ProbeNode probe) {
@@ -56,31 +69,9 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
     return (tag == StandardTags.ExpressionTag.class) || super.hasTag(tag);
   }
 
-  @NodeChild(value="lhs")
-  @NodeChild(value="rhs")
-  @NodeInfo(shortName="+")
-  public abstract static class Add extends Expr {
-    public abstract Expr getLhs();
-    public abstract Expr getRhs();
-    @Specialization
-    public int add(int x, int y) {
-      return x + y;
-    }
-    @Specialization
-    public Int add(Int x, Int y) {
-      return new Int(x.value.add(y.value));
-    }
-    public Type infer(FrameDescriptor fd) throws TypeError { // needs access to both children
-      getLhs().check(fd,Type.nat);
-      getRhs().check(fd,Type.nat);
-      return Type.nat;
-    }
-  }
-
   @TypeSystemReference(Types.class)
   @NodeInfo(shortName = "App")
   public static final class App extends Expr {
-
     // construct a call node here we can use to invoke the closure appropriately?
     protected App(Expr rator, Expr[] rands) {
       this.indirectCallNode = Truffle.getRuntime().createIndirectCallNode(); // TODO: custom PIC?
@@ -88,20 +79,6 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
       this.rands = rands;
     }
 
-    public Type infer(FrameDescriptor fd) throws TypeError { // needs access to both children
-      Type current = this.rator.infer(fd);
-      // now we need to take the first n
-      for (Expr rand : rands) {
-        Type.Arr arr = (Type.Arr) current;
-        if (arr == null) throw new TypeError();
-        rand.check(fd, arr.argument);
-        current = arr.result;
-      }
-      return current;
-    }
-
-
-    // TODO: specialize when the rator always reduces to a closure with the same body
     @SuppressWarnings("CanBeFinal") @Child protected IndirectCallNode indirectCallNode;
     @SuppressWarnings("CanBeFinal") @Child protected Expr rator;
     @Children protected final Expr[] rands;
@@ -111,37 +88,26 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
       int len = rands.length;
       CompilerAsserts.partialEvaluationConstant(len);
       Object[] values = new Object[len];
-      for (int i=0;i<len;++i) values[i] = rands[i].execute(frame);
+      for (int i=0;i<len;++i) values[i] = rands[i].executeAny(frame); // closures can handle VNeutral
       return values;
     }
 
-    public final Object execute(VirtualFrame frame)  {
-      Closure fun;
+    public final Object execute(VirtualFrame frame) throws NeutralException {
+      Object fun;
       try {
         fun = rator.executeClosure(frame);
       } catch (UnexpectedResultException e) {
-        throw new RuntimeException("closure expected", e); // hard fail. when we add neutrals maybe add a slow path here?
+        panic("closure expected", e);
+      } catch (NeutralException e) {
+        e.get().execute(executeRands(frame));
       }
-
-      Object[] values = executeRands(frame);
-      return indirectCallNode.call(fun.callTarget, values);
+      return indirectCallNode.call(fun.callTarget, executeRands(frame));
     }
 
     public boolean hasTag(Class<? extends Tag> tag) {
       if (tag == StandardTags.CallTag.class) return true;
       return super.hasTag(tag);
     }
-
-
-    //CompilerAsserts.partialEvaluationConstant(this.isInTailPosition);
-      //if (this.isInTailPosition) throw new TailCallException(closure, arguments);
-
-    //@CompilerDirectives.CompilationFinal protected boolean isInTailPosition = false;
-    // app nodes care if they are in tail position
-    //@Override public final void setInTailPosition() { isInTailPosition = true; }
-    //public boolean requiresTrampoline() { return isInTailPosition; } // if we're in tail position we require a trampoline
-
-
   }
 
   // once a variable binding has been inferred to refer to the local arguments of the current frame and mapped to an actual arg index
@@ -176,114 +142,44 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
   }
 
   public static class If extends Expr {
+    public final Type type;
     @SuppressWarnings("CanBeFinal")
     @Child
     private Expr bodyNode, thenNode, elseNode;
     private final ConditionProfile conditionProfile = ConditionProfile.createBinaryProfile();
-    public If(Expr bodyNode, Expr thenNode, Expr elseNode) {
+    public If(Type type, Expr bodyNode, Expr thenNode, Expr elseNode) {
+      this.type = type;
       this.bodyNode = bodyNode;
       this.thenNode = thenNode;
       this.elseNode = elseNode;
     }
 
-    @Override
-    public Type infer(FrameDescriptor fd) throws TypeError {
-      bodyNode.check(fd,Type.bool);
-      Type tt = thenNode.infer(fd);
-      elseNode.check(fd,tt);
-      return tt;
-    }
-
-    @Override
-    public void check(FrameDescriptor fd, Type expected) throws TypeError {
-      bodyNode.check(fd,Type.bool);
-      thenNode.check(fd,expected);
-      elseNode.check(fd,expected);
-    }
-
-    @Override
-    public Object execute(VirtualFrame frame) {
-      try {
-        return conditionProfile.profile(branch(frame))
-          ? thenNode.execute(frame)
-          : elseNode.execute(frame);
-      } catch (NeutralException e) {
-        return Neutral.nif(e.term, thenNode.execute(frame), elseNode.execute(frame));
-      }
-    }
-
-    @Override
-    public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
-      try {
-        return conditionProfile.profile(branch(frame))
-          ? thenNode.executeInteger(frame)
-          : elseNode.executeInteger(frame);
-      } catch (NeutralException e) {
-        // try to exploit value equality in each branch
-        Neutral b = e.term;
-        int t, f;
-        try {
-          t = thenNode.executeInteger(frame);
-        } catch (UnexpectedResultException e2) {
-          throw new UnexpectedResultException(Neutral.nif(b,e2.getResult(),elseNode.execute(frame)));
-        }
-        try {
-          f = elseNode.executeInteger(frame);
-        } catch (UnexpectedResultException e3) {
-          throw new UnexpectedResultException(Neutral.nif(b,t, e3.getResult()));
-        }
-        if (t == f) return t; // look we evaluated past the sticking point.
-        throw new UnexpectedResultException(Neutral.nif(b,t,f));
-      }
-    }
-
-    @Override
-    public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
-      try {
-        return conditionProfile.profile(branch(frame))
-          ? thenNode.executeBoolean(frame)
-          : elseNode.executeBoolean(frame);
-      } catch (NeutralException e) {
-        // try to exploit value equality in each branch
-        Neutral b = e.term;
-        boolean t, f;
-        try {
-          t = thenNode.executeBoolean(frame);
-        } catch (UnexpectedResultException e2) {
-          throw new UnexpectedResultException(Neutral.nif(b,e2.getResult(),elseNode.execute(frame)));
-        }
-        try {
-          f = elseNode.executeBoolean(frame);
-        } catch (UnexpectedResultException e3) {
-          throw new UnexpectedResultException(Neutral.nif(b,t, e3.getResult()));
-        }
-        if (t == f) return t; // look we evaluated past the sticking point.
-        throw new UnexpectedResultException(Neutral.nif(b,t,f));
-      }
-    }
-
-    @Override
-    public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
-      try {
-        return conditionProfile.profile(branch(frame))
-          ? thenNode.executeClosure(frame)
-          : elseNode.executeClosure(frame);
-      } catch (NeutralException e) {
-        throw new UnexpectedResultException(Neutral.nif(e.term, thenNode.execute(frame), elseNode.execute(frame)));
-      }
-    }
-
     private boolean branch(VirtualFrame frame) throws NeutralException {
       try {
-        return bodyNode.executeBoolean(frame);
+        return conditionProfile.profile(bodyNode.executeBoolean(frame));
       } catch (UnexpectedResultException e) {
-        CompilerDirectives.transferToInterpreter(); // slow path, but don't invalidate
-        Neutral b = (Neutral)e.getResult();
-        if (b == null) throw new RuntimeException("bad condition",e); // fail hard
-        throw new NeutralException(b);
+        panic("non-boolean branch",e);
+      } catch (NeutralException e) {
+        throw new NeutralException(type, Neutral.nif(e.term, thenNode.executeAny(frame), elseNode.executeAny(frame)));
       }
     }
+
+    @Override
+    public Object execute(VirtualFrame frame) throws NeutralException {
+      return branch(frame)
+        ? thenNode.execute(frame)
+        : elseNode.execute(frame);
+    }
+
+    @Override
+    public int executeInteger(VirtualFrame frame) throws UnexpectedResultException, NeutralException {
+      return branch(frame)
+        ? thenNode.executeInteger(frame)
+        : elseNode.executeInteger(frame);
+    }
+
   }
+
 
   // lambdas can be constructed from foreign calltargets, you just need to supply an arity
   @TypeSystemReference(Types.class)
@@ -496,8 +392,24 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
       }
     }
 
-  }
+    @Override
+    public void executeVoid(VirtualFrame frame) {
+      try {
+        builtin.executeVoid(frame, arg);
+      } catch (NeutralException n) {
+        throw new NeutralException(Neutral.ncallbuiltin(builtin, n.term));
+      }
+    }
 
+    @Override
+    public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
+      try {
+        return builtin.executeBoolean(frame, arg);
+      } catch (NeutralException n) {
+        throw new NeutralException(Neutral.ncallbuiltin(builtin, n.term));
+      }
+    }
+  }
 
   public static Ann ann(Expr e, Type t) { return new Ann(e,t); }
   public static Arg arg(int i) { return new Expr.Arg(i); }
