@@ -25,7 +25,7 @@ Contribution
 ============
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you shall licensed as per [LICENSE.txt][license], without any
+for inclusion in the work by you shall be licensed as per [LICENSE.txt][license], without any
 additional terms or conditions.
 
 Contact Information
