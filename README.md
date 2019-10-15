@@ -25,7 +25,7 @@ Contribution
 ============
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you shall licensed as per LICENSE.txt, without any
+for inclusion in the work by you shall licensed as per [LICENSE.txt][license], without any
 additional terms or conditions.
 
 Contact Information
@@ -41,3 +41,4 @@ Please feel free to contact me through github or on the ##coda or #haskell IRC c
  [travis]: http://travis-ci.org/ekmett/cadenza
  [travis-img]: https://secure.travis-ci.org/ekmett/cadenza.png?branch=master
  [top-language-img]: https://img.shields.io/github/languages/top/ekmett/cadenza
+ [license]: https://raw.githubusercontent.com/ekmett/cadenza/master/LICENSE.txt
