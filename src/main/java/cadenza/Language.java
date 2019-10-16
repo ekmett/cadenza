@@ -1,35 +1,33 @@
 package cadenza;
 
+import cadenza.nodes.ClosureRootNode;
+import cadenza.nodes.Expr;
+import cadenza.nodes.FrameBuilder;
 import cadenza.types.Term;
 import cadenza.types.Type;
+import cadenza.values.Closure;
+import cadenza.values.Int;
+
+import com.oracle.truffle.api.*;
+import com.oracle.truffle.api.TruffleLanguage.ContextPolicy;
 import com.oracle.truffle.api.debug.DebuggerTags;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
 import com.oracle.truffle.api.instrumentation.StandardTags.*;
-import com.oracle.truffle.api.nodes.NodeInfo;
-import cadenza.nodes.*;
-import cadenza.values.*;
-import com.oracle.truffle.api.*;
-import com.oracle.truffle.api.TruffleLanguage.*;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.source.SourceSection;
-import org.graalvm.options.OptionDescriptors;
-import org.graalvm.options.OptionValues;
+import org.graalvm.options.*;
 
-import java.nio.charset.Charset;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import org.graalvm.options.OptionCategory;
-import org.graalvm.options.OptionKey;
-import org.graalvm.options.OptionStability;
-import org.graalvm.polyglot.Source;
-import static cadenza.types.Type.*;
 import static cadenza.nodes.Expr.*;
+import static cadenza.types.Type.arr;
+import static cadenza.types.Type.nat;
 
 @SuppressWarnings("SuspiciousNameCombination")
 @Option.Group("cadenza")
@@ -40,7 +38,7 @@ import static cadenza.nodes.Expr.*;
   defaultMimeType = Language.MIME_TYPE,
   characterMimeTypes = Language.MIME_TYPE,
   contextPolicy = ContextPolicy.SHARED,
-  fileTypeDetectors = Language.Detector.class
+  fileTypeDetectors = Detector.class
 )
 @ProvidedTags({
   CallTag.class,
@@ -50,7 +48,7 @@ import static cadenza.nodes.Expr.*;
   ExpressionTag.class,
   DebuggerTags.AlwaysHalt.class
 })
-public class Language extends TruffleLanguage<Language.Context> {
+public class Language extends TruffleLanguage<Context> {
   public final static String ID = "cadenza";
   public final static String NAME = "Cadenza";
   public final static String VERSION = "0";
@@ -275,39 +273,4 @@ public class Language extends TruffleLanguage<Language.Context> {
      */
   }
 
-  public static final class Context {
-    private static final Source BUILTIN_SOURCE = Source.newBuilder(ID, "", "[core builtin]").buildLiteral();
-
-    public Context(Language language, Env env) {
-      this.language = language;
-      this.env = env;
-    }
-    public final Language language;
-    private Env env;
-
-    public Env getEnv() { return env; }
-
-    public final Assumption singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded");
-
-    public void shutdown() { }
-
-    public static NodeInfo lookupNodeInfo(Class<?> clazz) {
-      if (clazz == null) return null;
-      NodeInfo info = clazz.getAnnotation(NodeInfo.class);
-      if (info != null) return info;
-      return lookupNodeInfo(clazz.getSuperclass());
-    }
-  }
-
-  public static class Detector implements TruffleFile.FileTypeDetector {
-    @Override public String findMimeType(TruffleFile file) {
-      String name = file.getName();
-      if (name != null && name.endsWith(EXTENSION)) return MIME_TYPE;
-      return null;
-    }
-
-    @Override public Charset findEncoding(TruffleFile file) {
-      return null;
-    }
-  }
 }

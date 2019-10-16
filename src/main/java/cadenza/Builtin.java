@@ -3,16 +3,19 @@ package cadenza;
 import cadenza.nbe.NeutralException;
 import cadenza.nodes.Expr;
 import cadenza.types.Type;
+import cadenza.types.Types;
 import cadenza.types.TypesGen;
 import cadenza.values.Closure;
+import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import com.oracle.truffle.api.nodes.UnexpectedResultException;
 
 import java.io.Serializable;
 
-@NodeInfo(shortName = "print$")
-public abstract class Builtin implements Serializable {
+@TypeSystemReference(Types.class)
+public abstract class Builtin extends Node implements Serializable {
   public final Type resultType;
   public Builtin(final Type resultType) {
     this.resultType = resultType;
@@ -34,8 +37,10 @@ public abstract class Builtin implements Serializable {
     return TypesGen.expectInteger(execute(frame, arg));
   }
 
-  public static Builtin print$ = new Builtin(Type.action) {
-    @Override
+  public static Builtin print$ = new Print();
+  @NodeInfo(shortName="print$")
+  static class Print extends Builtin {
+    Print() { super(Type.action); }
     public Object execute(VirtualFrame frame, Expr arg) throws NeutralException {
       executeVoid(frame,arg);
       return null;
@@ -44,5 +49,5 @@ public abstract class Builtin implements Serializable {
     public void executeVoid(VirtualFrame frame, Expr arg) throws NeutralException {
       System.out.println(arg.execute(frame));
     }
-  };
+  }
 }
