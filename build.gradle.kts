@@ -19,6 +19,12 @@ sonarqube {
   }
 }
 
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
 dependencies {
   annotationProcessor("org.graalvm.truffle:truffle-api:19.2.0.1")
   annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
@@ -35,7 +41,7 @@ dependencies {
 application {
   // mainClassName = "cadenza.Launcher"
   mainClassName = "cadenza.Main"
-  applicationDefaultJvmArgs = listOf("-XX:+UseCompressedOops","-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=build/libs/cadenza.jar")
+  applicationDefaultJvmArgs = listOf("-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=build/libs/cadenza.jar")
 }
 
 //graal {
