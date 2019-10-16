@@ -9,6 +9,7 @@ plugins {
   java
   maven
   id("org.sonarqube") version "2.7.1"
+//  id("com.palantir.graal") version "0.3.0-6-g0b828af"
 }
 
 sonarqube {
@@ -32,10 +33,16 @@ dependencies {
 }
 
 application {
-  mainClassName = "cadenza.Launcher"
-  // mainClassName = "cadenza.Main"
-  applicationDefaultJvmArgs = listOf("-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=build/libs/cadenza.jar")
+  // mainClassName = "cadenza.Launcher"
+  mainClassName = "cadenza.Main"
+  applicationDefaultJvmArgs = listOf("-XX:+UseCompressedOops","-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=build/libs/cadenza.jar")
 }
+
+//graal {
+//  graalVersion("19.2.0.1")
+//  mainClass("cadenza.Launcher")
+//  outputName("cadenza")
+//}
 
 val jar by tasks.getting(Jar::class) {
   manifest {
