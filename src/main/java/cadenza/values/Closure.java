@@ -1,47 +1,41 @@
 package cadenza.values;
 
-import cadenza.Types;
 import cadenza.types.Type;
-import cadenza.types.TypeError;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
-import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.TruffleLanguage;
-import com.oracle.truffle.api.dsl.TypeSystemReference;
-import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
-import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrumentation.*;
+import com.oracle.truffle.api.interop.ArityException;
 import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
+import com.oracle.truffle.api.interop.UnsupportedTypeException;
 import com.oracle.truffle.api.library.ExportLibrary;
 import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
-import com.oracle.truffle.api.nodes.RootNode;
-import com.oracle.truffle.api.nodes.UnexpectedResultException;
 import cadenza.nodes.*;
 
-@CompilerDirectives.ValueType // screw your reference equality?
-// can we overload == to use alpha equivalence by nbe?
+@CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary.class)
 public class Closure implements TruffleObject {
   public final RootCallTarget callTarget;
-  public final int arity;
-  public final MaterializedFrame env; // possibly null;
+  public final int arity; // local minimum arity to do anything, below this construct PAPs, above this pump arguments.
+  public final Type type;
+  public final MaterializedFrame env;
 
   // invariant: target should have been constructed from a FunctionBody
   // also assumes that env matches the shape expected by the function body
-  public Closure(MaterializedFrame env, int arity, RootCallTarget callTarget) {
-    assert callTarget.getRootNode() instanceof Root : "not a function body";
-    assert (env != null) == ((Root)callTarget.getRootNode()).isSuperCombinator() : "calling convention mismatch";
+  public Closure(MaterializedFrame env, int arity, Type type, RootCallTarget callTarget) {
+    assert callTarget.getRootNode() instanceof ClosureRootNode : "not a function body";
+    assert (env != null) == ((ClosureRootNode)callTarget.getRootNode()).isSuperCombinator() : "calling convention mismatch";
+    assert arity <= type.getArity();
     this.arity = arity;
     this.callTarget = callTarget;
     this.env = env;
+    this.type = type;
   }
 
   // combinator
-  public Closure(int arity, RootCallTarget callTarget) {
-    this(null, arity, callTarget);
+  public Closure(int arity, Type type, RootCallTarget callTarget) {
+    this(null, arity, type, callTarget);
   }
   public final boolean isSuperCombinator() {
     return env != null;
@@ -52,12 +46,20 @@ public class Closure implements TruffleObject {
 
   // allow the use of our closures from other polyglot languages
   @ExportMessage
-  @CompilerDirectives.TruffleBoundary
-  public final Object execute(Object... arguments) {
+  @ExplodeLoop
+  public final Object execute(Object... arguments) throws ArityException, UnsupportedTypeException {
+    int maxArity = type.getArity();
+    int len = arguments.length;
+    if (len > maxArity) throw ArityException.create(maxArity, len);
+    Type currentType = type;
+    for (int i=0;i<len;++i) { // lint foreign arguments for safety
+      Type.Arr arr = (Type.Arr)currentType; // safe by arity check
+      arr.argument.validate(arguments[i]);
+      currentType = arr.result;
+    }
     return call(arguments);
   }
 
-  // not a truffle boundary, this code will likely wind up inlined into App, so KISS
   public final Object call(Object... arguments) {
     return isSuperCombinator()
       ? callTarget.call(cons(env,arguments))
@@ -72,134 +74,4 @@ public class Closure implements TruffleObject {
     return ys;
   }
 
-  // this node implements RootTag, because it contains a preamble in which the current frame is only partially set up
-  @GenerateWrapper
-  @TypeSystemReference(Types.class)
-  public static class Root extends RootNode implements ExpressionInterface, InstrumentableNode {
-    private static final Object[] noArguments = new Object[]{};
-    @Children private final FrameBuilder[] envPreamble;
-    @Children private final FrameBuilder[] argPreamble;
-    public final int arity;
-    @SuppressWarnings("CanBeFinal")
-    @Child public Closure.Body body;
-    protected final TruffleLanguage<?> language;
-
-    public final boolean isSuperCombinator() { return envPreamble.length != 0; }
-
-    public Root(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] envPreamble, FrameBuilder[] argPreamble, Closure.Body body) {
-      super(language, frameDescriptor);
-      this.language = language;
-      this.arity = arity;
-      this.envPreamble = envPreamble;
-      this.argPreamble = argPreamble;
-      this.body = body;
-    }
-
-    // need a copy constructor for instrumentation
-    public Root(Root other) {
-      super(other.language,other.getFrameDescriptor());
-      this.language = other.language;
-      this.arity = other.arity;
-      this.envPreamble = other.envPreamble;
-      this.argPreamble = other.argPreamble;
-      this.body = other.body;
-    }
-
-    @ExplodeLoop
-    private VirtualFrame preamble(VirtualFrame frame) {
-      VirtualFrame local = Truffle.getRuntime().createVirtualFrame(noArguments,getFrameDescriptor());
-      for (FrameBuilder builder : argPreamble) builder.build(local,frame);
-      if (isSuperCombinator()) { // supercombinator, needs environment
-        MaterializedFrame env = (MaterializedFrame) frame.getArguments()[0];
-        for (FrameBuilder builder : envPreamble) builder.build(local,env);
-      }
-      return local;
-    }
-
-    // TODO: rewrite on execute throwing a tail call exception?
-    // * if it is for the same FunctionBody, we can reuse the frame, just refilling it with their args
-    // * if it is for a different FunctionBody, we can use a traditional trampoline
-    // * pass the special execute method a tailcall count and have it blow only once it exceeds some threshold?
-
-    public Object execute(VirtualFrame frame) {
-      return body.execute(preamble(frame));
-    }
-
-    @Override
-    public final boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
-      return body.executeBoolean(preamble(frame));
-    }
-
-    @Override
-    public final int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
-      return body.executeInteger(preamble(frame));
-    }
-
-    @Override
-    public final Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
-      return body.executeClosure(preamble(frame));
-    }
-
-    @Override
-    public final void executeVoid(VirtualFrame frame) {
-      body.executeVoid(preamble(frame));
-    }
-
-    public static Root create(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] envPreamble, FrameBuilder[] argPreamble, Expr body) {
-      return new Root(language, frameDescriptor, arity, envPreamble, argPreamble, new Closure.Body(body));
-    }
-
-    public static Root create(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] argPreamble, Expr body) {
-      return new Root(language, frameDescriptor, arity, FrameBuilder.noFrameBuilders, argPreamble, new Closure.Body(body));
-    }
-
-    public static Root create(TruffleLanguage<?> language, int arity, FrameBuilder[] argPreamble, Expr body) {
-      return new Root(language, new FrameDescriptor(), arity, FrameBuilder.noFrameBuilders, argPreamble, new Closure.Body(body));
-    }
-
-    public boolean hasTag(Class<? extends Tag> tag) {
-      return tag == StandardTags.RootTag.class;
-    }
-
-    @Override public WrapperNode createWrapper(ProbeNode probeNode) {
-      return new RootWrapper(this, this, probeNode);
-    }
-
-    @Override
-    public boolean isInstrumentable() { return super.isInstrumentable(); }
-
-
-    // checking two closures for alpha equivalence equality involves using nbe to probe to see if they are the same.
-    // then converting to debruijn form.
-
-    // we'd also need to convert the hashcode to work similarly.
-  }
-
-  public static class Body extends Expr {
-    @SuppressWarnings("CanBeFinal")
-    @Child protected Expr content;
-    public Body(Expr content) {
-      this.content = content;
-    }
-
-    @Override
-    public Type infer(FrameDescriptor fd) throws TypeError {
-      return content.infer(fd);
-    }
-
-    @Override
-    public void check(FrameDescriptor fd, Type expected) throws TypeError {
-      content.check(fd, expected);
-    }
-
-    public Object execute(VirtualFrame frame) { return content.execute(frame); }
-    public int executeInteger(VirtualFrame frame) throws UnexpectedResultException { return content.executeInteger(frame); }
-    public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException { return content.executeClosure(frame); }
-    public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException { return content.executeBoolean(frame); }
-
-    @Override
-    public boolean hasTag(Class<? extends Tag> tag) {
-      return tag == StandardTags.RootBodyTag.class;
-    }
-  }
 }

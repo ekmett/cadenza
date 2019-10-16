@@ -27,7 +27,7 @@ dependencies {
   implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
   implementation("org.graalvm.sdk:launcher-common:19.2.0.1")
   implementation("org.antlr:antlr4-runtime:4.7.2")
-  // implementation("org.yuvalshavit:antlr-denter:1.1")
+  // implementation("com.google.guava:guava:28.1-jre")
   testImplementation("org.testng:testng:6.14.3")
 }
 

@@ -1,14 +1,12 @@
 package cadenza.nodes;
 
 import cadenza.Builtin;
-import cadenza.types.Type;
-import cadenza.types.TypeError;
-import cadenza.Neutral;
+import cadenza.nbe.*;
+import cadenza.types.*;
+import cadenza.values.*;
 import com.oracle.truffle.api.CompilerAsserts;
-import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.Truffle;
-import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.*;
@@ -16,26 +14,15 @@ import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.nodes.*;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import cadenza.*;
-import cadenza.values.Int;
-import cadenza.values.Closure;
+import static cadenza.util.Errors.*;
 
 // Used for expressions: variables, applications, abstractions, etc.
 
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(Types.class)
-public abstract class Expr extends CadenzaNode.Simple implements ExpressionInterface {
-  public static void panic(String msg) {
-    CompilerDirectives.transferToInterpreter();
-    throw new RuntimeException(msg)
-  }
-
-  public static void panic(String msg, Exception e) {
-    CompilerDirectives.transferToInterpreter();
-    throw new RuntimeException(msg, e);
-  }
-
+public abstract class Expr extends CadenzaNode.Simple {
+  public abstract Object execute(VirtualFrame frame) throws NeutralException;
 
   public Object executeAny(VirtualFrame frame) {
     try {
@@ -79,6 +66,7 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
       this.rands = rands;
     }
 
+
     @SuppressWarnings("CanBeFinal") @Child protected IndirectCallNode indirectCallNode;
     @SuppressWarnings("CanBeFinal") @Child protected Expr rator;
     @Children protected final Expr[] rands;
@@ -93,13 +81,13 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
     }
 
     public final Object execute(VirtualFrame frame) throws NeutralException {
-      Object fun;
+      Closure fun;
       try {
         fun = rator.executeClosure(frame);
       } catch (UnexpectedResultException e) {
-        panic("closure expected", e);
+        throw panic("closure expected", e);
       } catch (NeutralException e) {
-        e.get().execute(executeRands(frame));
+        throw e.apply(executeRands(frame));
       }
       return indirectCallNode.call(fun.callTarget, executeRands(frame));
     }
@@ -120,16 +108,6 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
     public Arg(int index) {
       assert 0 <= index : "negative index";
       this.index = index;
-    }
-
-    @Override
-    public Type infer(FrameDescriptor fd) throws TypeError {
-      throw new TypeError();
-    }
-
-    @Override
-    public void check(FrameDescriptor fd, Type expected) throws TypeError {
-      return;
     }
 
     @Override public Object execute(VirtualFrame frame) {
@@ -158,7 +136,7 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
       try {
         return conditionProfile.profile(bodyNode.executeBoolean(frame));
       } catch (UnexpectedResultException e) {
-        panic("non-boolean branch",e);
+        throw panic("non-boolean branch",e);
       } catch (NeutralException e) {
         throw new NeutralException(type, Neutral.nif(e.term, thenNode.executeAny(frame), elseNode.executeAny(frame)));
       }
@@ -177,15 +155,12 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
         ? thenNode.executeInteger(frame)
         : elseNode.executeInteger(frame);
     }
-
   }
-
 
   // lambdas can be constructed from foreign calltargets, you just need to supply an arity
   @TypeSystemReference(Types.class)
   @NodeInfo(shortName = "Lambda")
   public static class Lambda extends Expr {
-
     final FrameDescriptor closureFrameDescriptor; // used to manufacture the temporary copy that we freeze in the closure
     @Children final FrameBuilder[] captureSteps; // steps used to capture the closure's environment
     @SuppressWarnings("CanBeFinal")
@@ -201,26 +176,16 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
       this.type = type;
     }
 
-    @Override
-    public void check(FrameDescriptor fd, Type expected) throws TypeError {
-      type.match(expected);
-    }
-
-    @Override
-    public Type infer(FrameDescriptor fd) throws TypeError {
-      throw new TypeError();
-    }
-
     // do we need to capture an environment?
     public final boolean isSuperCombinator() { return closureFrameDescriptor != null; }
 
     public final Closure execute(VirtualFrame frame) {
-      return executeClosure(frame);
+      return new Closure(captureEnv(frame), arity, type, callTarget);
     }
 
     @Override
     public final Closure executeClosure(VirtualFrame frame) {
-      return new Closure(captureEnv(frame),arity,callTarget);
+      return new Closure(captureEnv(frame), arity, type, callTarget);
     }
 
     @ExplodeLoop
@@ -231,13 +196,11 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
       return env.materialize();
     }
 
-    // smart constructors
-
     // invariant callTarget points to a native function body with known arity
     public static Lambda create(final RootCallTarget callTarget, Type type) {
       RootNode root = callTarget.getRootNode();
-      assert root instanceof Closure.Root;
-      return create(((Closure.Root)root).arity, callTarget, type);
+      assert root instanceof ClosureRootNode;
+      return create(((ClosureRootNode)root).arity, callTarget, type);
     }
 
     // package a foreign root call target with known arity
@@ -247,8 +210,8 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
 
     public static Lambda create(final FrameDescriptor closureFrameDescriptor, final FrameBuilder[] captureSteps, final RootCallTarget callTarget, Type type) {
       RootNode root = callTarget.getRootNode();
-      assert root instanceof Closure.Root;
-      return create(closureFrameDescriptor, captureSteps,((Closure.Root)root).arity, callTarget, type);
+      assert root instanceof ClosureRootNode;
+      return create(closureFrameDescriptor, captureSteps,((ClosureRootNode)root).arity, callTarget, type);
     }
 
     // ensures that all the invariants for the constructor are satisfied
@@ -270,7 +233,7 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
     // utility
     public static boolean isSuperCombinator(final RootCallTarget callTarget) {
       RootNode root = callTarget.getRootNode();
-      return root instanceof Closure.Root && ((Closure.Root)root).isSuperCombinator();
+      return root instanceof ClosureRootNode && ((ClosureRootNode)root).isSuperCombinator();
     }
 
     // root to render capture steps opaque
@@ -284,19 +247,6 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
   public abstract static class Var extends Expr {
     protected Var(FrameSlot slot) { this.slot = slot; }
     protected final FrameSlot slot;
-
-    @Override
-    public Type infer(FrameDescriptor fd) throws TypeError {
-      Type t = (Type)slot.getInfo();
-      if (t == null) throw new TypeError();
-      return t;
-    }
-
-    @Override
-    public void check(FrameDescriptor fd, Type expected) throws TypeError {
-      Type actual = (Type)slot.getInfo();
-      if (actual != null && !actual.equals(expected))  throw new TypeError(actual,expected);
-    }
 
     @Specialization(rewriteOn = FrameSlotTypeException.class)
     protected long readLong(VirtualFrame frame) throws FrameSlotTypeException {
@@ -326,87 +276,85 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
     }
 
     @Override
-    public Type infer(FrameDescriptor fd) throws TypeError {
-      body.check(fd, type);
-      return type;
-    }
-
-    @Override
-    public void check(FrameDescriptor fd, Type expected) throws TypeError {
-      type.match(expected);
-      body.check(fd, type);
-    }
-
-    @Override
-    public Object execute(VirtualFrame frame) {
+    public Object execute(VirtualFrame frame) throws NeutralException {
       return body.execute(frame);
     }
 
     @Override
-    public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+    public Object executeAny(VirtualFrame frame) {
+      return body.executeAny(frame);
+    }
+
+    @Override
+    public int executeInteger(VirtualFrame frame) throws UnexpectedResultException, NeutralException {
       return body.executeInteger(frame);
     }
 
     @Override
-    public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException  {
+    public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException, NeutralException  {
       return body.executeBoolean(frame);
     }
 
     @Override
-    public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException {
+    public Closure executeClosure(VirtualFrame frame) throws UnexpectedResultException, NeutralException {
       return body.executeClosure(frame);
     }
   }
 
-
-
   // a fully saturated call to a builtin
+  // invariant: builtins themselves do not return neutral values, other than through evaluating their argument
   public abstract class CallBuiltin extends Expr {
+    public Type type;
     public final Builtin builtin;
     public @Child Expr arg;
-    public CallBuiltin(Builtin builtin, Expr arg) {
+    public CallBuiltin(Type type, Builtin builtin, Expr arg) {
+      this.type = type;
       this.builtin = builtin;
       this.arg = arg;
     }
 
     @Override
-    public Type infer(FrameDescriptor fd) {
-      return builtin.resultType;
-    }
-
-    @Override
-    public Object execute(VirtualFrame frame) {
+    public Object executeAny(VirtualFrame frame) {
       try {
         return builtin.execute(frame, arg);
       } catch (NeutralException n) {
-        throw new NeutralException(Neutral.ncallbuiltin(builtin, n.term));
+        return new NeutralValue(type, Neutral.ncallbuiltin(builtin, n.term));
       }
     }
 
     @Override
-    public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+    public Object execute(VirtualFrame frame) throws NeutralException {
+      try {
+        return builtin.execute(frame, arg);
+      } catch (NeutralException n) {
+        throw new NeutralException(type, Neutral.ncallbuiltin(builtin, n.term));
+      }
+    }
+
+    @Override
+    public int executeInteger(VirtualFrame frame) throws UnexpectedResultException, NeutralException {
       try {
         return builtin.executeInteger(frame, arg);
       } catch (NeutralException n) {
-        throw new NeutralException(Neutral.ncallbuiltin(builtin, n.term));
+        throw new NeutralException(type, Neutral.ncallbuiltin(builtin, n.term));
       }
     }
 
     @Override
-    public void executeVoid(VirtualFrame frame) {
+    public void executeVoid(VirtualFrame frame) throws NeutralException {
       try {
         builtin.executeVoid(frame, arg);
       } catch (NeutralException n) {
-        throw new NeutralException(Neutral.ncallbuiltin(builtin, n.term));
+        throw new NeutralException(type, Neutral.ncallbuiltin(builtin, n.term));
       }
     }
 
     @Override
-    public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException {
+    public boolean executeBoolean(VirtualFrame frame) throws UnexpectedResultException, NeutralException {
       try {
         return builtin.executeBoolean(frame, arg);
       } catch (NeutralException n) {
-        throw new NeutralException(Neutral.ncallbuiltin(builtin, n.term));
+        throw new NeutralException(type, Neutral.ncallbuiltin(builtin, n.term));
       }
     }
   }
@@ -425,27 +373,17 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
   }
   public static FrameBuilder put(FrameSlot slot, Expr value) { return FrameBuilderNodeGen.create(slot,value); }
 
-  public static Add add(Expr x, Expr y) { return ExprFactory.AddNodeGen.create(x,y); }
+//  public static Add add(Expr x, Expr y) { return ExprFactory.AddNodeGen.create(x,y); }
   public static Expr booleanLiteral(boolean b) {
     return new Expr() {
       @Override public Object execute(VirtualFrame frame) { return b; }
       @Override public boolean executeBoolean(VirtualFrame frame) { return b; }
-
-      @Override
-      public Type infer(FrameDescriptor fd) throws TypeError {
-        return Type.bool;
-      }
     };
   }
   public static Expr intLiteral(int i) {
     return new Expr() {
       @Override public Object execute(VirtualFrame frame) { return i; }
       @Override public int executeInteger(VirtualFrame frame) { return i; }
-
-      @Override
-      public Type infer(FrameDescriptor fd) throws TypeError {
-        return Type.nat;
-      }
     };
   }
 
@@ -458,10 +396,6 @@ public abstract class Expr extends CadenzaNode.Simple implements ExpressionInter
           if (i.fitsInInt()) return i.asInt();
         } catch (UnsupportedMessageException e) {}
         throw new UnexpectedResultException(i);
-      }
-      @Override
-      public Type infer(FrameDescriptor fd) throws TypeError {
-        return Type.nat;
       }
     };
   }

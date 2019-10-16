@@ -1,6 +1,7 @@
 package cadenza.nodes;
 
-import cadenza.Types;
+import cadenza.nbe.NeutralException;
+import cadenza.types.Types;
 import com.oracle.truffle.api.dsl.Fallback;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
@@ -47,6 +48,9 @@ public abstract class FrameBuilder extends Node {
     } catch (UnexpectedResultException e) {
       frame.setObject(slot, e);
       throw e;
+    } catch (NeutralException e) {
+      frame.setObject(slot, e.get());
+      return false; // nonsense, the results are never used, result is to use @Specialization only
     }
     frame.setBoolean(slot,result);
     return result;
@@ -60,6 +64,9 @@ public abstract class FrameBuilder extends Node {
     } catch (UnexpectedResultException e) {
       frame.setObject(slot, e);
       throw e;
+    } catch (NeutralException e) {
+      frame.setObject(slot, e.get());
+      return 0;
     }
     frame.setInt(slot,result);
     return result;
@@ -67,7 +74,7 @@ public abstract class FrameBuilder extends Node {
 
   @Fallback
   Object buildObject(VirtualFrame frame, final int hack, VirtualFrame oldFrame) {
-    Object result = rhs.execute(oldFrame);
+    Object result = rhs.executeAny(oldFrame);
     frame.setObject(slot, result);
     return result;
   }

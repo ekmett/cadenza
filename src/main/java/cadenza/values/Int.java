@@ -110,6 +110,8 @@ public final class Int implements TruffleObject, Comparable<Int> {
   @TruffleBoundary
   public boolean isNumber() { return fitsInLong(); } // this is small enough to marshal
 
+  public boolean isNatural() { return value.compareTo(BigInteger.ZERO) >= 0; }
+
   private static final long LONG_MAX_SAFE_DOUBLE = 9007199254740991L; // 2 ** 53 - 1
   private static final int INT_MAX_SAFE_FLOAT = 16777215; // 2 ** 24 - 1
 

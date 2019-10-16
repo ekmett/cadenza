@@ -1,10 +1,12 @@
 package cadenza;
 
+import cadenza.types.Term;
 import cadenza.types.Type;
-import cadenza.types.TypeError;
+import com.oracle.truffle.api.debug.DebuggerTags;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.instrumentation.ProvidedTags;
+import com.oracle.truffle.api.instrumentation.StandardTags.*;
 import com.oracle.truffle.api.nodes.NodeInfo;
 import cadenza.nodes.*;
 import cadenza.values.*;
@@ -40,7 +42,14 @@ import static cadenza.nodes.Expr.*;
   contextPolicy = ContextPolicy.SHARED,
   fileTypeDetectors = Language.Detector.class
 )
-@ProvidedTags(value={})
+@ProvidedTags({
+  CallTag.class,
+  StatementTag.class,
+  RootTag.class,
+  RootBodyTag.class,
+  ExpressionTag.class,
+  DebuggerTags.AlwaysHalt.class
+})
 public class Language extends TruffleLanguage<Language.Context> {
   public final static String ID = "cadenza";
   public final static String NAME = "Cadenza";
@@ -68,10 +77,10 @@ public class Language extends TruffleLanguage<Language.Context> {
   } // TODO: any expensive shutdown here
 
   // stubbed: for now inline parsing requests just return 'const'
-  @Override public CadenzaNode.Executable parse(@SuppressWarnings("unused") InlineParsingRequest request) {
+  @Override public Watch parse(@SuppressWarnings("unused") InlineParsingRequest request) {
     System.out.println("parse0");
     Expr body = K(nat,nat);
-    return CadenzaNode.Executable.create(this,body);
+    return Watch.create(this,body);
   }
 
   // stubbed: returns a calculation that adds two numbers
@@ -80,8 +89,8 @@ public class Language extends TruffleLanguage<Language.Context> {
     FrameSlot[] argSlots = request.getArgumentNames().stream().map(fd::addFrameSlot).toArray(FrameSlot[]::new);
       FrameBuilder[] preamble = IntStream.range(0, argSlots.length).mapToObj(i -> put(argSlots[i], arg(i))).toArray(FrameBuilder[]::new);
       int arity = argSlots.length;
-      Expr content = Expr.add(Expr.intLiteral(-42), Expr.bigLiteral(new Int(42)));
-      Closure.Root body = Closure.Root.create(this, arity, preamble, content);
+      Expr content = null; // Expr.intLiteral(-42);
+      ClosureRootNode body = ClosureRootNode.create(this, arity, preamble, content);
       return Truffle.getRuntime().createCallTarget(body);
   //  }
   }
@@ -183,6 +192,8 @@ public class Language extends TruffleLanguage<Language.Context> {
   Expr I(Type tx) { return unary(x -> x, tx); }
   Expr K(Type tx, Type ty) { return binary((x, y) -> x, tx, ty); }
   Expr S(Type tx, Type ty, Type tz) {
+    return null;
+    /*
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x", tx, tx.rep);
     FrameSlot y = fd.addFrameSlot("y", ty, ty.rep);
@@ -208,12 +219,20 @@ public class Language extends TruffleLanguage<Language.Context> {
       impl
     );
     return Expr.lam(3, Truffle.getRuntime().createCallTarget(body), arr(tx,arr(ty,arr(tz,result))));
+     */
   }
 
-  public Expr unary(Function<Expr, Expr> f, Type argument) {
+  public Expr unary(Function<Term, Term> f, Type argument) {
+    return null; /*
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x", argument, argument.rep);
-    Expr impl = f.apply(var(x));
+
+    Term impl = f.apply(tvar(x));
+    try {
+      Witness result = impl.infer(fd);
+
+    }
+
     Type result;
     try {
       result = impl.infer(fd);
@@ -228,9 +247,12 @@ public class Language extends TruffleLanguage<Language.Context> {
     );
     RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
     return Expr.lam(1, callTarget, arr(argument,result));
+    */
   }
   // construct a binary function
   public Expr binary(BiFunction<Expr, Expr, Expr> f, Type tx, Type ty) {
+    return null;
+    /*
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x", tx, tx.rep);
     FrameSlot y = fd.addFrameSlot("y", ty, ty.rep);
@@ -248,7 +270,9 @@ public class Language extends TruffleLanguage<Language.Context> {
       impl
     );
     RootCallTarget callTarget = Truffle.getRuntime().createCallTarget(body);
+
     return Expr.lam(2, callTarget, arr(tx, arr(ty, result)));
+     */
   }
 
   public static final class Context {
@@ -286,5 +310,4 @@ public class Language extends TruffleLanguage<Language.Context> {
       return null;
     }
   }
-
 }

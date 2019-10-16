@@ -1,5 +1,6 @@
 package cadenza.nodes;
 
+import cadenza.nbe.NeutralException;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.*;
@@ -72,6 +73,9 @@ public abstract class Stmt extends CadenzaNode.Simple {
       } catch (UnexpectedResultException e) {
         frame.setObject(slot, e);
         throw e;
+      } catch (NeutralException e) {
+        frame.setObject(slot, e.get());
+        return 0; // this result is never used
       }
     }
 
@@ -84,12 +88,15 @@ public abstract class Stmt extends CadenzaNode.Simple {
       } catch (UnexpectedResultException e) {
         frame.setObject(slot, e);
         throw e;
+      } catch (NeutralException e) {
+        frame.setObject(slot, e.get());
+        return false; // never used
       }
     }
 
     @Specialization(replaces={"defInteger","defBoolean"})
     protected void defObject(VirtualFrame frame) {
-      frame.setObject(slot, arg.execute(frame));
+      frame.setObject(slot, arg.executeAny(frame));
     }
 
     boolean allowsSlotKind(VirtualFrame frame, FrameSlotKind kind) {
