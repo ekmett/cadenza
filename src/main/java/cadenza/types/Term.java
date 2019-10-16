@@ -1,11 +1,11 @@
 package cadenza.types;
 
-import cadenza.nodes.Expr;
+import cadenza.nodes.Code;
 import com.oracle.truffle.api.frame.FrameDescriptor;
 
 import java.util.Arrays;
 
-import static cadenza.nodes.Expr.*;
+import static cadenza.nodes.Code.*;
 
 // terms can be checked and inferred. The result is an expression.
 public abstract class Term {
@@ -17,8 +17,8 @@ public abstract class Term {
     return new Term() {
       public Witness check(Ctx ctx, Type expectedType) throws TypeError {
         return new Witness(lookup(ctx,name)) {
-          @Override public Expr compile(FrameDescriptor fd) {
-            return Expr.var(fd.findOrAddFrameSlot(name));
+          @Override public Code compile(FrameDescriptor fd) {
+            return Code.var(fd.findOrAddFrameSlot(name));
           }
         };
       }
@@ -27,14 +27,14 @@ public abstract class Term {
 
   public static Term tif(Term body, Term thenTerm, Term elseTerm) {
     return new Term() {
-      public Witness check(Ctx env, Type expectedType) throws TypeError {
-        Witness bodyWitness = body.check(env, Type.bool);
-        Witness thenWitness = thenTerm.check(env, expectedType);
+      public Witness check(Ctx ctx, Type expectedType) throws TypeError {
+        Witness bodyWitness = body.check(ctx, Type.bool);
+        Witness thenWitness = thenTerm.check(ctx, expectedType);
         Type actualType = thenWitness.type;
-        Witness elseWitness = elseTerm.check(env, actualType);
+        Witness elseWitness = elseTerm.check(ctx, actualType);
         return new Witness(actualType) {
-          @Override public Expr compile(FrameDescriptor fd) {
-            return new Expr.If(actualType, bodyWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd));
+          @Override public Code compile(FrameDescriptor fd) {
+            return new Code.If(actualType, bodyWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd));
           }
         };
       }
@@ -43,20 +43,20 @@ public abstract class Term {
 
   public static Term tapp(Term trator, Term... trands) {
     return new Term() {
-      public Witness check(Ctx env, Type expectedType) throws TypeError {
-        Witness wrator = trator.check(env, expectedType);
+      public Witness check(Ctx ctx, Type expectedType) throws TypeError {
+        Witness wrator = trator.check(ctx, expectedType);
         Type currentType = wrator.type;
         int len = trands.length;
         Witness[] wrands = new Witness[len]; // can't make into a nice stream, throws type errors
         for (int i = 0; i < len; ++i) {
           Type.Arr arr = (Type.Arr) currentType;
           if (arr == null) throw new TypeError("not a fun type");
-          wrands[i] = trands[i].check(env, arr.argument);
+          wrands[i] = trands[i].check(ctx, arr.argument);
           currentType = arr.result;
         }
         return new Witness(currentType) {
-          @Override public Expr compile(FrameDescriptor fd) {
-            return app(wrator.compile(fd), Arrays.stream(wrands).map(w -> w.compile(fd)).toArray(Expr[]::new));
+          @Override public Code compile(FrameDescriptor fd) {
+            return app(wrator.compile(fd), Arrays.stream(wrands).map(w -> w.compile(fd)).toArray(Code[]::new));
           }
         };
       }
@@ -71,7 +71,7 @@ public abstract class Term {
   public static abstract class Witness {
     public final Type type;
     Witness(Type type) { this.type = type; }
-    public abstract Expr compile(FrameDescriptor fd); // take a frame descriptor and emit an expression
+    public abstract Code compile(FrameDescriptor fd); // take a frame descriptor and emit an expression
 
     // builder style
     public Witness match(Type expectedType) throws TypeError {

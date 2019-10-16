@@ -32,8 +32,8 @@ dependencies {
 }
 
 application {
-  // mainClassName = "cadenza.CoreLauncher"
-  mainClassName = "cadenza.Main"
+  mainClassName = "cadenza.Launcher"
+  // mainClassName = "cadenza.Main"
   applicationDefaultJvmArgs = listOf("-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=build/libs/cadenza.jar")
 }
 

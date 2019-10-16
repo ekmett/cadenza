@@ -13,12 +13,15 @@ import com.oracle.truffle.api.library.ExportMessage;
 import com.oracle.truffle.api.nodes.ExplodeLoop;
 import cadenza.nodes.*;
 
+import java.util.Arrays;
+
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary.class)
 public class Closure implements TruffleObject {
-  public final RootCallTarget callTarget;
   public final int arity; // local minimum arity to do anything, below this construct PAPs, above this pump arguments.
-  public final Type type;
+  public final Type type; // tells us the maximum number of arguments this can take and how to lint foreign arguments.
+
+  public final RootCallTarget callTarget;
   public final MaterializedFrame env;
 
   // invariant: target should have been constructed from a FunctionBody
@@ -60,10 +63,25 @@ public class Closure implements TruffleObject {
     return call(arguments);
   }
 
+  // this logic needs to be copied into Code.App
   public final Object call(Object... arguments) {
-    return isSuperCombinator()
-      ? callTarget.call(cons(env,arguments))
-      : callTarget.call(arguments);
+    int len = arguments.length;
+    if (len < arity) {
+      return pap(this,arguments);
+    } else if (len == arity) {
+      return isSuperCombinator()
+        ? callTarget.call(cons(env, arguments))
+        : callTarget.call(arguments);
+    } else {
+      // the result _must_ be a closure.
+      Closure next = (Closure)callTarget.call(consTake(env,arity,arguments));
+      return next.call(drop(arity, arguments));
+    }
+  }
+
+  // construct a partial application node, which should check that it is a PAP itself
+  public Closure pap(Closure f, Object[] arguments) {
+    return null; // TODO:
   }
 
   @ExplodeLoop
@@ -72,6 +90,17 @@ public class Closure implements TruffleObject {
     ys[0] = x;
     System.arraycopy(xs, 0, ys, 1, xs.length);
     return ys;
+  }
+  @ExplodeLoop
+  private static Object[] consTake(Object x, int n, Object[] xs) {
+    Object[] ys = new Object[n + 1];
+    ys[0] = x;
+    System.arraycopy(xs, 0, ys, 1, n);
+    return ys;
+  }
+  @ExplodeLoop
+  private static Object[] drop(int k, Object[] xs) {
+    return Arrays.copyOfRange(xs,k,xs.length);
   }
 
 }

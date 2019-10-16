@@ -1,6 +1,5 @@
 package cadenza.nodes;
 
-import cadenza.Builtin;
 import cadenza.nbe.*;
 import cadenza.types.*;
 import cadenza.values.*;
@@ -14,6 +13,9 @@ import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.nodes.*;
 import com.oracle.truffle.api.profiles.ConditionProfile;
+import com.oracle.truffle.api.source.Source;
+import com.oracle.truffle.api.source.SourceSection;
+
 import static cadenza.util.Errors.*;
 
 // Used for expressions: variables, applications, abstractions, etc.
@@ -21,7 +23,9 @@ import static cadenza.util.Errors.*;
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(Types.class)
-public abstract class Expr extends CadenzaNode.Simple {
+public abstract class Code extends Node implements InstrumentableNode {
+  // execution
+
   public abstract Object execute(VirtualFrame frame) throws NeutralException;
 
   public Object executeAny(VirtualFrame frame) {
@@ -48,19 +52,61 @@ public abstract class Expr extends CadenzaNode.Simple {
     execute(frame);
   }
 
+  // instrumentation
+
+  public static final int NO_SOURCE = -1;
+  public static final int UNAVAILABLE_SOURCE = -2;
+  private int sourceCharIndex = NO_SOURCE;
+  private int sourceLength = 0;
+
+  public boolean hasSource() {
+    return sourceCharIndex != NO_SOURCE;
+  }
+
+  // invoked by the parser to set the source
+  public final void setSourceSection(int charIndex, int length) {
+    assert sourceCharIndex == NO_SOURCE : "source must only be set once";
+    if (charIndex < 0) throw new IllegalArgumentException("charIndex < 0");
+    if (length < 0) throw new IllegalArgumentException("length < 0");
+    sourceCharIndex = charIndex;
+    sourceLength = length;
+  }
+
+  public final void setUnavailableSourceSection() {
+    assert sourceCharIndex == NO_SOURCE : "source must only be set once";
+    sourceCharIndex = UNAVAILABLE_SOURCE;
+  }
+
+  public final SourceSection getSourceSection() {
+    if (sourceCharIndex == NO_SOURCE) return null;
+    RootNode rootNode = getRootNode();
+    if (rootNode == null) return null;
+    SourceSection rootSourceSection = rootNode.getSourceSection();
+    if (rootSourceSection == null) return null;
+    Source source = rootSourceSection.getSource();
+    return (sourceCharIndex == UNAVAILABLE_SOURCE)
+      ? source.createUnavailableSection()
+      : source.createSection(sourceCharIndex, sourceLength);
+  }
+
+  @Override
+  public boolean isInstrumentable() { return hasSource(); }
+
   public InstrumentableNode.WrapperNode createWrapper(ProbeNode probe) {
-    return new ExprWrapper(this,probe);
+    return new CodeWrapper(this,probe);
   }
 
   public boolean hasTag(Class<? extends Tag> tag) {
-    return (tag == StandardTags.ExpressionTag.class) || super.hasTag(tag);
+    return tag == StandardTags.ExpressionTag.class;
   }
+
+  // statics
 
   @TypeSystemReference(Types.class)
   @NodeInfo(shortName = "App")
-  public static final class App extends Expr {
+  public static final class App extends Code {
     // construct a call node here we can use to invoke the closure appropriately?
-    protected App(Expr rator, Expr[] rands) {
+    protected App(Code rator, Code[] rands) {
       this.indirectCallNode = Truffle.getRuntime().createIndirectCallNode(); // TODO: custom PIC?
       this.rator = rator;
       this.rands = rands;
@@ -68,8 +114,8 @@ public abstract class Expr extends CadenzaNode.Simple {
 
 
     @SuppressWarnings("CanBeFinal") @Child protected IndirectCallNode indirectCallNode;
-    @SuppressWarnings("CanBeFinal") @Child protected Expr rator;
-    @Children protected final Expr[] rands;
+    @SuppressWarnings("CanBeFinal") @Child protected Code rator;
+    @Children protected final Code[] rands;
 
     @ExplodeLoop
     private Object[] executeRands(VirtualFrame frame) {
@@ -103,7 +149,7 @@ public abstract class Expr extends CadenzaNode.Simple {
   // used during frame materialization to access numbered arguments. otherwise not available
   @TypeSystemReference(Types.class)
   @NodeInfo(shortName = "Arg")
-  public static class Arg extends Expr {
+  public static class Arg extends Code {
     private final int index;
     public Arg(int index) {
       assert 0 <= index : "negative index";
@@ -119,13 +165,13 @@ public abstract class Expr extends CadenzaNode.Simple {
     @Override public boolean isAdoptable() { return false; }
   }
 
-  public static class If extends Expr {
+  public static class If extends Code {
     public final Type type;
     @SuppressWarnings("CanBeFinal")
     @Child
-    private Expr bodyNode, thenNode, elseNode;
+    private Code bodyNode, thenNode, elseNode;
     private final ConditionProfile conditionProfile = ConditionProfile.createBinaryProfile();
-    public If(Type type, Expr bodyNode, Expr thenNode, Expr elseNode) {
+    public If(Type type, Code bodyNode, Code thenNode, Code elseNode) {
       this.type = type;
       this.bodyNode = bodyNode;
       this.thenNode = thenNode;
@@ -160,7 +206,7 @@ public abstract class Expr extends CadenzaNode.Simple {
   // lambdas can be constructed from foreign calltargets, you just need to supply an arity
   @TypeSystemReference(Types.class)
   @NodeInfo(shortName = "Lambda")
-  public static class Lambda extends Expr {
+  public static class Lambda extends Code {
     final FrameDescriptor closureFrameDescriptor; // used to manufacture the temporary copy that we freeze in the closure
     @Children final FrameBuilder[] captureSteps; // steps used to capture the closure's environment
     @SuppressWarnings("CanBeFinal")
@@ -244,7 +290,7 @@ public abstract class Expr extends CadenzaNode.Simple {
   }
 
   @NodeInfo(shortName = "Read")
-  public abstract static class Var extends Expr {
+  public abstract static class Var extends Code {
     protected Var(FrameSlot slot) { this.slot = slot; }
     protected final FrameSlot slot;
 
@@ -266,11 +312,11 @@ public abstract class Expr extends CadenzaNode.Simple {
     @Override public boolean isAdoptable() { return false; }
   }
 
-  public static class Ann extends Expr {
-    @Child protected Expr body;
+  public static class Ann extends Code {
+    @Child protected Code body;
     public final Type type;
 
-    public Ann(Expr body, Type type) {
+    public Ann(Code body, Type type) {
       this.body = body;
       this.type = type;
     }
@@ -303,11 +349,12 @@ public abstract class Expr extends CadenzaNode.Simple {
 
   // a fully saturated call to a builtin
   // invariant: builtins themselves do not return neutral values, other than through evaluating their argument
-  public abstract class CallBuiltin extends Expr {
+  public abstract class CallBuiltin extends Code {
     public Type type;
     public final Builtin builtin;
-    public @Child Expr arg;
-    public CallBuiltin(Type type, Builtin builtin, Expr arg) {
+    public @Child
+    Code arg;
+    public CallBuiltin(Type type, Builtin builtin, Code arg) {
       this.type = type;
       this.builtin = builtin;
       this.arg = arg;
@@ -359,36 +406,36 @@ public abstract class Expr extends CadenzaNode.Simple {
     }
   }
 
-  public static Ann ann(Expr e, Type t) { return new Ann(e,t); }
-  public static Arg arg(int i) { return new Expr.Arg(i); }
-  public static Var var(FrameSlot slot) { return ExprFactory.VarNodeGen.create(slot); }
+  public static Ann ann(Code e, Type t) { return new Ann(e,t); }
+  public static Arg arg(int i) { return new Code.Arg(i); }
+  public static Var var(FrameSlot slot) { return CodeFactory.VarNodeGen.create(slot); }
 
   public static Lambda lam(RootCallTarget callTarget, Type type) { return Lambda.create(callTarget, type); }
   public static Lambda lam(int arity, RootCallTarget callTarget, Type type) { return Lambda.create(arity, callTarget, type); }
   public static Lambda lam(FrameDescriptor closureFrameDescriptor, FrameBuilder[] captureSteps, RootCallTarget callTarget, Type type) { return Lambda.create(closureFrameDescriptor, captureSteps, callTarget,type); }
   public static Lambda lam(FrameDescriptor closureFrameDescriptor, FrameBuilder[] captureSteps, int arity, RootCallTarget callTarget, Type type) { return Lambda.create(closureFrameDescriptor, captureSteps, arity, callTarget,type); }
 
-  public static App app(Expr rator, Expr... rands) {
-    return new Expr.App(rator, rands);
+  public static App app(Code rator, Code... rands) {
+    return new Code.App(rator, rands);
   }
-  public static FrameBuilder put(FrameSlot slot, Expr value) { return FrameBuilderNodeGen.create(slot,value); }
+  public static FrameBuilder put(FrameSlot slot, Code value) { return FrameBuilderNodeGen.create(slot,value); }
 
 //  public static Add add(Expr x, Expr y) { return ExprFactory.AddNodeGen.create(x,y); }
-  public static Expr booleanLiteral(boolean b) {
-    return new Expr() {
+  public static Code booleanLiteral(boolean b) {
+    return new Code() {
       @Override public Object execute(VirtualFrame frame) { return b; }
       @Override public boolean executeBoolean(VirtualFrame frame) { return b; }
     };
   }
-  public static Expr intLiteral(int i) {
-    return new Expr() {
+  public static Code intLiteral(int i) {
+    return new Code() {
       @Override public Object execute(VirtualFrame frame) { return i; }
       @Override public int executeInteger(VirtualFrame frame) { return i; }
     };
   }
 
-  public static Expr bigLiteral(Int i) {
-    return new Expr() {
+  public static Code bigLiteral(Int i) {
+    return new Code() {
       @Override public Object execute(VirtualFrame frame) { return i; }
       @Override public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
         //noinspection CatchMayIgnoreException

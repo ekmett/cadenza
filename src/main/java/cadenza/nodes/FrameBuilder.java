@@ -16,8 +16,8 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 public abstract class FrameBuilder extends Node {
   protected final FrameSlot slot;
   @SuppressWarnings("CanBeFinal")
-  @Child protected Expr rhs;
-  public FrameBuilder(FrameSlot slot, Expr rhs) {
+  @Child protected Code rhs;
+  public FrameBuilder(FrameSlot slot, Code rhs) {
     this.slot = slot;
     this.rhs = rhs;
   }

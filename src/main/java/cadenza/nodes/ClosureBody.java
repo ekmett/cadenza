@@ -8,8 +8,8 @@ import com.oracle.truffle.api.source.SourceSection;
 @GenerateWrapper
 public class ClosureBody extends Node implements InstrumentableNode {
   @SuppressWarnings("CanBeFinal")
-  @Child protected Expr content;
-  public ClosureBody(Expr content) {
+  @Child protected Code content;
+  public ClosureBody(Code content) {
     this.content = content;
   }
   public ClosureBody() {}

@@ -1,7 +1,6 @@
-package cadenza;
+package cadenza.nodes;
 
 import cadenza.nbe.NeutralException;
-import cadenza.nodes.Expr;
 import cadenza.types.Type;
 import cadenza.types.Types;
 import cadenza.types.TypesGen;
@@ -21,19 +20,19 @@ public abstract class Builtin extends Node implements Serializable {
     this.resultType = resultType;
   }
 
-  public abstract Object execute(VirtualFrame frame, Expr arg) throws NeutralException;
+  public abstract Object execute(VirtualFrame frame, Code arg) throws NeutralException;
 
-  public void executeVoid(VirtualFrame frame, Expr arg) throws NeutralException {
+  public void executeVoid(VirtualFrame frame, Code arg) throws NeutralException {
     execute(frame, arg);
   }
 
-  public Closure executeClosure(VirtualFrame frame, Expr arg) throws UnexpectedResultException, NeutralException {
+  public Closure executeClosure(VirtualFrame frame, Code arg) throws UnexpectedResultException, NeutralException {
     return TypesGen.expectClosure(execute(frame, arg));
   }
-  public boolean executeBoolean(VirtualFrame frame, Expr arg) throws UnexpectedResultException, NeutralException {
+  public boolean executeBoolean(VirtualFrame frame, Code arg) throws UnexpectedResultException, NeutralException {
     return TypesGen.expectBoolean(execute(frame, arg));
   }
-  public int executeInteger(VirtualFrame frame, Expr arg) throws UnexpectedResultException, NeutralException {
+  public int executeInteger(VirtualFrame frame, Code arg) throws UnexpectedResultException, NeutralException {
     return TypesGen.expectInteger(execute(frame, arg));
   }
 
@@ -41,12 +40,12 @@ public abstract class Builtin extends Node implements Serializable {
   @NodeInfo(shortName="print$")
   static class Print extends Builtin {
     Print() { super(Type.action); }
-    public Object execute(VirtualFrame frame, Expr arg) throws NeutralException {
+    public Object execute(VirtualFrame frame, Code arg) throws NeutralException {
       executeVoid(frame,arg);
       return null;
     }
     @Override
-    public void executeVoid(VirtualFrame frame, Expr arg) throws NeutralException {
+    public void executeVoid(VirtualFrame frame, Code arg) throws NeutralException {
       System.out.println(arg.execute(frame));
     }
   }

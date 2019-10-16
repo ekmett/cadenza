@@ -1,7 +1,6 @@
 package cadenza.nodes;
 
 import cadenza.nbe.NeutralException;
-import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.*;
 import com.oracle.truffle.api.instrumentation.*;
@@ -18,14 +17,15 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException;
 public abstract class Stmt extends CadenzaNode.Simple {
   // execute a block of statements returning the last result, this is basically a chain of >>'s in IO. no intermediate lambda results
   public static Do block(Stmt... nodes) { return new Stmt.Do(nodes); }
-  public static Def def(FrameSlot slot, Expr body) { return StmtFactory.DefNodeGen.create(slot, body); }
-
+  public static Def def(FrameSlot slot, Code body) { return StmtFactory.DefNodeGen.create(slot, body); }
 
   @SuppressWarnings("unused")
   @GenerateWrapper.OutgoingConverter
   Object convertOutgoing(@SuppressWarnings("unused") Object object) {
     return null;
   }
+
+  @Override public boolean isInstrumentable() { return true; }
 
   abstract void execute(VirtualFrame frame);
   public boolean isAdoptable() { return true; }
@@ -53,8 +53,8 @@ public abstract class Stmt extends CadenzaNode.Simple {
   public abstract static class Def extends Stmt {
     public final FrameSlot slot;
     @SuppressWarnings("CanBeFinal")
-    @Child public Expr arg;
-    public Def(FrameSlot slot, Expr arg) {
+    @Child public Code arg;
+    public Def(FrameSlot slot, Code arg) {
       this.slot = slot;
       this.arg = arg;
     }

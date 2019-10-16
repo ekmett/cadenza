@@ -163,6 +163,6 @@ public class Launcher extends AbstractLanguageLauncher {
   }
 
   @Override protected String[] getDefaultLanguages() {
-    return new String[]{"core"}; // "js","llvm",getLanguageId()};
+    return new String[]{Language.ID}; // "js","llvm",getLanguageId()};
   }
 }

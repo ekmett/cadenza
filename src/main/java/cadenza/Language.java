@@ -1,8 +1,9 @@
 package cadenza;
 
 import cadenza.nodes.ClosureRootNode;
-import cadenza.nodes.Expr;
+import cadenza.nodes.Code;
 import cadenza.nodes.FrameBuilder;
+import cadenza.nodes.InlineCode;
 import cadenza.types.Term;
 import cadenza.types.Type;
 import cadenza.values.Closure;
@@ -25,7 +26,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-import static cadenza.nodes.Expr.*;
+import static cadenza.nodes.Code.*;
 import static cadenza.types.Type.arr;
 import static cadenza.types.Type.nat;
 
@@ -75,10 +76,10 @@ public class Language extends TruffleLanguage<Context> {
   } // TODO: any expensive shutdown here
 
   // stubbed: for now inline parsing requests just return 'const'
-  @Override public Watch parse(@SuppressWarnings("unused") InlineParsingRequest request) {
+  @Override public InlineCode parse(@SuppressWarnings("unused") InlineParsingRequest request) {
     System.out.println("parse0");
-    Expr body = K(nat,nat);
-    return Watch.create(this,body);
+    Code body = K(nat,nat);
+    return InlineCode.create(this,body);
   }
 
   // stubbed: returns a calculation that adds two numbers
@@ -87,7 +88,7 @@ public class Language extends TruffleLanguage<Context> {
     FrameSlot[] argSlots = request.getArgumentNames().stream().map(fd::addFrameSlot).toArray(FrameSlot[]::new);
       FrameBuilder[] preamble = IntStream.range(0, argSlots.length).mapToObj(i -> put(argSlots[i], arg(i))).toArray(FrameBuilder[]::new);
       int arity = argSlots.length;
-      Expr content = null; // Expr.intLiteral(-42);
+      Code content = null; // Expr.intLiteral(-42);
       ClosureRootNode body = ClosureRootNode.create(this, arity, preamble, content);
       return Truffle.getRuntime().createCallTarget(body);
   //  }
@@ -187,9 +188,9 @@ public class Language extends TruffleLanguage<Context> {
 
   // for testing
 
-  Expr I(Type tx) { return unary(x -> x, tx); }
-  Expr K(Type tx, Type ty) { return binary((x, y) -> x, tx, ty); }
-  Expr S(Type tx, Type ty, Type tz) {
+  Code I(Type tx) { return unary(x -> x, tx); }
+  Code K(Type tx, Type ty) { return binary((x, y) -> x, tx, ty); }
+  Code S(Type tx, Type ty, Type tz) {
     return null;
     /*
     FrameDescriptor fd = new FrameDescriptor();
@@ -220,7 +221,7 @@ public class Language extends TruffleLanguage<Context> {
      */
   }
 
-  public Expr unary(Function<Term, Term> f, Type argument) {
+  public Code unary(Function<Term, Term> f, Type argument) {
     return null; /*
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x", argument, argument.rep);
@@ -248,7 +249,7 @@ public class Language extends TruffleLanguage<Context> {
     */
   }
   // construct a binary function
-  public Expr binary(BiFunction<Expr, Expr, Expr> f, Type tx, Type ty) {
+  public Code binary(BiFunction<Code, Code, Code> f, Type tx, Type ty) {
     return null;
     /*
     FrameDescriptor fd = new FrameDescriptor();

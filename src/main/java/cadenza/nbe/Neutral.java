@@ -1,6 +1,6 @@
 package cadenza.nbe;
 
-import cadenza.Builtin;
+import cadenza.nodes.Builtin;
 import cadenza.util.Arrays;
 import com.oracle.truffle.api.CompilerDirectives;
 

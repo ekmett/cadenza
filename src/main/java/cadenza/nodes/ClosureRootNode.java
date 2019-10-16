@@ -63,15 +63,15 @@ public class ClosureRootNode extends RootNode implements InstrumentableNode {
     return body.execute(preamble(frame));
   }
 
-  public static ClosureRootNode create(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] envPreamble, FrameBuilder[] argPreamble, Expr body) {
+  public static ClosureRootNode create(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] envPreamble, FrameBuilder[] argPreamble, Code body) {
     return new ClosureRootNode(language, frameDescriptor, arity, envPreamble, argPreamble, new ClosureBody(body));
   }
 
-  public static ClosureRootNode create(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] argPreamble, Expr body) {
+  public static ClosureRootNode create(TruffleLanguage<?> language, FrameDescriptor frameDescriptor, int arity, FrameBuilder[] argPreamble, Code body) {
     return new ClosureRootNode(language, frameDescriptor, arity, FrameBuilder.noFrameBuilders, argPreamble, new ClosureBody(body));
   }
 
-  public static ClosureRootNode create(TruffleLanguage<?> language, int arity, FrameBuilder[] argPreamble, Expr body) {
+  public static ClosureRootNode create(TruffleLanguage<?> language, int arity, FrameBuilder[] argPreamble, Code body) {
     return new ClosureRootNode(language, new FrameDescriptor(), arity, FrameBuilder.noFrameBuilders, argPreamble, new ClosureBody(body));
   }
 
