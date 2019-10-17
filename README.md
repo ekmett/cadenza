@@ -9,15 +9,19 @@ cadenza | \ kə-ˈden-zə \ (noun) 1. a solo section, usually in a concerto or s
 
 Nothing seems to say Java to me moreso than considerable length, so that seems appropriate.
 
-## installation
+## running
 
-* [Install GraalVM][graalvm]
+* `gradle run` should just download GraalVM CE automatically and use it to run the launcher for testing.
 
-* Set your `JAVA_HOME` to point to the modified JDK you just downloaded.
+* `gradle nativeImage` should eventually produce a native executable for the compiler. (Once I figure out how to include everything.)
 
-* `make run`
+## running by hand
 
-* Once you've built the jar, `java -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI -Dtruffle.class.path.append=build/libs/cadenza.jar -jar build/libs/cadenza.jar` seems to run the top level application without polyglot complaining about not having the language installed. IntelliJ has different IDEAs about what the arguments should be when you run it in debug more, however.
+You can either [Install GraalVM][graalvm] yourself or choose to `gradle extractGraalTooling`, which will produce a cached copy of GraalVM CE.
+
+* Set your `JAVA_HOME`. If you used `gradle extractGraalTooling` it should point to something in `~/.gradle/caches/com.palantir.graal/19.2.0.1/graalvm-ce-19.2.0.1`
+
+* Once you've built the jar with `gradle jar`, `java -XX:+UnlockExperimentalVMOptions -XX:+EnableJVMCI -Dtruffle.class.path.append=build/libs/cadenza.jar -jar build/libs/cadenza.jar` seems to run the top level application without polyglot complaining about not having the language installed. IntelliJ has different IDEAs about what the arguments should be when you run it in debug more, however.
 
 * `make component` should install things with `gu`, to make it so this is a viable language we could use in other polyglot repls easily. I'm missing some steps, though. (Likely I need to rebuild polyglot?)
 

@@ -20,7 +20,7 @@ build:
 build-test:
 	$(GRADLE) compileTestJava
 
-run: jar
+run:
 	$(GRADLE) run --args="Foo.cadenza"
 
 test:
@@ -32,11 +32,18 @@ clean:
 jar:
 	$(GRADLE) jar
 
-component: jar
-	$(JAVA_HOME)/bin/gu -L install build/libs/cadenza.jar
+component:
+	$(GRADLE) component
+
+install:
+	$(GRADLE) installComponent
+
+# build/graal/cadenza
+native-image:
+	$(GRADLE) nativeImage
 
 docs:
 	$(GRADLE) javadoc
 	open build/docs/javadoc/index.html 
 
-.PHONY: all build build-test clean docs jar component run test
+.PHONY: all build build-test clean docs jar component run test install
