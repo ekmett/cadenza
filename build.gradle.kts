@@ -1,3 +1,5 @@
+import com.palantir.gradle.graal.ExtractGraalTask;
+
 repositories {
   jcenter()
   mavenCentral()
@@ -9,7 +11,7 @@ plugins {
   java
   maven
   id("org.sonarqube") version "2.7.1"
-//  id("com.palantir.graal") version "0.3.0-6-g0b828af"
+  id("com.palantir.graal") version "0.6.0"
 }
 
 sonarqube {
@@ -21,8 +23,8 @@ sonarqube {
 
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {
@@ -44,11 +46,16 @@ application {
   applicationDefaultJvmArgs = listOf("-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=build/libs/cadenza.jar")
 }
 
-//graal {
-//  graalVersion("19.2.0.1")
-//  mainClass("cadenza.Launcher")
-//  outputName("cadenza")
-//}
+graal {
+  graalVersion("19.2.0.1")
+  mainClass("cadenza.Launcher")
+  outputName("cadenza")
+}
+
+tasks.withType<JavaExec> {
+  dependsOn("extractGraalTooling")
+  executable = tasks.named<ExtractGraalTask>("extractGraalTooling").get().getOutputDirectory().get().getAsFile().toString() + "/Contents/Home/bin/java"
+}
 
 val jar by tasks.getting(Jar::class) {
   manifest {
