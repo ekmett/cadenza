@@ -1,4 +1,6 @@
-package cadenza;
+package cadenza.launcher;
+
+import cadenza.*;
 
 import org.graalvm.launcher.*;
 import org.graalvm.options.OptionCategory;

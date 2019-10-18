@@ -23,11 +23,6 @@ sonarqube {
   }
 }
 
-// graal is jvm 1.8, even if we're compiling on something else
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8 // todo: jabel to relax this and get "var"
-  targetCompatibility = JavaVersion.VERSION_1_8
-}
 
 dependencies {
   annotationProcessor("org.graalvm.truffle:truffle-api:19.2.0.1")
@@ -40,6 +35,10 @@ dependencies {
   implementation("org.antlr:antlr4-runtime:4.7.2")
   testImplementation("org.testng:testng:6.14.3")
   // implementation("com.google.guava:guava:28.1-jre")
+}
+
+tasks.register("cadenza", JavaCompile::class) {
+  source = fileTree("src/cadenza/java")
 }
 
 // gradle run is a bit more convenient
@@ -61,22 +60,30 @@ val graalToolingDir = tasks.named<ExtractGraalTask>("extractGraalTooling").get()
 var graalHome = if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
 val graalBinDir = if (os == "Linux") graalHome else "$graalHome/bin"
 
+// cause gradle run to use the GraalVM
 tasks.withType<JavaExec> {
   dependsOn("extractGraalTooling","jar")
   executable = "$graalBinDir/java"
 }
 
-val jar = tasks["jar"]
+tasks.register("cadenzaJar", Jar::class) {
+  from("cadenza")
+  baseName = "cadenza"
+}
 
 // build cadenza-component.jar
 tasks.register("component", Jar::class) {
-  dependsOn("jar")
+  dependsOn("cadenzaJar","jar")
   baseName = "cadenza-component"
   from("src/component/resources")
-  from(jar)
+  from(tasks["cadenzaJar"])
   rename("cadenza.jar","jre/languages/cadenza/cadenza.jar")
+  from(tasks["jar"])
+  rename("cadenza-launcher.jar","jre/languages/cadenza/cadenza-launcher.jar")
   manifest {
     attributes["Bundle-Name"] = "Cadenza"
+    attributes["Bundle-Description"] = "The cadenza language"
+    attributes["Bundle-DocURL"] = "https://github.com/ekmett/cadenza"
     attributes["Bundle-Symbolic-Name"] = "cadenza"
     attributes["Bundle-Version"] = "0.0"
     attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=19.2.0)(os_arch=amd64))\""
@@ -96,8 +103,22 @@ tasks.withType<NativeImageTask> {
   dependsOn("install") // make sure we have a language first
 }
 
+tasks.getByName<JavaCompile>("compileJava") {
+  classPath = plus(sourceSets.compileClasspath,files(cadenzaJar))
+}
+
+tasks.getByName<Jar>("jar") {
+  baseName = "cadenza-launcher"
+}
+
 val test by tasks.getting(Test::class) {
   useTestNG()
+}
+
+// graal is jvm 1.8, even if we're compiling on something else
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8 // todo: jabel to relax this and get "var"
+  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 // defaultTasks("run")
