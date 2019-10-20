@@ -1,9 +1,5 @@
 grammar Cadenza;
 
-@header{
-package cadenza.syntax;
-}
-
 expression
     : VARIABLE | function | application
     ;

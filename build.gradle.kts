@@ -66,6 +66,9 @@ project(":language") {
   tasks.getByName<Jar>("jar") {
     baseName = "cadenza-language"
   }
+  tasks.withType<AntlrTask> {
+    arguments.addAll(listOf("-package", "cadenza.syntax", "-no-listener", "-visitor"))
+  }
 }
 
 project(":launcher") {
