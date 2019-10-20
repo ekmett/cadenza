@@ -107,10 +107,10 @@ public class Launcher extends AbstractLanguageLauncher {
       }
     }
     if (!path.isEmpty())
-      polyglotOptions.put("core.libraryPath", String.join(":", path));
+      polyglotOptions.put("cadenza.libraryPath", String.join(":", path));
 
     if (!path.isEmpty())
-      polyglotOptions.put("core.libraries", String.join(":", libs));
+      polyglotOptions.put("cadenza.libraries", String.join(":", libs));
 
     if (file == null && iterator.hasNext())
       file = Paths.get(iterator.next()).toFile();
@@ -127,11 +127,11 @@ public class Launcher extends AbstractLanguageLauncher {
 
   @Override protected void printHelp(OptionCategory maxCategory) {
     System.out.println();
-    System.out.println("Usage: core [OPTION]... [FILE] [PROGRAM ARGS]");
-    System.out.println("Run core programs on GraalVM\n");
+    System.out.println("Usage: cadenza [OPTION]... [FILE] [PROGRAM ARGS]");
+    System.out.println("Run cadenza programs on GraalVM\n");
     System.out.println("Mandatory arguments to long options are mandatory for short options too.\n");
     System.out.println("Options:");
-    printOption("-L <path>", "set the path to search for core libraries");
+    printOption("-L <path>", "set the path to search for cadenza libraries");
     printOption("--lib <library>", "add a library");
     printOption("--version", "print the version and exit");
     printOption("--show-version", "print the version and continue");

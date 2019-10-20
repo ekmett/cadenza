@@ -95,7 +95,13 @@ project(":component") {
   tasks.register("register", Exec::class) {
     dependsOn(":extractGraalTooling", jar)
     description = "Register the language with graal"
-    commandLine = listOf("$graalBinDir/gu","install","-f","-L","build/libs/cadenza-component-0.0-SNAPSHOT.jar")
+    commandLine = listOf(
+      "$graalBinDir/gu",
+      "install",
+      "-f",
+      "-L",
+      jar.archiveFile.get().getAsFile().getPath()
+    )
   }
 }
 
@@ -105,11 +111,14 @@ tasks.getByName<NativeImageTask>("nativeImage") {
 
 application {
   mainClassName = "cadenza.launcher.Launcher"
-  applicationDefaultJvmArgs = listOf("-XX:+UnlockExperimentalVMOptions","-XX:+EnableJVMCI","-Dtruffle.class.path.append=language/build/libs/cadenza-0.0-SNAPSHOT.jar")
+  applicationDefaultJvmArgs = listOf(
+    "-XX:+UnlockExperimentalVMOptions",
+    "-XX:+EnableJVMCI",
+    "-Dtruffle.class.path.append=" + project("language").tasks.getByName<Jar>("jar").archiveFile.get().getAsFile().getPath()
+  )
 }
 
 tasks.getByName<JavaExec>("run") {
   dependsOn(":extractGraalTooling",":language:jar",":launcher:jar")
-  // classpath = files(fileTree("language/build/libs/"),fileTree("launcher/build/libs/"))
   executable = "$graalBinDir/java"
 }
