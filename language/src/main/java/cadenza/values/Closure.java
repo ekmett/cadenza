@@ -55,9 +55,9 @@ public class Closure implements TruffleObject {
     int maxArity = type.getArity();
     int len = arguments.length;
     if (len > maxArity) throw ArityException.create(maxArity, len);
-    Type currentType = type;
+    var currentType = type;
     for (Object argument : arguments) { // lint foreign arguments for safety
-      Type.Arr arr = (Type.Arr) currentType; // safe by arity check
+      var arr = (Type.Arr) currentType; // safe by arity check
       arr.argument.validate(argument);
       currentType = arr.result;
     }
@@ -75,7 +75,7 @@ public class Closure implements TruffleObject {
         : callTarget.call(arguments);
     } else {
       // the result _must_ be a closure.
-      Closure next = (Closure)callTarget.call(consTake(env,arity,arguments));
+      var next = (Closure)callTarget.call(consTake(env,arity,arguments));
       return next.call(drop(arity, arguments));
     }
   }
@@ -87,14 +87,14 @@ public class Closure implements TruffleObject {
 
   @ExplodeLoop
   private static Object[] cons(Object x, Object[] xs) {
-    Object[] ys = new Object[xs.length + 1];
+    var ys = new Object[xs.length + 1];
     ys[0] = x;
     System.arraycopy(xs, 0, ys, 1, xs.length);
     return ys;
   }
   @ExplodeLoop
   private static Object[] consTake(Object x, int n, Object[] xs) {
-    Object[] ys = new Object[n + 1];
+    var ys = new Object[n + 1];
     ys[0] = x;
     System.arraycopy(xs, 0, ys, 1, n);
     return ys;

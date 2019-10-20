@@ -15,7 +15,7 @@ public class NeutralException extends SlowPathException {
   public NeutralException(Type type, Neutral term) { this.type = type; this.term = term; }
   public NeutralException apply(final Object... rands) {
     int len = rands.length;
-    Type currentType = type;
+    var currentType = type;
     for (int i=0;i<len;++i) currentType = ((Type.Arr)currentType).result;
     return new NeutralException(currentType, term.apply(rands));
   }

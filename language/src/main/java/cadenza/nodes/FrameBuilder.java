@@ -29,7 +29,7 @@ public abstract class FrameBuilder extends Node {
   public abstract Object execute(VirtualFrame frame, final int hack, VirtualFrame oldFrame);
 
   boolean allowsSlotKind(VirtualFrame frame, FrameSlotKind kind) {
-    FrameSlotKind currentKind = frame.getFrameDescriptor().getFrameSlotKind(slot);
+    var currentKind = frame.getFrameDescriptor().getFrameSlotKind(slot);
     if (currentKind == FrameSlotKind.Illegal) {
       frame.getFrameDescriptor().setFrameSlotKind(slot,kind);
       return true;
@@ -74,7 +74,7 @@ public abstract class FrameBuilder extends Node {
 
   @Fallback
   Object buildObject(VirtualFrame frame, final int hack, VirtualFrame oldFrame) {
-    Object result = rhs.executeAny(oldFrame);
+    var result = rhs.executeAny(oldFrame);
     frame.setObject(slot, result);
     return result;
   }

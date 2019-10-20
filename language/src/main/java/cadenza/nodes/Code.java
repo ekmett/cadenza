@@ -79,11 +79,11 @@ public abstract class Code extends Node implements InstrumentableNode {
 
   public final SourceSection getSourceSection() {
     if (sourceCharIndex == NO_SOURCE) return null;
-    RootNode rootNode = getRootNode();
+    var rootNode = getRootNode();
     if (rootNode == null) return null;
-    SourceSection rootSourceSection = rootNode.getSourceSection();
+    var rootSourceSection = rootNode.getSourceSection();
     if (rootSourceSection == null) return null;
-    Source source = rootSourceSection.getSource();
+    var source = rootSourceSection.getSource();
     return (sourceCharIndex == UNAVAILABLE_SOURCE)
       ? source.createUnavailableSection()
       : source.createSection(sourceCharIndex, sourceLength);
@@ -121,7 +121,7 @@ public abstract class Code extends Node implements InstrumentableNode {
     private Object[] executeRands(VirtualFrame frame) {
       int len = rands.length;
       CompilerAsserts.partialEvaluationConstant(len);
-      Object[] values = new Object[len];
+      var values = new Object[len];
       for (int i=0;i<len;++i) values[i] = rands[i].executeAny(frame); // closures can handle VNeutral
       return values;
     }
@@ -157,7 +157,7 @@ public abstract class Code extends Node implements InstrumentableNode {
     }
 
     @Override public Object execute(VirtualFrame frame) {
-      Object[] arguments = frame.getArguments();
+      var arguments = frame.getArguments();
       assert index < arguments.length : "insufficient arguments";
       return arguments[index];
     }
@@ -237,14 +237,14 @@ public abstract class Code extends Node implements InstrumentableNode {
     @ExplodeLoop
     private MaterializedFrame captureEnv(VirtualFrame frame) {
       if (!isSuperCombinator()) return null;
-      VirtualFrame env = Truffle.getRuntime().createMaterializedFrame(new Object[]{}, closureFrameDescriptor);
+      var env = Truffle.getRuntime().createMaterializedFrame(new Object[]{}, closureFrameDescriptor);
       for (FrameBuilder captureStep : captureSteps) captureStep.build(env, frame);
       return env.materialize();
     }
 
     // invariant callTarget points to a native function body with known arity
     public static Lambda create(final RootCallTarget callTarget, Type type) {
-      RootNode root = callTarget.getRootNode();
+      var root = callTarget.getRootNode();
       assert root instanceof ClosureRootNode;
       return create(((ClosureRootNode)root).arity, callTarget, type);
     }
@@ -278,7 +278,7 @@ public abstract class Code extends Node implements InstrumentableNode {
 
     // utility
     public static boolean isSuperCombinator(final RootCallTarget callTarget) {
-      RootNode root = callTarget.getRootNode();
+      var root = callTarget.getRootNode();
       return root instanceof ClosureRootNode && ((ClosureRootNode)root).isSuperCombinator();
     }
 

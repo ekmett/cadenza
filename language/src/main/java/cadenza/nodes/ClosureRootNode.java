@@ -45,7 +45,7 @@ public class ClosureRootNode extends RootNode implements InstrumentableNode {
 
   @ExplodeLoop
   private VirtualFrame preamble(VirtualFrame frame) {
-    VirtualFrame local = Truffle.getRuntime().createVirtualFrame(noArguments,getFrameDescriptor());
+    var local = Truffle.getRuntime().createVirtualFrame(noArguments,getFrameDescriptor());
     for (FrameBuilder builder : argPreamble) builder.build(local,frame);
     if (isSuperCombinator()) { // supercombinator, needs environment
       MaterializedFrame env = (MaterializedFrame) frame.getArguments()[0];

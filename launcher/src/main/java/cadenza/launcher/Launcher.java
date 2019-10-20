@@ -49,12 +49,12 @@ public class Launcher extends AbstractLanguageLauncher {
   }
 
   @Override protected List<String> preprocessArguments(List<String> arguments, Map<String, String> polyglotOptions) {
-    List<String> unrecognizedOptions = new ArrayList<>();
-    List<String> path = new ArrayList<>();
-    List<String> libs = new ArrayList<>();
-    ListIterator<String> iterator = arguments.listIterator();
+    var unrecognizedOptions = new ArrayList<String>();
+    var path = new ArrayList<String>();
+    var libs = new ArrayList<String>();
+    var iterator = arguments.listIterator();
     while (iterator.hasNext()) {
-      String option = iterator.next();
+      var option = iterator.next();
       if (option.length() < 2 || !option.startsWith("-")) {
         iterator.previous();
         break;
@@ -70,7 +70,7 @@ public class Launcher extends AbstractLanguageLauncher {
           versionAction = VersionAction.PrintAndExit;
           break;
         default:
-          String optionName = option;
+          var optionName = option;
           String argument;
           int equalsIndex = option.indexOf('=');
           if (equalsIndex > 0) {
@@ -115,7 +115,7 @@ public class Launcher extends AbstractLanguageLauncher {
     if (file == null && iterator.hasNext())
       file = Paths.get(iterator.next()).toFile();
 
-    List<String> programArgumentsList = arguments.subList(iterator.nextIndex(), arguments.size());
+    var programArgumentsList = arguments.subList(iterator.nextIndex(), arguments.size());
     programArgs = programArgumentsList.toArray(new String[0]);
     return unrecognizedOptions;
   }
@@ -150,7 +150,7 @@ public class Launcher extends AbstractLanguageLauncher {
   }
 
   private static void printStackTraceSkipTrailingHost(PolyglotException e) {
-    List<PolyglotException.StackFrame> stackTrace = new ArrayList<>();
+    var stackTrace = new ArrayList<PolyglotException.StackFrame>();
     for (PolyglotException.StackFrame s : e.getPolyglotStackTrace())
       stackTrace.add(s);
     for (ListIterator<PolyglotException.StackFrame> iterator = stackTrace.listIterator(stackTrace.size()); iterator.hasPrevious();) {

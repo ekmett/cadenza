@@ -28,10 +28,10 @@ public abstract class Term {
   public static Term tif(Term body, Term thenTerm, Term elseTerm) {
     return new Term() {
       public Witness check(Ctx ctx, Type expectedType) throws TypeError {
-        Witness bodyWitness = body.check(ctx, Type.bool);
-        Witness thenWitness = thenTerm.check(ctx, expectedType);
-        Type actualType = thenWitness.type;
-        Witness elseWitness = elseTerm.check(ctx, actualType);
+        var bodyWitness = body.check(ctx, Type.bool);
+        var thenWitness = thenTerm.check(ctx, expectedType);
+        var actualType = thenWitness.type;
+        var elseWitness = elseTerm.check(ctx, actualType);
         return new Witness(actualType) {
           @Override public Code compile(FrameDescriptor fd) {
             return new Code.If(actualType, bodyWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd));
@@ -44,12 +44,12 @@ public abstract class Term {
   public static Term tapp(Term trator, Term... trands) {
     return new Term() {
       public Witness check(Ctx ctx, Type expectedType) throws TypeError {
-        Witness wrator = trator.check(ctx, expectedType);
-        Type currentType = wrator.type;
+        var wrator = trator.check(ctx, expectedType);
+        var currentType = wrator.type;
         int len = trands.length;
-        Witness[] wrands = new Witness[len]; // can't make into a nice stream, throws type errors
+        var wrands = new Witness[len]; // can't make into a nice stream, throws type errors
         for (int i = 0; i < len; ++i) {
-          Type.Arr arr = (Type.Arr) currentType;
+          var arr = (Type.Arr) currentType;
           if (arr == null) throw new TypeError("not a fun type");
           wrands[i] = trands[i].check(ctx, arr.argument);
           currentType = arr.result;

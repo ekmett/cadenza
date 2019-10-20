@@ -6,10 +6,17 @@ allprojects {
   repositories {
     jcenter()
     mavenCentral()
+    maven { url = uri("https://jitpack.io") }
   }
   java {
-    sourceCompatibility = JavaVersion.VERSION_1_8 // TODO: jabel
+    sourceCompatibility = JavaVersion.VERSION_12
     targetCompatibility = JavaVersion.VERSION_1_8
+  }
+  dependencies {
+    annotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:0.2.0")
+  }
+  tasks.withType<JavaCompile> {
+    options.compilerArgs = listOf("--release","8")
   }
 }
 
@@ -37,8 +44,11 @@ val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").g
 var graalHome = if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
 val graalBinDir = if (os == "Linux") graalHome else "$graalHome/bin"
 
+val rootBuildDir = buildDir
+
 subprojects {
-  version = project.properties["version"] // "0.0-SNAPSHOT"
+  version = project.properties["version"]
+  // buildDir = file("$rootBuildDir/subproject/" + project.name) // confuses intellij
 }
 
 sonarqube {

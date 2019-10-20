@@ -82,7 +82,7 @@ public abstract class Stmt extends CadenzaNode.Simple {
     @Specialization(guards = "allowsBooleanSlot(frame)", rewriteOn = {UnexpectedResultException.class})
     protected boolean defBoolean(VirtualFrame frame) throws UnexpectedResultException {
       try {
-        boolean result = arg.executeBoolean(frame);
+        var result = arg.executeBoolean(frame);
         frame.setBoolean(slot, result);
         return result;
       } catch (UnexpectedResultException e) {
@@ -100,7 +100,7 @@ public abstract class Stmt extends CadenzaNode.Simple {
     }
 
     boolean allowsSlotKind(VirtualFrame frame, FrameSlotKind kind) {
-      FrameSlotKind currentKind = frame.getFrameDescriptor().getFrameSlotKind(slot);
+      var currentKind = frame.getFrameDescriptor().getFrameSlotKind(slot);
       if (currentKind == FrameSlotKind.Illegal) {
         frame.getFrameDescriptor().setFrameSlotKind(slot,kind);
         return true;

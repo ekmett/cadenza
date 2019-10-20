@@ -39,7 +39,7 @@ public abstract class Type {
     @Override
     public void validate(Object t) throws UnsupportedTypeException {
       if (!(t instanceof Closure)) throw unsupported("expected closure",t);
-      Closure c = (Closure)t;
+      var c = (Closure)t;
       if (!(this.argument == c.type))
         throw unsupported(
           "expected closure of type: " + this.toString() + ", but received one of type " + c.type.toString(),
@@ -54,7 +54,7 @@ public abstract class Type {
     @Override
     public boolean equals(Object o) {
       if (!(o instanceof Arr)) return false;
-      Arr that = (Arr)o;
+      var that = (Arr)o;
       return argument.equals(that.argument) && result.equals(that.result);
     }
   }

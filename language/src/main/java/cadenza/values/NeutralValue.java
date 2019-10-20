@@ -26,10 +26,10 @@ public class NeutralValue implements TruffleObject {
 
   @ExportMessage
   public NeutralValue execute(Object... arguments) throws ArityException {
-    Type resultType = type;
+    var resultType = type;
     // give arity exception on overflow
     for (int i=0;i<arguments.length;++i) {
-      Type.Arr arr = (Type.Arr)resultType;
+      var arr = (Type.Arr)resultType;
       if (arr == null) throw ArityException.create(i, arguments.length); // we over-applied, report by how much for FFI
       resultType = arr.result;
     }
@@ -39,7 +39,7 @@ public class NeutralValue implements TruffleObject {
 
   // assumes this has been built legally. fails via unchecked null pointer exception
   public NeutralValue apply(Object... arguments) {
-    Type resultType = type;
+    var resultType = type;
     for (int i=0;i<arguments.length;++i)
       resultType = ((Type.Arr)resultType).result;
     return new NeutralValue( resultType, term.apply(arguments));

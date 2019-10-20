@@ -77,7 +77,7 @@ public class Language extends TruffleLanguage<Context> {
   // stubbed: for now inline parsing requests just return 'const'
   @Override public InlineCode parse(@SuppressWarnings("unused") InlineParsingRequest request) {
     System.out.println("parse0");
-    Code body = K(nat,nat);
+    var body = K(nat,nat);
     return InlineCode.create(this,body);
   }
 
@@ -88,7 +88,7 @@ public class Language extends TruffleLanguage<Context> {
       FrameBuilder[] preamble = IntStream.range(0, argSlots.length).mapToObj(i -> put(argSlots[i], arg(i))).toArray(FrameBuilder[]::new);
       int arity = argSlots.length;
       Code content = null; // Expr.intLiteral(-42);
-      ClosureRootNode body = ClosureRootNode.create(this, arity, preamble, content);
+      var body = ClosureRootNode.create(this, arity, preamble, content);
       return Truffle.getRuntime().createCallTarget(body);
   //  }
   }
@@ -128,7 +128,7 @@ public class Language extends TruffleLanguage<Context> {
 
   public static String getMetaObject(Object value) {
     if (value == null) return "ANY";
-    InteropLibrary interop = InteropLibrary.getFactory().getUncached(value);
+    var interop = InteropLibrary.getFactory().getUncached(value);
     if (interop.isNumber(value) || value instanceof Number) return "Number";
     if (interop.isBoolean(value)) return "Boolean";
     if (interop.isString(value)) return "String";
@@ -156,7 +156,7 @@ public class Language extends TruffleLanguage<Context> {
       if (value == null) return "null";
       if (value instanceof Number) return value.toString();
       if (value instanceof Closure) return value.toString();
-      InteropLibrary interop = InteropLibrary.getFactory().getUncached(value);
+      var interop = InteropLibrary.getFactory().getUncached(value);
       if (interop.fitsInLong(value)) return Long.toString(interop.asLong(value));
       if (interop.isBoolean(value)) return Boolean.toString(interop.asBoolean(value));
       if (interop.isString(value)) return interop.asString(value);
