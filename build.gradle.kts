@@ -1,13 +1,19 @@
 import com.palantir.gradle.graal.ExtractGraalTask;
 import com.palantir.gradle.graal.NativeImageTask;
 
-repositories {
-  jcenter()
-  mavenCentral()
+allprojects {
+  apply(plugin = "java")
+  repositories {
+    jcenter()
+    mavenCentral()
+  }
+  java {
+    sourceCompatibility = JavaVersion.VERSION_1_8 // TODO: jabel
+    targetCompatibility = JavaVersion.VERSION_1_8
+  }
 }
 
 plugins {
-  java
   maven
   application
   id("org.sonarqube") version "2.7.1"
@@ -17,14 +23,6 @@ plugins {
 dependencies {
   runtime(project(":language"))
   runtime(project(":launcher"))
-}
-
-allprojects {
-}
-
-java {
-  sourceCompatibility = JavaVersion.VERSION_1_8
-  targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 graal {
@@ -50,20 +48,25 @@ sonarqube {
   }
 }
 
-project(":launcher") {
-  repositories {
-    jcenter()
-    mavenCentral()
+project(":language") {
+  apply (plugin="antlr")
+  apply (plugin="java-library")
+  dependencies {
+    annotationProcessor("org.graalvm.truffle:truffle-api:19.2.0.1")
+    annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
+    "antlr"("org.antlr:antlr4:4.7.2")
+    implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
+    implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
+    implementation("org.antlr:antlr4-runtime:4.7.2")
+    testImplementation("org.testng:testng:6.14.3")
   }
-  apply(plugin = "java")
+}
+
+project(":launcher") {
   dependencies {
     implementation(project(":language"))
-    implementation("org.graalvm.sdk:launcher-common:19.2.0.1")
     implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
-  }
-  java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    implementation("org.graalvm.sdk:launcher-common:19.2.0.1")
   }
   tasks.getByName<Jar>("jar") {
     baseName = "cadenza-launcher"
@@ -97,7 +100,7 @@ project(":component") {
 }
 
 tasks.getByName<NativeImageTask>("nativeImage") {
-  dependsOn("register")
+  dependsOn(":component:register")
 }
 
 application {
