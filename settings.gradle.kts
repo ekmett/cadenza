@@ -1,3 +1,3 @@
 rootProject.name = "cadenza"
-includeBuild("gradle-plugins")
+includeBuild("gradle")
 include(":language",":launcher",":component")

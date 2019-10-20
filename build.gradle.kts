@@ -15,7 +15,7 @@ buildscript {
   dependencies {
     classpath("com.palantir.baseline:gradle-baseline-java:2.24.0")
     classpath("gradle.plugin.org.inferred:gradle-processors:2.1.0")
-    classpath(project.properties["group"].toString() + ":gradle-plugins:" + project.properties["version"].toString())
+    classpath(project.properties["group"].toString() + ":gradle:" + project.properties["version"].toString())
   }
 }
 
@@ -38,7 +38,7 @@ allprojects {
     targetCompatibility = JavaVersion.VERSION_1_8
   }
   dependencies {
-    annotationProcessor(project.properties["group"].toString() + ":gradle-plugins:" + project.properties["version"].toString())
+    annotationProcessor(project.properties["group"].toString() + ":gradle:" + project.properties["version"].toString())
   }
   tasks.withType<JavaCompile> {
     options.compilerArgs = listOf("--release","8")
