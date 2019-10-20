@@ -38,7 +38,7 @@ var graalHome = if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graa
 val graalBinDir = if (os == "Linux") graalHome else "$graalHome/bin"
 
 subprojects {
-  version = "0.0-SNAPSHOT"
+  version = project.properties["version"] // "0.0-SNAPSHOT"
 }
 
 sonarqube {
@@ -75,9 +75,14 @@ project(":launcher") {
 
 project(":component") {
   apply(plugin = "java")
+  tasks.withType<ProcessResources> {
+    from("native-image.properties") {
+      expand(project.properties)
+    }
+    rename("native-image.properties","jre/languages/cadenza/native-image.properties")
+  }
   val jar = tasks.getByName<Jar>("jar") {
     baseName = "cadenza-component"
-    from("src/component/resources")
     from(tasks.getByPath(":language:jar"))
     from(tasks.getByPath(":launcher:jar"))
     rename("(.*).jar","jre/languages/cadenza/\$1.jar")
@@ -86,7 +91,7 @@ project(":component") {
       attributes["Bundle-Description"] = "The cadenza language"
       attributes["Bundle-DocURL"] = "https://github.com/ekmett/cadenza"
       attributes["Bundle-Symbolic-Name"] = "cadenza"
-      attributes["Bundle-Version"] = "0.0"
+      attributes["Bundle-Version"] = project.version.toString()
       attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=19.2.0)(os_arch=amd64))\""
       attributes["x-GraalVM-Polyglot-Part"] = "True"
     }
