@@ -48,9 +48,11 @@ sonarqube {
   }
 }
 
+
 project(":language") {
   apply (plugin="antlr")
   apply (plugin="java-library")
+  val antlrRuntime by configurations.creating
   dependencies {
     annotationProcessor("org.graalvm.truffle:truffle-api:19.2.0.1")
     annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
@@ -58,6 +60,7 @@ project(":language") {
     implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
     implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
     implementation("org.antlr:antlr4-runtime:4.7.2")
+    "antlrRuntime"("org.antlr:antlr4-runtime:4.7.2")
     testImplementation("org.testng:testng:6.14.3")
   }
   tasks.getByName<Jar>("jar") {
@@ -86,9 +89,20 @@ project(":component") {
   }
   val jar = tasks.getByName<Jar>("jar") {
     baseName = "cadenza-component"
-    from(tasks.getByPath(":language:jar"))
-    from(tasks.getByPath(":launcher:jar"))
-    rename("(.*).jar","jre/languages/cadenza/\$1.jar")
+    from("../LICENSE.txt") { rename("LICENSE.txt","LICENSE_CADENZA") }
+    from("../LICENSE.txt") { rename("LICENSE.txt","jre/languages/cadenza/LICENSE.txt") }
+    from(tasks.getByPath(":language:jar")) {
+      rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
+    }
+    from(tasks.getByPath(":launcher:jar")) {
+      rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
+    }
+    from(tasks.getByPath(":startScripts")) {
+      rename("(.*)","jre/languages/cadenza/bin/$1")
+    }
+    from(project(":language").configurations.getByName("antlrRuntime")) {
+      rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
+    }
     manifest {
       attributes["Bundle-Name"] = "Cadenza"
       attributes["Bundle-Description"] = "The cadenza language"
