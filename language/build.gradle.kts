@@ -1,7 +1,11 @@
+repositories {
+  jcenter()
+  mavenCentral()
+}
+
 plugins {
   antlr
   `java-library`
-  //maven
 }
 
 dependencies {
