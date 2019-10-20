@@ -22,7 +22,7 @@ public abstract class Type {
     return UnsupportedTypeException.create(objects,msg);
   }
 
-  public FrameSlotKind rep; // used to set the starting frameslotkind
+  public final FrameSlotKind rep; // used to set the starting frameslotkind
   Type(FrameSlotKind rep) { this.rep = rep; }
 
   @CompilerDirectives.ValueType
@@ -53,8 +53,9 @@ public abstract class Type {
     }
     @Override
     public boolean equals(Object o) {
+      if (!(o instanceof Arr)) return false;
       Arr that = (Arr)o;
-      return that != null && argument.equals(that.argument) && result.equals(that.result);
+      return argument.equals(that.argument) && result.equals(that.result);
     }
   }
 
@@ -79,13 +80,13 @@ public abstract class Type {
 
     @Override
     public boolean equals(Object o) {
-      IO that = (IO)o;
-      return that != null && result.equals(that.result);
+      if (!(o instanceof IO)) return false;
+      return result.equals(((IO)o).result);
     }
   }
 
-  public static final Type arr(Type a, Type b) { return new Arr(a,b); }
-  public static final Type io(Type a) { return new IO(a); }
+  public static Type arr(Type a, Type b) { return new Arr(a,b); }
+  public static Type io(Type a) { return new IO(a); }
   public static final Type bool = new Type(FrameSlotKind.Boolean) {
     public void validate(Object t) throws UnsupportedTypeException {
       if (!(t instanceof Boolean)) throw unsupported("expected boolean",t);

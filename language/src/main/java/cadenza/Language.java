@@ -30,7 +30,6 @@ import static cadenza.nodes.Code.*;
 import static cadenza.types.Type.arr;
 import static cadenza.types.Type.nat;
 
-@SuppressWarnings("SuspiciousNameCombination")
 @Option.Group("cadenza")
 @TruffleLanguage.Registration(
   id = Language.ID,

@@ -20,6 +20,7 @@ public class NeutralValue implements TruffleObject {
   }
 
   // other languages can execute this, but it just builds a bigger and bigger NApp
+  @SuppressWarnings("SameReturnValue")
   @ExportMessage
   boolean isExecutable() { return true; }
 

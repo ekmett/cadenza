@@ -313,6 +313,7 @@ public abstract class Code extends Node implements InstrumentableNode {
   }
 
   public static class Ann extends Code {
+    @SuppressWarnings("CanBeFinal")
     @Child protected Code body;
     public final Type type;
 
@@ -349,11 +350,11 @@ public abstract class Code extends Node implements InstrumentableNode {
 
   // a fully saturated call to a builtin
   // invariant: builtins themselves do not return neutral values, other than through evaluating their argument
-  public abstract class CallBuiltin extends Code {
-    public Type type;
+  public abstract static class CallBuiltin extends Code {
+    public final Type type;
     public final Builtin builtin;
-    public @Child
-    Code arg;
+    @SuppressWarnings("CanBeFinal")
+    @Child Code arg;
     public CallBuiltin(Type type, Builtin builtin, Code arg) {
       this.type = type;
       this.builtin = builtin;

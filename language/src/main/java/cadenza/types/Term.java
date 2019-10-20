@@ -101,7 +101,7 @@ public abstract class Term {
 
   static Type lookup(final Ctx ctx, final String name) throws TypeError {
     for(Ctx current = ctx; current != null; current = current.next) {
-      if (name == current.name) return current.type;
+      if (name.equals(current.name)) return current.type;
     }
     throw new TypeError("unknown variable");
   }

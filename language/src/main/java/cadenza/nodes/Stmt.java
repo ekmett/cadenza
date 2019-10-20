@@ -19,7 +19,7 @@ public abstract class Stmt extends CadenzaNode.Simple {
   public static Do block(Stmt... nodes) { return new Stmt.Do(nodes); }
   public static Def def(FrameSlot slot, Code body) { return StmtFactory.DefNodeGen.create(slot, body); }
 
-  @SuppressWarnings("unused")
+  @SuppressWarnings({"unused", "SameReturnValue"})
   @GenerateWrapper.OutgoingConverter
   Object convertOutgoing(@SuppressWarnings("unused") Object object) {
     return null;

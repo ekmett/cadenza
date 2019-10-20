@@ -26,6 +26,7 @@ public abstract class Types {
   @TypeCheck(Void.class)
   public static boolean isVoid(Object value) { return value == null; }
 
+  @SuppressWarnings("SameReturnValue")
   @TypeCast(Void.class)
   public static Void asVoid(Object value) {
     assert value == null;

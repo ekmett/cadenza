@@ -44,6 +44,7 @@ public class Closure implements TruffleObject {
     return env != null;
   }
 
+  @SuppressWarnings("SameReturnValue")
   @ExportMessage
   public final boolean isExecutable() { return true; }
 
@@ -55,9 +56,9 @@ public class Closure implements TruffleObject {
     int len = arguments.length;
     if (len > maxArity) throw ArityException.create(maxArity, len);
     Type currentType = type;
-    for (int i=0;i<len;++i) { // lint foreign arguments for safety
-      Type.Arr arr = (Type.Arr)currentType; // safe by arity check
-      arr.argument.validate(arguments[i]);
+    for (Object argument : arguments) { // lint foreign arguments for safety
+      Type.Arr arr = (Type.Arr) currentType; // safe by arity check
+      arr.argument.validate(argument);
       currentType = arr.result;
     }
     return call(arguments);
