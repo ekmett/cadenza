@@ -15,7 +15,8 @@ public abstract class Term {
 
     public static Term tname(String name) {
     return new Term() {
-      public Witness check(Ctx ctx, Type expectedType) throws TypeError {
+      @Override
+      public Witness check(Ctx ctx, Type _expectedType) throws TypeError {
         return new Witness(lookup(ctx,name)) {
           @Override public Code compile(FrameDescriptor fd) {
             return Code.var(fd.findOrAddFrameSlot(name));
@@ -27,6 +28,7 @@ public abstract class Term {
 
   public static Term tif(Term body, Term thenTerm, Term elseTerm) {
     return new Term() {
+      @Override
       public Witness check(Ctx ctx, Type expectedType) throws TypeError {
         var bodyWitness = body.check(ctx, Type.bool);
         var thenWitness = thenTerm.check(ctx, expectedType);
@@ -43,6 +45,7 @@ public abstract class Term {
 
   public static Term tapp(Term trator, Term... trands) {
     return new Term() {
+      @Override
       public Witness check(Ctx ctx, Type expectedType) throws TypeError {
         var wrator = trator.check(ctx, expectedType);
         var currentType = wrator.type;
@@ -63,7 +66,7 @@ public abstract class Term {
     };
   }
 
-  public static Term tlam(String[] names, Term body) {
+  public static Term tlam(String[] _names, Term _body) {
     return null;
   }
 

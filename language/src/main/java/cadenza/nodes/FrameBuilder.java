@@ -41,7 +41,7 @@ public abstract class FrameBuilder extends Node {
 
   // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
   @Specialization(guards = "allowsBooleanSlot(frame)", rewriteOn = {UnexpectedResultException.class})
-  boolean buildBoolean(VirtualFrame frame, final int hack, VirtualFrame oldFrame) throws UnexpectedResultException {
+  boolean buildBoolean(VirtualFrame frame, final int _hack, VirtualFrame oldFrame) throws UnexpectedResultException {
     boolean result;
     try {
       result = rhs.executeBoolean(oldFrame);
@@ -57,7 +57,7 @@ public abstract class FrameBuilder extends Node {
   }
 
   @Specialization(guards = "allowsIntegerSlot(frame)", rewriteOn = {UnexpectedResultException.class})
-  int buildInteger(VirtualFrame frame, final int hack, VirtualFrame oldFrame) throws UnexpectedResultException {
+  int buildInteger(VirtualFrame frame, final int _hack, VirtualFrame oldFrame) throws UnexpectedResultException {
     int result;
     try {
       result = rhs.executeInteger(oldFrame);
@@ -73,12 +73,13 @@ public abstract class FrameBuilder extends Node {
   }
 
   @Fallback
-  Object buildObject(VirtualFrame frame, final int hack, VirtualFrame oldFrame) {
+  Object buildObject(VirtualFrame frame, final int _hack, VirtualFrame oldFrame) {
     var result = rhs.executeAny(oldFrame);
     frame.setObject(slot, result);
     return result;
   }
 
+  @Override
   public boolean isAdoptable() { return false; }
 
   public static final FrameBuilder[] noFrameBuilders = new FrameBuilder[]{};

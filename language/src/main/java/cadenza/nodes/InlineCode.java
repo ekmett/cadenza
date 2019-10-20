@@ -15,6 +15,7 @@ public class InlineCode extends ExecutableNode {
     this.body = body;
   }
 
+  @Override
   public Object execute(VirtualFrame frame) {
     return body.executeAny(frame);
   }

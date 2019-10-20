@@ -28,11 +28,16 @@ public abstract class Stmt extends CadenzaNode.Simple {
   @Override public boolean isInstrumentable() { return true; }
 
   abstract void execute(VirtualFrame frame);
+
+  @Override
   public boolean isAdoptable() { return true; }
+
+  @Override
   public InstrumentableNode.WrapperNode createWrapper(ProbeNode probe) {
     return new StmtWrapper(this,probe);
   }
 
+  @Override
   public boolean hasTag(Class<? extends Tag> tag) {
     return tag == StandardTags.StatementTag.class || super.hasTag(tag);
   }
@@ -59,6 +64,7 @@ public abstract class Stmt extends CadenzaNode.Simple {
       this.arg = arg;
     }
 
+    @Override
     public final void execute(VirtualFrame frame) { executeDef(frame); }
 
     @SuppressWarnings("UnusedReturnValue")

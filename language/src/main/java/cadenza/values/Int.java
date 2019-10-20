@@ -18,6 +18,7 @@ public final class Int implements TruffleObject, Comparable<Int> {
   public final BigInteger value;
 
   @TruffleBoundary
+  @Override
   public int compareTo(Int o) {
     return value.compareTo(o.value);
   }

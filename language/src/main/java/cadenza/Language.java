@@ -20,6 +20,7 @@ import com.oracle.truffle.api.interop.InteropLibrary;
 import com.oracle.truffle.api.interop.TruffleObject;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.source.SourceSection;
+import com.palantir.logsafe.exceptions.SafeRuntimeException;
 import org.graalvm.options.*;
 
 import java.util.function.BiFunction;
@@ -166,7 +167,7 @@ public class Language extends TruffleLanguage<Context> {
       return "Unsupported";
     } catch (UnsupportedMessageException e) {
       CompilerDirectives.transferToInterpreter();
-      throw new AssertionError();
+      throw new SafeRuntimeException("unknown type");
     }
   }
   
@@ -181,15 +182,15 @@ public class Language extends TruffleLanguage<Context> {
       case "K": return K(nat,nat);
       case "I": return I(nat);
       case "main": return 42;
-      default: return null;
     }
+    return null;
   }
 
   // for testing
 
   Code I(Type tx) { return unary(x -> x, tx); }
   Code K(Type tx, Type ty) { return binary((x, y) -> x, tx, ty); }
-  Code S(Type tx, Type ty, Type tz) {
+  Code S(Type _tx, Type _ty, Type _tz) {
     return null;
     /*
     FrameDescriptor fd = new FrameDescriptor();
@@ -220,7 +221,7 @@ public class Language extends TruffleLanguage<Context> {
      */
   }
 
-  public Code unary(Function<Term, Term> f, Type argument) {
+  public Code unary(Function<Term, Term> _f, Type _argument) {
     return null; /*
     FrameDescriptor fd = new FrameDescriptor();
     FrameSlot x = fd.addFrameSlot("x", argument, argument.rep);
@@ -248,7 +249,7 @@ public class Language extends TruffleLanguage<Context> {
     */
   }
   // construct a binary function
-  public Code binary(BiFunction<Code, Code, Code> f, Type tx, Type ty) {
+  public Code binary(BiFunction<Code, Code, Code> _f, Type _tx, Type _ty) {
     return null;
     /*
     FrameDescriptor fd = new FrameDescriptor();

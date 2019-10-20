@@ -81,7 +81,7 @@ public class Closure implements TruffleObject {
   }
 
   // construct a partial application node, which should check that it is a PAP itself
-  public Closure pap(Closure f, Object[] arguments) {
+  public Closure pap(Closure _f, Object[] _arguments) {
     return null; // TODO:
   }
 

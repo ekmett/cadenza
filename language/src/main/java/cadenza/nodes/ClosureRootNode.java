@@ -59,6 +59,7 @@ public class ClosureRootNode extends RootNode implements InstrumentableNode {
   // * if it is for a different FunctionBody, we can use a traditional trampoline
   // * pass the special execute method a tailcall count and have it blow only once it exceeds some threshold?
 
+  @Override
   public Object execute(VirtualFrame frame) {
     return body.execute(preamble(frame));
   }
@@ -75,6 +76,7 @@ public class ClosureRootNode extends RootNode implements InstrumentableNode {
     return new ClosureRootNode(language, new FrameDescriptor(), arity, FrameBuilder.noFrameBuilders, argPreamble, new ClosureBody(body));
   }
 
+  @Override
   public boolean hasTag(Class<? extends Tag> tag) {
     return tag == StandardTags.RootTag.class;
   }

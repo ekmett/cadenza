@@ -120,12 +120,12 @@ public class Launcher extends AbstractLanguageLauncher {
     return unrecognizedOptions;
   }
 
-  @Override protected void validateArguments(Map<String, String> polyglotOptions) {
+  @Override protected void validateArguments(Map<String, String> _polyglotOptions) {
     if (file == null && versionAction != VersionAction.PrintAndExit)
       throw abort("no file provided", 6);
   }
 
-  @Override protected void printHelp(OptionCategory maxCategory) {
+  @Override protected void printHelp(OptionCategory _maxCategory) {
     System.out.println();
     System.out.println("Usage: cadenza [OPTION]... [FILE] [PROGRAM ARGS]");
     System.out.println("Run cadenza programs on GraalVM\n");

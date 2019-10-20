@@ -15,6 +15,8 @@ import com.oracle.truffle.api.nodes.*;
 import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
+import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
+
 
 import static cadenza.util.Errors.*;
 
@@ -66,8 +68,8 @@ public abstract class Code extends Node implements InstrumentableNode {
   // invoked by the parser to set the source
   public final void setSourceSection(int charIndex, int length) {
     assert sourceCharIndex == NO_SOURCE : "source must only be set once";
-    if (charIndex < 0) throw new IllegalArgumentException("charIndex < 0");
-    if (length < 0) throw new IllegalArgumentException("length < 0");
+    if (charIndex < 0) throw new SafeIllegalArgumentException("charIndex < 0");
+    if (length < 0) throw new SafeIllegalArgumentException("length < 0");
     sourceCharIndex = charIndex;
     sourceLength = length;
   }
@@ -77,6 +79,7 @@ public abstract class Code extends Node implements InstrumentableNode {
     sourceCharIndex = UNAVAILABLE_SOURCE;
   }
 
+  @Override
   public final SourceSection getSourceSection() {
     if (sourceCharIndex == NO_SOURCE) return null;
     var rootNode = getRootNode();
@@ -92,10 +95,12 @@ public abstract class Code extends Node implements InstrumentableNode {
   @Override
   public boolean isInstrumentable() { return hasSource(); }
 
+  @Override
   public InstrumentableNode.WrapperNode createWrapper(ProbeNode probe) {
     return new CodeWrapper(this,probe);
   }
 
+  @Override
   public boolean hasTag(Class<? extends Tag> tag) {
     return tag == StandardTags.ExpressionTag.class;
   }
@@ -126,6 +131,7 @@ public abstract class Code extends Node implements InstrumentableNode {
       return values;
     }
 
+    @Override
     public final Object execute(VirtualFrame frame) throws NeutralException {
       Closure fun;
       try {
@@ -138,6 +144,7 @@ public abstract class Code extends Node implements InstrumentableNode {
       return indirectCallNode.call(fun.callTarget, executeRands(frame));
     }
 
+    @Override
     public boolean hasTag(Class<? extends Tag> tag) {
       if (tag == StandardTags.CallTag.class) return true;
       return super.hasTag(tag);
@@ -225,6 +232,7 @@ public abstract class Code extends Node implements InstrumentableNode {
     // do we need to capture an environment?
     public final boolean isSuperCombinator() { return closureFrameDescriptor != null; }
 
+    @Override
     public final Closure execute(VirtualFrame frame) {
       return new Closure(captureEnv(frame), arity, type, callTarget);
     }
@@ -424,21 +432,21 @@ public abstract class Code extends Node implements InstrumentableNode {
 //  public static Add add(Expr x, Expr y) { return ExprFactory.AddNodeGen.create(x,y); }
   public static Code booleanLiteral(boolean b) {
     return new Code() {
-      @Override public Object execute(VirtualFrame frame) { return b; }
-      @Override public boolean executeBoolean(VirtualFrame frame) { return b; }
+      @Override public Object execute(VirtualFrame _frame) { return b; }
+      @Override public boolean executeBoolean(VirtualFrame _frame) { return b; }
     };
   }
   public static Code intLiteral(int i) {
     return new Code() {
-      @Override public Object execute(VirtualFrame frame) { return i; }
-      @Override public int executeInteger(VirtualFrame frame) { return i; }
+      @Override public Object execute(VirtualFrame _frame) { return i; }
+      @Override public int executeInteger(VirtualFrame _frame) { return i; }
     };
   }
 
   public static Code bigLiteral(Int i) {
     return new Code() {
-      @Override public Object execute(VirtualFrame frame) { return i; }
-      @Override public int executeInteger(VirtualFrame frame) throws UnexpectedResultException {
+      @Override public Object execute(VirtualFrame _frame) { return i; }
+      @Override public int executeInteger(VirtualFrame _frame) throws UnexpectedResultException {
         //noinspection CatchMayIgnoreException
         try {
           if (i.fitsInInt()) return i.asInt();

@@ -29,6 +29,7 @@ public abstract class Neutral {
       this.rands = rands;
     }
 
+    @Override
     public final NApp apply(Object... arguments) {
       return napp(rator, Arrays.add(rands,arguments));
     }

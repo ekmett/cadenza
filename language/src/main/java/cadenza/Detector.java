@@ -24,7 +24,7 @@ public class Detector implements TruffleFile.FileTypeDetector {
     return null;
   }
 
-  @Override public Charset findEncoding(TruffleFile file) {
+  @Override public Charset findEncoding(TruffleFile _file) {
     return StandardCharsets.UTF_8;
   }
 }

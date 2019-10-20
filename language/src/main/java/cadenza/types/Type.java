@@ -46,6 +46,7 @@ public abstract class Type {
           c
         );
     }
+    @Override
     public int getArity() { return arity; }
     @Override
     public int hashCode() {
@@ -88,19 +89,23 @@ public abstract class Type {
   public static Type arr(Type a, Type b) { return new Arr(a,b); }
   public static Type io(Type a) { return new IO(a); }
   public static final Type bool = new Type(FrameSlotKind.Boolean) {
+    @Override
     public void validate(Object t) throws UnsupportedTypeException {
       if (!(t instanceof Boolean)) throw unsupported("expected boolean",t);
     }
   };
   public static final Type object = new Type(FrameSlotKind.Object) {
-    public void validate(Object t) {}
+    @Override
+    public void validate(Object _t) {}
   };
   public static final Type unit = new Type(FrameSlotKind.Object) {
+    @Override
     public void validate(Object t) throws UnsupportedTypeException {
       if (t != null) throw unsupported("expected unit", t);
     }
   }; // always null. use byte or something else instead?
   public static final Type nat = new Type(FrameSlotKind.Int) {
+    @Override
     public void validate(Object t) throws UnsupportedTypeException {
       if ( ! ((t instanceof Integer && ((int)t)>=0)
          || (t instanceof Int && ((Int)t).isNatural())))

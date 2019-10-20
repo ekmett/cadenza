@@ -1,13 +1,32 @@
 import com.palantir.gradle.graal.ExtractGraalTask;
 import com.palantir.gradle.graal.NativeImageTask;
+import net.ltgt.gradle.errorprone.*;
+
+buildscript {
+  repositories {
+    gradlePluginPortal()
+    maven { url = uri("http://palantir.bintray.com/releases") }
+  }
+
+  dependencies {
+    classpath("com.palantir.baseline:gradle-baseline-java:2.24.0")
+    classpath("gradle.plugin.org.inferred:gradle-processors:2.1.0")
+  }
+}
+
+repositories {
+  maven { url = uri("http://palantir.bintray.com/releases") }
+}
 
 allprojects {
-  apply(plugin = "java")
   repositories {
     jcenter()
     mavenCentral()
     maven { url = uri("https://jitpack.io") }
+    maven { url = uri("http://palantir.bintray.com/releases") }
   }
+  apply(plugin = "java")
+  apply(plugin = "org.inferred.processors")
   java {
     sourceCompatibility = JavaVersion.VERSION_12
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -23,6 +42,7 @@ allprojects {
 plugins {
   maven
   application
+  id("com.palantir.baseline") version "2.24.0"
   id("org.sonarqube") version "2.7.1"
   id("com.palantir.graal") version "0.6.0"
 }
@@ -60,10 +80,12 @@ sonarqube {
 
 
 project(":language") {
-  apply (plugin="antlr")
-  apply (plugin="java-library")
+  apply(plugin = "antlr")
+  apply(plugin = "java-library")
   val antlrRuntime by configurations.creating
   dependencies {
+    compile("com.palantir.safe-logging:preconditions:1.11.0")
+    testCompile("com.palantir.safe-logging:preconditions-assertj:1.11.0")
     annotationProcessor("org.graalvm.truffle:truffle-api:19.2.0.1")
     annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
     "antlr"("org.antlr:antlr4:4.7.2")
@@ -75,6 +97,11 @@ project(":language") {
   }
   tasks.getByName<Jar>("jar") {
     baseName = "cadenza-language"
+  }
+  tasks.withType<JavaCompile> {
+    options.errorprone {
+      check("SwitchStatementDefaultCase", CheckSeverity.ERROR)
+    }
   }
   tasks.withType<AntlrTask> {
     arguments.addAll(listOf("-package", "cadenza.syntax", "-no-listener", "-visitor"))

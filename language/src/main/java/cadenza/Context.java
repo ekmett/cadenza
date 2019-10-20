@@ -7,7 +7,7 @@ import com.oracle.truffle.api.nodes.NodeInfo;
 import org.graalvm.polyglot.Source;
 
 public final class Context {
-  private static final Source BUILTIN_SOURCE = Source.newBuilder(Language.ID, "", "[core builtin]").buildLiteral();
+  public static final Source BUILTIN_SOURCE = Source.newBuilder(Language.ID, "", "[core builtin]").buildLiteral();
 
   public Context(Language language, TruffleLanguage.Env env) {
     this.language = language;
