@@ -60,6 +60,9 @@ project(":language") {
     implementation("org.antlr:antlr4-runtime:4.7.2")
     testImplementation("org.testng:testng:6.14.3")
   }
+  tasks.getByName<Jar>("jar") {
+    baseName = "cadenza-language"
+  }
 }
 
 project(":launcher") {
