@@ -2,15 +2,20 @@ import com.palantir.gradle.graal.ExtractGraalTask;
 import com.palantir.gradle.graal.NativeImageTask;
 import net.ltgt.gradle.errorprone.*;
 
+group = project.properties["group"].toString()
+version = project.properties["version"].toString()
+
 buildscript {
   repositories {
     gradlePluginPortal()
+    maven { url = uri("https://jitpack.io") }
     maven { url = uri("http://palantir.bintray.com/releases") }
   }
 
   dependencies {
     classpath("com.palantir.baseline:gradle-baseline-java:2.24.0")
     classpath("gradle.plugin.org.inferred:gradle-processors:2.1.0")
+    classpath(project.properties["group"].toString() + ":gradle-plugins:" + project.properties["version"].toString())
   }
 }
 
@@ -20,19 +25,20 @@ repositories {
 
 allprojects {
   repositories {
-    jcenter()
     mavenCentral()
     maven { url = uri("https://jitpack.io") }
     maven { url = uri("http://palantir.bintray.com/releases") }
   }
   apply(plugin = "java")
   apply(plugin = "org.inferred.processors")
+  apply(plugin = "com.palantir.baseline-versions")
+
   java {
     sourceCompatibility = JavaVersion.VERSION_12
     targetCompatibility = JavaVersion.VERSION_1_8
   }
   dependencies {
-    annotationProcessor("com.github.bsideup.jabel:jabel-javac-plugin:0.2.0")
+    annotationProcessor(project.properties["group"].toString() + ":gradle-plugins:" + project.properties["version"].toString())
   }
   tasks.withType<JavaCompile> {
     options.compilerArgs = listOf("--release","8")
@@ -40,10 +46,9 @@ allprojects {
 }
 
 plugins {
-  maven
   application
-  id("com.palantir.baseline") version "2.24.0"
   id("org.sonarqube") version "2.7.1"
+  id("com.palantir.baseline-config") version "2.24.0"
   id("com.palantir.graal") version "0.6.0"
 }
 
@@ -64,11 +69,8 @@ val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").g
 var graalHome = if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
 val graalBinDir = if (os == "Linux") graalHome else "$graalHome/bin"
 
-val rootBuildDir = buildDir
-
 subprojects {
   version = project.properties["version"]
-  // buildDir = file("$rootBuildDir/subproject/" + project.name) // confuses intellij
 }
 
 sonarqube {
@@ -82,6 +84,7 @@ sonarqube {
 project(":language") {
   apply(plugin = "antlr")
   apply(plugin = "java-library")
+  apply(plugin = "com.palantir.baseline-error-prone")
   val antlrRuntime by configurations.creating
   dependencies {
     compile("com.palantir.safe-logging:preconditions:1.11.0")
@@ -89,6 +92,7 @@ project(":language") {
     annotationProcessor("org.graalvm.truffle:truffle-api:19.2.0.1")
     annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
     "antlr"("org.antlr:antlr4:4.7.2")
+    implementation("com.palantir.safe-logging:safe-logging")
     implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
     implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
     implementation("org.antlr:antlr4-runtime:4.7.2")
@@ -100,7 +104,7 @@ project(":language") {
   }
   tasks.withType<JavaCompile> {
     options.errorprone {
-      check("SwitchStatementDefaultCase", CheckSeverity.ERROR)
+      check("SwitchStatementDefaultCase", CheckSeverity.OFF)
     }
   }
   tasks.withType<AntlrTask> {

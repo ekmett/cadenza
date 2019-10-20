@@ -13,7 +13,6 @@ import com.oracle.truffle.api.instrumentation.*;
 import com.oracle.truffle.api.interop.UnsupportedMessageException;
 import com.oracle.truffle.api.nodes.*;
 import com.oracle.truffle.api.profiles.ConditionProfile;
-import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
 
