@@ -21,9 +21,11 @@ The install will download the latest Graal CE edition into a cache with gradle a
 
 The code is built from java 12 source code (with access to only java 8 libraries) and so your host JVM should be jdk12+. Runtime will be performed against the downloaded graal installation.
 
-## running by hand
+## using your own graal
 
-You can either [Install GraalVM][graalvm] yourself or choose to `gradle extractGraalTooling`, which will produce a cached copy of GraalVM CE.
+Set JAVA_HOME to a site where you have installed jdk12+ and set GRAAL_HOME to a directory with graal-ce or graal-ee installed.
+
+## running by hand
 
 * Set your `JAVA_HOME`. If you used `gradle extractGraalTooling` it should point to something in `~/.gradle/caches/com.palantir.graal/19.2.0.1/graalvm-ce-19.2.0.1`
 
