@@ -16,7 +16,6 @@ import com.oracle.truffle.api.profiles.ConditionProfile;
 import com.oracle.truffle.api.source.SourceSection;
 import com.palantir.logsafe.exceptions.SafeIllegalArgumentException;
 
-
 import static cadenza.util.Errors.*;
 
 // Used for expressions: variables, applications, abstractions, etc.
