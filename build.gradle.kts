@@ -15,13 +15,10 @@ buildscript {
   dependencies {
     classpath("com.palantir.baseline:gradle-baseline-java:2.24.0")
     classpath("gradle.plugin.org.inferred:gradle-processors:2.1.0")
-    classpath(project.properties["group"].toString() + ":gradle:" + project.properties["version"].toString())
+    classpath("${project.group}:gradle:${project.version}")
   }
 }
 
-repositories {
-  maven { url = uri("http://palantir.bintray.com/releases") }
-}
 
 allprojects {
   repositories {
@@ -32,13 +29,14 @@ allprojects {
   apply(plugin = "java")
   apply(plugin = "org.inferred.processors")
   apply(plugin = "com.palantir.baseline-versions")
+  apply(plugin = "com.palantir.baseline-idea")
 
   java {
     sourceCompatibility = JavaVersion.VERSION_12
     targetCompatibility = JavaVersion.VERSION_1_8
   }
   dependencies {
-    annotationProcessor(project.properties["group"].toString() + ":gradle:" + project.properties["version"].toString())
+    annotationProcessor("${project.group}:gradle:${project.version}")
   }
   tasks.withType<JavaCompile> {
     options.compilerArgs = listOf("--release","8")
@@ -47,6 +45,7 @@ allprojects {
 
 plugins {
   application
+  idea
   id("org.sonarqube") version "2.7.1"
   id("com.palantir.baseline-config") version "2.24.0"
   id("com.palantir.graal") version "0.6.0"
@@ -92,12 +91,13 @@ project(":language") {
     annotationProcessor("org.graalvm.truffle:truffle-api:19.2.0.1")
     annotationProcessor("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
     "antlr"("org.antlr:antlr4:4.7.2")
-    implementation("com.palantir.safe-logging:safe-logging")
+    "antlrRuntime"("org.antlr:antlr4-runtime:4.7.2")
     implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
     implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
     implementation("org.antlr:antlr4-runtime:4.7.2")
-    "antlrRuntime"("org.antlr:antlr4-runtime:4.7.2")
     testImplementation("org.testng:testng:6.14.3")
+    implementation("com.palantir.safe-logging:safe-logging")
+    implementation("com.palantir.safe-logging:preconditions")
   }
   tasks.getByName<Jar>("jar") {
     baseName = "cadenza-language"
