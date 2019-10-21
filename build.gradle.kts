@@ -65,8 +65,13 @@ graal {
 }
 
 val os = System.getProperty("os.name")
+
+val systemGraalHome = System.getenv("GRAAL_HOME")
+val needsExtract = systemGraalHome == null
 val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").getOutputDirectory().get().getAsFile().toString()
-var graalHome = if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
+var graalHome = if (needsExtract)
+  (if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir)
+  else systemGraalHome
 val graalBinDir = if (os == "Linux") graalHome else "$graalHome/bin"
 
 subprojects {
@@ -85,7 +90,8 @@ project(":component") {
 
   // register the component
   tasks.register("register", Exec::class) {
-    dependsOn(":extractGraalTooling", jar)
+    if (needsExtract) dependsOn("extractGraalTooling")
+    dependsOn(jar)
     description = "Register the language with graal"
     commandLine = listOf(
       "$graalBinDir/gu",
@@ -111,6 +117,7 @@ application {
 }
 
 tasks.getByName<JavaExec>("run") {
-  dependsOn(":extractGraalTooling",":language:jar",":launcher:jar")
+  if (needsExtract) dependsOn(":extractGraalTooling")
+  dependsOn(":language:jar",":launcher:jar")
   executable = "$graalBinDir/java"
 }
