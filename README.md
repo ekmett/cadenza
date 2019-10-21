@@ -3,17 +3,23 @@
 [![Travis Continuous Integration Status][travis-img]][travis]
 ![Most used language][top-language-img]
 
-This package will eventually provide a toy normalized-by-evaluation lambda calculus implementation in java using truffle.
+This package will eventually provide a normalized-by-evaluation lambda calculus implementation in java using truffle. With an eye towards efficient evaluation.
 
-cadenza | \ kə-ˈden-zə \ (noun) 1. a solo section, usually in a concerto or similar work before the final coda, that is used to display the performer's technique, sometimes at considerable length
+cadenza | \ kə-ˈden-zə \ (noun) 1. an virtuosic solo section before the final coda used to display a performer's technique, which is often considerably long
 
-Nothing seems to say Java to me moreso than considerable length, so that seems appropriate.
+Nothing seems to say Java moreso than considerable length, so here we are.
 
 ## running
 
-* `gradle run` should just download GraalVM CE automatically and use it to run the launcher for testing.
+* `gradle run --args="<args>"` should just download GraalVM CE automatically and use it to run the launcher for testing.
 
 * `gradle nativeImage` should eventually produce a native executable for the compiler. (Once I figure out how to include everything.)
+
+* `gradle register` will install the language into GraalVM making it available to other truffle languages once you rebuild their images with `gu`.
+
+The install will download the latest Graal CE edition into a cache with gradle and install there. TODO: I should add an option for a manual Graal path.
+
+The code is built from java 12 source code (with access to only java 8 libraries) and so your host JVM should be jdk12+. Runtime will be performed against the downloaded graal installation.
 
 ## running by hand
 
