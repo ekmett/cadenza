@@ -17,8 +17,6 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException
 import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.profiles.ConditionProfile
 import com.oracle.truffle.api.source.SourceSection
-import com.palantir.logsafe.exceptions.SafeIllegalArgumentException
-
 import java.util.Arrays
 
 
@@ -71,8 +69,8 @@ abstract class Code : Node(), InstrumentableNode {
   // invoked by the parser to set the source
   fun setSourceSection(charIndex: Int, length: Int) {
     assert(sourceCharIndex == NO_SOURCE) { "source must only be set once" }
-    if (charIndex < 0) throw SafeIllegalArgumentException("charIndex < 0")
-    if (length < 0) throw SafeIllegalArgumentException("length < 0")
+    if (charIndex < 0) throw IllegalArgumentException("charIndex < 0")
+    if (length < 0) throw IllegalArgumentException("length < 0")
     sourceCharIndex = charIndex
     sourceLength = length
   }

@@ -1,33 +1,13 @@
 language: java
 sudo: false
 dist: trusty
-
-before_install:
-- unset -v _JAVA_OPTIONS
-- wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
-
-jobs:
-  include:
-  - stage: 🚀 Graal
-    env: JDK=graalvm-ce-19.2.0.1
-    install: source install-jdk.sh --url https://github.com/oracle/graal/releases/download/vm-19.2.0.1/graalvm-ce-linux-amd64-19.2.0.1.tar.gz
+jdk: oraclejdk8
 
 script:
-- echo JAVA_HOME = ${JAVA_HOME}
-- echo PATH = ${PATH}
-- ls ${JAVA_HOME}
 - java -version
 - ./gradlew build
-- git fetch --unshallow
-- ./gradlew sonarqube
 
 cache:
   directories:
     - '.$HOME/.gradle'
     - '.gradle'
-
-addons:
-  sonarcloud:
-    organization: "ekmett"
-    token:
-      secure: "xKtILTWE3nEFJYF9w5LppLlKtHCHRpU48v6aryC5FGEI//BCol5VFGnoHVpO9CIijWvXeKgtjkXhXczcBploZlQssm0lXfiQdqwoX8IubcEMtc46sULpKmANIykCJC5NN4+Ib2syHZuDGuPk9OXmfinHiB2UNyXRActJLEBWSNWfKxlA49pJelOubm+OwcRQ8iJ1PF+QDnS3wkvDvZsbOky+kUcz46H1tMRynV/OFPoyK78dOQ/i4MtswYub4DP03L4ZOC8ZeI+tGWWXhW9AE55FV2K6weewXqyHSC6cy+PG5XkRtLHNFnuqCD1UFK85yV9GbKb3ujP0+EIGSdUR5kaAam0vLWOlpld/5ZtYgvNwaji8NZr8NtVclWnsKhAIaIaBTaqH8OIrdCO9LaFaziDQGuLMhCJVk6njPdBt+GjYBmEW6RTDCqnZdcyRHUTgTk/0O4IoIayQXpeY7w/JHXOl76WICgxZ+gWI6nOSU15hq/dwxMTGGIBauw/i/wGXmb1Vuu2R9i3xbxi8f0u49D2CfhM3QKp+IUq19SGX3Yee7Dm0I1YoYmLSIv5sraW3bGKTdmrc2GYjriZk6miItnwHfRC58oCynA/MxQ2jY96hNPjewSGNYkOGiTdAVyNeSzsBdfuCrOieFplYpYe52rzMWW4BbEyPxNqMA+v1bZ0="

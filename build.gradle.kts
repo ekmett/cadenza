@@ -17,10 +17,6 @@ repositories {
   mavenCentral()
 }
 
-//dependencies {
-//  compile("org.jetbrains.kotlin:kotlin-stdlib:1.3.41")
-//}
-
 allprojects {
   repositories {
     jcenter()

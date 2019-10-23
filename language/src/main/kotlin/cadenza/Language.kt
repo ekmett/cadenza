@@ -22,7 +22,6 @@ import com.oracle.truffle.api.interop.InteropLibrary
 import com.oracle.truffle.api.interop.TruffleObject
 import com.oracle.truffle.api.interop.UnsupportedMessageException
 import com.oracle.truffle.api.source.SourceSection
-import com.palantir.logsafe.exceptions.SafeRuntimeException
 import org.graalvm.options.*
 
 import java.util.function.BiFunction
@@ -190,7 +189,7 @@ class Language : TruffleLanguage<Context>() {
         return if (interop.hasMembers(value)) "Object" else "Unsupported"
       } catch (e: UnsupportedMessageException) {
         CompilerDirectives.transferToInterpreter()
-        throw SafeRuntimeException("unknown type")
+        throw RuntimeException("unknown type")
       }
     }
   }
