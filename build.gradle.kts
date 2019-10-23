@@ -6,49 +6,39 @@ version = project.properties["version"].toString()
 
 buildscript {
   repositories {
-    gradlePluginPortal()
-    maven { url = uri("https://jitpack.io") }
-    maven { url = uri("http://palantir.bintray.com/releases") }
+    mavenCentral()
   }
-
   dependencies {
-    classpath("com.palantir.baseline:gradle-baseline-java:2.24.0")
-    classpath("gradle.plugin.org.inferred:gradle-processors:2.1.0")
-    classpath("${project.group}:gradle:${project.version}")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.41")
   }
 }
 
+repositories {
+  mavenCentral()
+}
+
+//dependencies {
+//  compile("org.jetbrains.kotlin:kotlin-stdlib:1.3.41")
+//}
+
 allprojects {
   repositories {
+    jcenter()
     mavenCentral()
     maven { url = uri("https://jitpack.io") }
     maven { url = uri("http://palantir.bintray.com/releases") }
   }
 
-  apply(plugin = "java")
-  apply(plugin = "org.inferred.processors")
-  apply(plugin = "com.palantir.baseline-versions")
-  apply(plugin = "com.palantir.baseline-idea")
-
-  java {
-    sourceCompatibility = JavaVersion.VERSION_12
-    targetCompatibility = JavaVersion.VERSION_1_8
-  }
+  apply(plugin = "kotlin")
 
   dependencies {
-    annotationProcessor("${project.group}:gradle:${project.version}")
-  }
-
-  tasks.withType<JavaCompile> {
-    options.compilerArgs = listOf("--release","8")
+    implementation(kotlin("stdlib"))
   }
 }
 
 plugins {
   application
   idea
-  id("org.sonarqube") version "2.7.1"
-  id("com.palantir.baseline-config") version "2.24.0"
   id("com.palantir.graal") version "0.6.0"
 }
 
@@ -65,7 +55,6 @@ graal {
 }
 
 val os = System.getProperty("os.name")
-
 val systemGraalHome = System.getenv("GRAAL_HOME")
 val needsExtract = systemGraalHome == null
 val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").getOutputDirectory().get().getAsFile().toString()
@@ -78,17 +67,9 @@ subprojects {
   version = project.properties["version"]
 }
 
-sonarqube {
-  properties {
-    property("sonar.projectKey","ekmett_cadenza")
-    property("sonar.sourceEncoding","UTF-8")
-  }
-}
-
 project(":component") {
   val jar = tasks.getByName<Jar>("jar")
 
-  // register the component
   tasks.register("register", Exec::class) {
     if (needsExtract) dependsOn("extractGraalTooling")
     dependsOn(jar)
