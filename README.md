@@ -3,11 +3,11 @@
 [![Travis Continuous Integration Status][travis-img]][travis]
 ![Most used language][top-language-img]
 
-This package will eventually provide a normalized-by-evaluation lambda calculus implementation in java using truffle. With an eye towards efficient evaluation.
+This package will eventually provide a normalized-by-evaluation lambda calculus implementation in ~~Java~~ Kotlin using truffle. With an eye towards efficient evaluation.
 
 cadenza | \ kə-ˈden-zə \ (noun) 1. an virtuosic solo section before the final coda used to display a performer's technique, which is often considerably long
 
-Nothing seems to say Java moreso than considerable length, so here we are.
+Nothing seems to say ~~Java~~ Kotlin moreso than considerable length, so here we are.
 
 ## running
 
