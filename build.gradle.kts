@@ -29,6 +29,7 @@ allprojects {
 
   dependencies {
     implementation(kotlin("stdlib"))
+    implementation(kotlin("stdlib-jdk8"))
   }
 }
 
@@ -67,7 +68,7 @@ project(":component") {
   val jar = tasks.getByName<Jar>("jar")
 
   tasks.register("register", Exec::class) {
-    if (needsExtract) dependsOn("extractGraalTooling")
+    if (needsExtract) dependsOn(":extractGraalTooling")
     dependsOn(jar)
     description = "Register the language with graal"
     commandLine = listOf(

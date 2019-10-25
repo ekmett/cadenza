@@ -32,14 +32,12 @@ class Launcher : AbstractLanguageLauncher() {
   protected fun execute(contextBuilder: Context.Builder): Int {
     contextBuilder.arguments(languageId, programArgs)
     try {
-      /*
       contextBuilder.build().use { // context ->
           runVersionAction(versionAction, it.getEngine())
-          val library = it.eval(Source.newBuilder(languageId, file!!).build())
+          val library = it.eval(Source.newBuilder(languageId, file).build())
           if (!library.canExecute()) throw abort("no main function found")
           return library.execute().asInt()
-      }*/
-      return 0
+      }
     } catch (e: PolyglotException) {
       if (e.isExit) throw e
       if (e.isInternalError) throw e
@@ -149,7 +147,8 @@ class Launcher : AbstractLanguageLauncher() {
 
     @JvmStatic
     fun main(args: Array<String>) {
-      Launcher().launch(args)
+      println("main.start")
+      Launcher().launch(arrayOf("Foo.za")) // args
     }
 
     protected fun printOption(option: String, description: String) {
