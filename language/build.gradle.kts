@@ -1,5 +1,3 @@
-import org.jetbrains.dokka.gradle.DokkaTask
-
 apply(plugin = "antlr")
 apply(plugin = "kotlin")
 apply(plugin = "kotlin-kapt")
@@ -37,17 +35,4 @@ tasks.getByName<Jar>("jar") {
 
 tasks.withType<AntlrTask> {
   arguments.addAll(listOf("-package", "cadenza.syntax", "-no-listener", "-visitor"))
-}
-
-tasks.withType<DokkaTask> {
-  outputFormat = "html"
-  outputDirectory = "$buildDir/javadoc"
-  configuration {
-   includes = listOf("README.md")
-   sourceLink {
-     path = "language/src/main/kotlin"
-     url = "https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/"
-     lineSuffix = "#L"
-   }
-  } 
 }

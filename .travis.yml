@@ -5,7 +5,7 @@ jdk: oraclejdk8
 
 script:
 - java -version
-- ./gradlew build
+- ./gradlew dokka distZip
 
 cache:
   directories:

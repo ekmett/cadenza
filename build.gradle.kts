@@ -1,7 +1,9 @@
-import com.palantir.gradle.graal.ExtractGraalTask;
+import com.palantir.gradle.graal.ExtractGraalTask
+import com.palantir.gradle.graal.NativeImageTask
+import java.net.URL
+import java.util.Properties
 import org.apache.tools.ant.filters.ReplaceTokens
-import com.palantir.gradle.graal.NativeImageTask;
-import java.util.Properties;
+import org.jetbrains.dokka.gradle.DokkaTask
 
 group = project.properties["group"].toString()
 version = project.properties["version"].toString()
@@ -47,7 +49,7 @@ plugins {
   application
   idea
   id("com.palantir.graal") version "0.6.0"
-  id("org.jetbrains.dokka") version "0.9.17" apply false
+  id("org.jetbrains.dokka") version "0.9.17" // apply false
 }
 
 dependencies {
@@ -242,3 +244,27 @@ tasks.register("unregister", Exec::class) {
   )
 }
 
+tasks.withType<DokkaTask> {
+  outputFormat = "html"
+  outputDirectory = "$buildDir/javadoc"
+  subProjects = listOf("language","launcher")
+  configuration {
+    jdkVersion = 8
+    includes = listOf("module.md")
+      //  "antlr4-4*.jar", "javax.json*.jar", "org.abego.*.jar", "ST4*.jar",
+    sourceLink {
+      path = "language/src/main/kotlin"
+      url = "https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/"
+      lineSuffix = "#L"
+    }
+    sourceLink {
+      path = "launcher/src/main/kotlin"
+      url = "https://github.com/ekmett/cadenza/blob/master/launcher/src/main/kotlin/"
+      lineSuffix = "#L"
+    }
+    externalDocumentationLink {
+      url = URL("https://www.antlr.org/api/Java/")
+      packageListUrl = URL("https://www.antlr.org/api/Java/package-list")
+    }
+  }
+}
