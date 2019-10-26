@@ -69,7 +69,11 @@ buildScan {
 }
 
 gitPublish {
-  repoUri.set("git@github.com:ekmett/cadenza.git") // defaults to this project's origin URI
+  if (System.getenv("CI")) {
+    repoUri.set("https://github.com/ekmett/cadenza.git") // only pulling on CI, use https
+  } else
+    repoUri.set("git@github.com:ekmett/cadenza.git")
+  }
   branch.set("gh-pages")
   repoDir.set(file("$buildDir/javadoc"))
   contents {
