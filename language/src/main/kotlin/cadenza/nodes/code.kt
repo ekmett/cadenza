@@ -1,7 +1,7 @@
 package cadenza.nodes
 
 import cadenza.*
-import cadenza.Neutral.*
+import cadenza.types.Neutral.*
 import cadenza.types.*
 import cadenza.values.*
 import com.oracle.truffle.api.CompilerDirectives
@@ -36,27 +36,17 @@ abstract class Code : Node(), InstrumentableNode {
   }
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  open fun executeClosure(frame: VirtualFrame): Closure {
-    return TypesGen.expectClosure(execute(frame))
-  }
+  open fun executeClosure(frame: VirtualFrame): Closure = TypesGen.expectClosure(execute(frame))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  open fun executeInteger(frame: VirtualFrame): Int {
-    return TypesGen.expectInteger(execute(frame))
-  }
+  open fun executeInteger(frame: VirtualFrame): Int = TypesGen.expectInteger(execute(frame))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  open fun executeBoolean(frame: VirtualFrame): Boolean {
-    return TypesGen.expectBoolean(execute(frame))
-  }
+  open fun executeBoolean(frame: VirtualFrame): Boolean = TypesGen.expectBoolean(execute(frame))
 
   @Throws(NeutralException::class)
   open fun executeUnit(frame: VirtualFrame): Unit {
-    execute(frame)
-  }
-
-  fun hasSource(): Boolean {
-    return sourceCharIndex != NO_SOURCE
+    execute(frame); return
   }
 
   // invoked by the parser to set the source
@@ -84,30 +74,22 @@ abstract class Code : Node(), InstrumentableNode {
       source.createSection(sourceCharIndex, sourceLength)
   }
 
-  override fun isInstrumentable(): Boolean {
-    return hasSource()
-  }
-
-  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode {
-    return CodeWrapper(this, probe)
-  }
-
-  override fun hasTag(tag: Class<out Tag>?): Boolean {
-    return tag == StandardTags.ExpressionTag::class.java
-  }
+  override fun isInstrumentable() = sourceCharIndex != NO_SOURCE
+  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.ExpressionTag::class.java
+  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = CodeWrapper(this, probe)
 }
 
 @TypeSystemReference(Types::class)
 @NodeInfo(shortName = "App")
 class App(
-        @field:Child var rator: Code,
-        @field:Children val rands: Array<Code>
+  @field:Child var rator: Code,
+  @field:Children val rands: Array<Code>
 ) : Code() {
   @Child
   protected var indirectCallNode: IndirectCallNode
 
   init {
-    this.indirectCallNode = Truffle.getRuntime().createIndirectCallNode() // TODO: custom PIC?
+    this.indirectCallNode = Truffle.getRuntime().createIndirectCallNode()
   }
 
   @ExplodeLoop
@@ -133,14 +115,13 @@ class App(
     } else {
       CompilerDirectives.transferToInterpreterAndInvalidate()
       this.replace(App(App(rator, Arrays.copyOf<Code>(rands, fn.arity)),
-              Arrays.copyOfRange(rands, fn.arity, rands.size)))
+        Arrays.copyOfRange(rands, fn.arity, rands.size)))
       return fn.call(executeRands(frame)) // on slow path handling over-application
     }
   }
 
-  override fun hasTag(tag: Class<out Tag>?): Boolean {
-    return if (tag == StandardTags.CallTag::class.java) true else super.hasTag(tag)
-  }
+  override fun hasTag(tag: Class<out Tag>?) =
+    (tag == StandardTags.CallTag::class.java) || super.hasTag(tag)
 }
 
 // once a variable binding has been inferred to refer to the local arguments of the current frame and mapped to an actual arg index
@@ -149,9 +130,7 @@ class App(
 @TypeSystemReference(Types::class)
 @NodeInfo(shortName = "Arg")
 class Arg(private val index: Int) : Code() {
-  init {
-    assert(0 <= index) { "negative index" }
-  }
+  init { assert(0 <= index) { "negative index" } }
 
   override fun execute(frame: VirtualFrame): Any {
     val arguments = frame.arguments
@@ -159,44 +138,36 @@ class Arg(private val index: Int) : Code() {
     return arguments[index]
   }
 
-  override fun isAdoptable(): Boolean {
-    return false
-  }
+  override fun isAdoptable() = false
 }
 
-class If(val type: Type, @field:Child
-private var bodyNode: Code, @field:Child
-         private var thenNode: Code, @field:Child
-         private var elseNode: Code) : Code() {
+class If(
+  val type: Type,
+  @field:Child private var bodyNode: Code,
+  @field:Child private var thenNode: Code,
+  @field:Child private var elseNode: Code
+) : Code() {
   private val conditionProfile = ConditionProfile.createBinaryProfile()
 
   @Throws(NeutralException::class)
-  private fun branch(frame: VirtualFrame): Boolean {
+  private fun branch(frame: VirtualFrame): Boolean =
     try {
-      return conditionProfile.profile(bodyNode.executeBoolean(frame))
+      conditionProfile.profile(bodyNode.executeBoolean(frame))
     } catch (e: UnexpectedResultException) {
       panic("non-boolean branch", e)
     } catch (e: NeutralException) {
-      throw NeutralException(type, NIf(e.term, thenNode.executeAny(frame), elseNode.executeAny(frame)))
+      neutral(type, NIf(e.term, thenNode.executeAny(frame), elseNode.executeAny(frame)))
     }
 
-  }
-
   @Throws(NeutralException::class)
-  override fun execute(frame: VirtualFrame): Any? {
-    return if (branch(frame))
-      thenNode.execute(frame)
-    else
-      elseNode.execute(frame)
-  }
+  override fun execute(frame: VirtualFrame): Any? =
+    if (branch(frame)) thenNode.execute(frame)
+    else elseNode.execute(frame)
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  override fun executeInteger(frame: VirtualFrame): Int {
-    return if (branch(frame))
-      thenNode.executeInteger(frame)
-    else
-      elseNode.executeInteger(frame)
-  }
+  override fun executeInteger(frame: VirtualFrame): Int =
+    if (branch(frame)) thenNode.executeInteger(frame)
+    else elseNode.executeInteger(frame)
 }
 
 // lambdas can be constructed from foreign calltargets, you just need to supply an arity
@@ -246,7 +217,7 @@ class Lam(
 
     // package a foreign root call target with known arity
     fun create(arity: Int, callTarget: RootCallTarget, type: Type): Lam {
-      return create(null, FrameBuilder.noFrameBuilders, arity, callTarget, type)
+      return create(null, noFrameBuilders, arity, callTarget, type)
     }
 
     fun create(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type): Lam {
@@ -261,13 +232,13 @@ class Lam(
       val hasCaptureSteps = captureSteps.size != 0
       assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }
       return Lam(
-              if (hasCaptureSteps)
-                null
-              else closureFrameDescriptor ?: FrameDescriptor(),
-              captureSteps,
-              arity,
-              callTarget,
-              type
+        if (hasCaptureSteps)
+          null
+        else closureFrameDescriptor ?: FrameDescriptor(),
+        captureSteps,
+        arity,
+        callTarget,
+        type
       )
     }
   }
@@ -335,57 +306,47 @@ class Ann(@field:Child protected var body: Code, val type: Type) : Code() {
 // invariant: builtins themselves do not return neutral values, other than through evaluating their argument
 abstract class CallBuiltin(val type: Type, val builtin: Builtin, @field:Child
 internal var arg: Code) : Code() {
-
-  override fun executeAny(frame: VirtualFrame): Any? {
+  override fun executeAny(frame: VirtualFrame): Any? =
     try {
-      return builtin.execute(frame, arg)
+      builtin.execute(frame, arg)
     } catch (n: NeutralException) {
-      return NeutralValue(type, NCallBuiltin(builtin, n.term))
+      NeutralValue(type, NCallBuiltin(builtin, n.term))
     }
-
-  }
 
   @Throws(NeutralException::class)
-  override fun execute(frame: VirtualFrame): Any? {
+  override fun execute(frame: VirtualFrame): Any? =
     try {
-      return builtin.execute(frame, arg)
+      builtin.execute(frame, arg)
     } catch (n: NeutralException) {
-      throw NeutralException(type, NCallBuiltin(builtin, n.term))
+      neutral(type, NCallBuiltin(builtin, n.term))
     }
-
-  }
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  override fun executeInteger(frame: VirtualFrame): Int {
+  override fun executeInteger(frame: VirtualFrame): Int =
     try {
-      return builtin.executeInteger(frame, arg)
+      builtin.executeInteger(frame, arg)
     } catch (n: NeutralException) {
-      throw NeutralException(type, NCallBuiltin(builtin, n.term))
+      neutral(type, NCallBuiltin(builtin, n.term))
     }
-  }
 
   @Throws(NeutralException::class)
-  override fun executeUnit(frame: VirtualFrame): Unit {
+  override fun executeUnit(frame: VirtualFrame): Unit =
     try {
-      return builtin.executeUnit(frame, arg)
+      builtin.executeUnit(frame, arg)
     } catch (n: NeutralException) {
-      throw NeutralException(type, NCallBuiltin(builtin, n.term))
+      neutral(type, NCallBuiltin(builtin, n.term))
     }
-
-  }
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  override fun executeBoolean(frame: VirtualFrame): Boolean {
+  override fun executeBoolean(frame: VirtualFrame): Boolean =
     try {
-      return builtin.executeBoolean(frame, arg)
+      builtin.executeBoolean(frame, arg)
     } catch (n: NeutralException) {
-      throw NeutralException(type, NCallBuiltin(builtin, n.term))
+      neutral(type, NCallBuiltin(builtin, n.term))
     }
-
-  }
 }
 
-    // instrumentation
+// instrumentation
 
 const val NO_SOURCE = -1
 const val UNAVAILABLE_SOURCE = -2

@@ -12,6 +12,8 @@ import com.oracle.truffle.api.instrumentation.*
 import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.source.SourceSection
 
+internal val noArguments = arrayOf<Any>()
+
 @TypeSystemReference(Types::class)
 abstract class CadenzaNode : Node(), InstrumentableNode;// root nodes are needed by Truffle.getRuntime().createCallTarget(someRoot), which is the way to manufacture callable
 // things in truffle.
@@ -22,22 +24,20 @@ class ProgramRootNode constructor(
   @field:Child private var body: Code,
   fd: FrameDescriptor
 ) : RootNode(language, fd) {
+  override fun isCloningAllowed() = true
+  override fun execute(frame: VirtualFrame) = body.executeAny(frame)
+}
 
-  // eventually disallow selectively when we have the equivalent of NOINLINE / top level implicitly constructed references?
-  override fun isCloningAllowed(): Boolean {
-    return true
-  }
-
-  // returns neutral terms
-  override fun execute(frame: VirtualFrame): Any? {
-    return body.executeAny(frame)
-  }
+class InlineCode(
+  language: Language,
+  @field:Child var body: Code
+) : ExecutableNode(language) {
+  override fun execute(frame: VirtualFrame) = body.executeAny(frame)
 }
 
 @GenerateWrapper
 open class ClosureBody : Node, InstrumentableNode {
-  @Child
-  protected var content: Code
+  @Child protected var content: Code
 
   constructor(content: Code) {
     this.content = content
@@ -47,43 +47,32 @@ open class ClosureBody : Node, InstrumentableNode {
     this.content = that.content
   }
 
-  open fun execute(frame: VirtualFrame): Any? {
-    return content.executeAny(frame)
-  }
-
-  override fun isInstrumentable(): Boolean {
-    return true
-  }
-
-  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode {
-    return ClosureBodyWrapper(this, this, probe)
-  }
-
-  override fun hasTag(tag: Class<out Tag>?): Boolean {
-    return tag == StandardTags.RootBodyTag::class.java
-  }
-
-  override fun getSourceSection(): SourceSection {
-    return parent.sourceSection
-  }
+  open fun execute(frame: VirtualFrame): Any? = content.executeAny(frame)
+  override fun isInstrumentable() = true
+  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = ClosureBodyWrapper(this, this, probe)
+  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootBodyTag::class.java
+  override fun getSourceSection() = parent.sourceSection
 }
 
 @GenerateWrapper
 @TypeSystemReference(Types::class)
 open class ClosureRootNode : RootNode, InstrumentableNode {
-  @Children
-  private val envPreamble: Array<FrameBuilder>
-  @Children
-  private val argPreamble: Array<FrameBuilder>
+  @Children private val envPreamble: Array<FrameBuilder>
+  @Children private val argPreamble: Array<FrameBuilder>
   val arity: Int
-  @Child
-  var body: ClosureBody
+  @Child var body: ClosureBody
   protected val language: TruffleLanguage<*>
 
   val isSuperCombinator: Boolean
     get() = envPreamble.size != 0
 
-  constructor(language: TruffleLanguage<*>, frameDescriptor: FrameDescriptor, arity: Int, envPreamble: Array<FrameBuilder>, argPreamble: Array<FrameBuilder>, body: ClosureBody) : super(language, frameDescriptor) {
+  constructor(
+    language: TruffleLanguage<*>,
+    frameDescriptor: FrameDescriptor = FrameDescriptor(),
+    arity: Int, envPreamble: Array<FrameBuilder> = noFrameBuilders,
+    argPreamble: Array<FrameBuilder>,
+    body: ClosureBody
+  ) : super(language, frameDescriptor) {
     this.language = language
     this.arity = arity
     this.envPreamble = envPreamble
@@ -111,52 +100,11 @@ open class ClosureRootNode : RootNode, InstrumentableNode {
     return local
   }
 
-  // TODO: rewrite on execute throwing a tail call exception?
-  // * if it is for the same FunctionBody, we can reuse the frame, just refilling it with their args
-  // * if it is for a different FunctionBody, we can use a traditional trampoline
-  // * pass the special execute method a tailcall count and have it blow only once it exceeds some threshold?
+  override fun execute(frame: VirtualFrame) = body.execute(preamble(frame))
 
-  override fun execute(frame: VirtualFrame): Any? {
-    return body.execute(preamble(frame))
-  }
-
-  override fun hasTag(tag: Class<out Tag>?): Boolean {
-    return tag == StandardTags.RootTag::class.java
-  }
-
-  override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode {
-    return ClosureRootNodeWrapper(this, this, probeNode)
-  }
-
-  override fun isInstrumentable(): Boolean {
-    return super.isInstrumentable()
-  }
-
-  companion object {
-    private val noArguments = arrayOf<Any>()
-
-    fun create(language: TruffleLanguage<*>, frameDescriptor: FrameDescriptor, arity: Int, envPreamble: Array<FrameBuilder>, argPreamble: Array<FrameBuilder>, body: Code): ClosureRootNode {
-      return ClosureRootNode(language, frameDescriptor, arity, envPreamble, argPreamble, ClosureBody(body))
-    }
-
-    fun create(language: TruffleLanguage<*>, frameDescriptor: FrameDescriptor, arity: Int, argPreamble: Array<FrameBuilder>, body: Code): ClosureRootNode {
-      return ClosureRootNode(language, frameDescriptor, arity, FrameBuilder.noFrameBuilders, argPreamble, ClosureBody(body))
-    }
-
-    fun create(language: TruffleLanguage<*>, arity: Int, argPreamble: Array<FrameBuilder>, body: Code): ClosureRootNode {
-      return ClosureRootNode(language, FrameDescriptor(), arity, FrameBuilder.noFrameBuilders, argPreamble, ClosureBody(body))
-    }
-  }
-
-
-  // checking two closures for alpha equivalence equality involves using nbe to probe to see if they are the same.
-  // then converting to debruijn form.
-
-  // we'd also need to convert the hashcode to work similarly.
+  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java
+  override fun isInstrumentable() = super.isInstrumentable()
+  override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode
+    = ClosureRootNodeWrapper(this, this, probeNode)
 }
 
-class InlineCode(language: Language, @field:Child var body: Code) : ExecutableNode(language) {
-  override fun execute(frame: VirtualFrame): Any? {
-    return body.executeAny(frame)
-  }
-}

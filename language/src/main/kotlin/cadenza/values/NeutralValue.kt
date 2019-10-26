@@ -1,6 +1,6 @@
 package cadenza.values
 
-import cadenza.Neutral
+import cadenza.types.Neutral
 import cadenza.types.Type
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.interop.ArityException

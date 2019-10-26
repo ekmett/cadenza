@@ -1,14 +1,13 @@
-package cadenza
+package cadenza.types
 
 import cadenza.nodes.Builtin
-import cadenza.types.Type
 import cadenza.values.NeutralValue
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.nodes.SlowPathException
 
 @Throws(NeutralException::class)
 fun neutral(type: Type, term: Neutral) : Nothing {
-  throw NeutralException(type,term)
+  throw NeutralException(type, term)
 }
 
 @CompilerDirectives.ValueType

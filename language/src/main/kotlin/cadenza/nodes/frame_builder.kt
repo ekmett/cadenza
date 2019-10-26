@@ -1,6 +1,6 @@
 package cadenza.nodes
 
-import cadenza.NeutralException
+import cadenza.types.NeutralException
 import cadenza.types.Types
 import com.oracle.truffle.api.dsl.Fallback
 import com.oracle.truffle.api.dsl.Specialization
@@ -10,11 +10,15 @@ import com.oracle.truffle.api.nodes.Node
 import com.oracle.truffle.api.nodes.NodeInfo
 import com.oracle.truffle.api.nodes.UnexpectedResultException
 
+internal val noFrameBuilders = arrayOf<FrameBuilder>() // can't make const because kotlin is silly
+
 // this copies information from the VirtualFrame frame into a materialized frame
 @TypeSystemReference(Types::class)
 @NodeInfo(shortName = "FrameBuilder")
-abstract class FrameBuilder(protected val slot: FrameSlot, @field:Child
-protected var rhs: Code) : Node() {
+abstract class FrameBuilder(
+  protected val slot: FrameSlot,
+  @field:Child protected var rhs: Code
+) : Node() {
 
   fun build(frame: VirtualFrame, oldFrame: VirtualFrame) {
     execute(frame, 0, oldFrame)
@@ -22,7 +26,7 @@ protected var rhs: Code) : Node() {
 
   abstract fun execute(frame: VirtualFrame, hack: Int, oldFrame: VirtualFrame): Any
 
-  protected fun allowsSlotKind(frame: VirtualFrame, kind: FrameSlotKind): Boolean {
+  private fun allowsSlotKind(frame: VirtualFrame, kind: FrameSlotKind): Boolean {
     val currentKind = frame.frameDescriptor.getFrameSlotKind(slot)
     if (currentKind == FrameSlotKind.Illegal) {
       frame.frameDescriptor.setFrameSlotKind(slot, kind)
@@ -87,8 +91,4 @@ protected var rhs: Code) : Node() {
     return false
   }
 
-  companion object {
-
-    val noFrameBuilders = arrayOf<FrameBuilder>()
-  }
 }
