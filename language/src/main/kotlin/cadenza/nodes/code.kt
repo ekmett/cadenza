@@ -17,6 +17,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile
 import com.oracle.truffle.api.source.SourceSection
 import java.util.Arrays
 
+@Suppress("NOTHING_TO_INLINE")
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(Types::class)
@@ -171,6 +172,7 @@ class If(
 }
 
 // lambdas can be constructed from foreign calltargets, you just need to supply an arity
+@Suppress("NOTHING_TO_INLINE")
 @TypeSystemReference(Types::class)
 @NodeInfo(shortName = "Lambda")
 class Lam(
@@ -200,6 +202,7 @@ class Lam(
 }
 
 // utility
+@Suppress("NOTHING_TO_INLINE")
 inline fun isSuperCombinator(callTarget: RootCallTarget): Boolean {
   val root = callTarget.rootNode
   return root is ClosureRootNode && root.isSuperCombinator()
@@ -284,6 +287,7 @@ const val NO_SOURCE = -1
 const val UNAVAILABLE_SOURCE = -2
 
 // invariant callTarget points to a native function body with known arity
+@Suppress("NOTHING_TO_INLINE")
 inline fun lam(callTarget: RootCallTarget, type: Type): Lam {
   val root = callTarget.rootNode
   assert(root is ClosureRootNode)
@@ -291,10 +295,12 @@ inline fun lam(callTarget: RootCallTarget, type: Type): Lam {
 }
 
 // package a foreign root call target with known arity
+@Suppress("NOTHING_TO_INLINE")
 inline fun lam(arity: Int, callTarget: RootCallTarget, type: Type): Lam {
   return lam(null, noFrameBuilders, arity, callTarget, type)
 }
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type): Lam {
   val root = callTarget.rootNode
   assert(root is ClosureRootNode)
@@ -302,6 +308,7 @@ inline fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<Fram
 }
 
 // ensures that all the invariants for the constructor are satisfied
+@Suppress("NOTHING_TO_INLINE")
 inline fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type): Lam {
   assert(arity > 0)
   val hasCaptureSteps = captureSteps.size != 0
@@ -315,25 +322,32 @@ inline fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<Fra
   )
 }
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
 
 
-@Suppress("UNUSED_PARAMETER")
+@Suppress("NOTHING_TO_INLINE")
 inline fun booleanLiteral(b: Boolean): Code = object : Code() {
+  @Suppress("UNUSED_PARAMETER")
   override fun execute(frame: VirtualFrame) = b
+  @Suppress("UNUSED_PARAMETER")
   override fun executeBoolean(frame: VirtualFrame) = b
 }
 
-@Suppress("UNUSED_PARAMETER")
+@Suppress("NOTHING_TO_INLINE")
 inline fun intLiteral(i: Int): Code = object : Code() {
+  @Suppress("UNUSED_PARAMETER")
   override fun execute(frame: VirtualFrame) = i
+  @Suppress("UNUSED_PARAMETER")
   override fun executeInteger(frame: VirtualFrame) = i
 }
 
-@Suppress("UNUSED_PARAMETER")
+@Suppress("NOTHING_TO_INLINE")
 inline fun bigLiteral(i: BigInt): Code = object : Code() {
+  @Suppress("UNUSED_PARAMETER")
   override fun execute(frame: VirtualFrame) = i
   @Throws(UnexpectedResultException::class)
+  @Suppress("UNUSED_PARAMETER")
   override fun executeInteger(frame: VirtualFrame): Int =
     try {
       if (i.fitsInInt()) i.asInt().toInt()
