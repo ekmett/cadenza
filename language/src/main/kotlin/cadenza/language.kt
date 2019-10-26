@@ -29,43 +29,80 @@ const val LANGUAGE_NAME = "Cadenza"
 const val LANGUAGE_VERSION = "0"
 const val LANGUAGE_MIME_TYPE = "application/x-cadenza"
 const val LANGUAGE_EXTENSION = "za"
-val LANGUAGE_BUILTIN_SOURCE = Source.newBuilder(LANGUAGE_ID, "", "[cadenza builtin]").buildLiteral()
-private val LANGUAGE_SHEBANG_REGEXP = Pattern.compile("^#! ?/usr/bin/(env +cadenza|cadenza).*")
 
-fun lookupNodeInfo(clazz: Class<*>?): NodeInfo? {
-  if (clazz == null) return null
-  val info = clazz.getAnnotation<NodeInfo>(NodeInfo::class.java)
-  return info ?: lookupNodeInfo(clazz.superclass)
-}
+val LANGUAGE_BUILTIN_SOURCE by lazy { Source.newBuilder(LANGUAGE_ID, "", "[cadenza builtin]").buildLiteral()!! }
+val LANGUAGE_SHEBANG_REGEXP by lazy { Pattern.compile("^#! ?/usr/bin/(env +cadenza|cadenza).*")!! }
 
-fun getMetaObject(value: Any?): String {
-  if (value == null) return "ANY"
-  val interop = InteropLibrary.getFactory().getUncached(value)
-  if (interop.isNumber(value) || value is Number) return "Number"
-  if (interop.isBoolean(value)) return "Boolean"
-  if (interop.isString(value)) return "String"
-  if (interop.isNull(value)) return "NULL"
-  if (interop.isExecutable(value)) return "Function"
-  return if (interop.hasMembers(value)) "Object" else "Unsupported"
-}
+fun lookupNodeInfo(clazz: Class<*>?): NodeInfo? =
+  if (clazz == null) null
+  else clazz.getAnnotation<NodeInfo>(NodeInfo::class.java) ?: lookupNodeInfo(clazz.superclass)
 
-fun toString(value: Any?): String {
-  try {
-    if (value == null) return "null"
-    if (value is Number) return value.toString()
-    if (value is Closure) return value.toString()
+fun getMetaObject(value: Any?): String =
+  if (value == null) "ANY"
+  else {
     val interop = InteropLibrary.getFactory().getUncached(value)
-    if (interop.fitsInLong(value)) return java.lang.Long.toString(interop.asLong(value))
-    if (interop.isBoolean(value)) return java.lang.Boolean.toString(interop.asBoolean(value))
-    if (interop.isString(value)) return interop.asString(value)
-    if (interop.isNull(value)) return "NULL"
-    if (interop.isExecutable(value)) return "Function"
-    return if (interop.hasMembers(value)) "Object" else "Unsupported"
-  } catch (e: UnsupportedMessageException) {
-    CompilerDirectives.transferToInterpreter()
-    throw RuntimeException("unknown type")
+    when {
+      interop.isNumber(value) || value is Number -> "Number"
+      interop.isBoolean(value) -> "Boolean"
+      interop.isString(value) -> "String"
+      interop.isExecutable(value) -> "Function"
+      interop.isNull(value) -> "NULL"
+      interop.hasMembers(value) -> "Object"
+      else -> "Unsupported"
+    }
   }
+
+// crappy version of show
+fun toString(value: Any?): String =
+  when(value) {
+    null -> "null"
+    is Number -> value.toString()
+    is Closure -> value.toString()
+    else -> {
+      val interop = InteropLibrary.getFactory().getUncached(value)
+      try {
+        when {
+          interop.fitsInLong(value) -> java.lang.Long.toString(interop.asLong(value))
+          interop.isBoolean(value) -> java.lang.Boolean.toString(interop.asBoolean(value))
+          interop.isString(value) -> interop.asString(value)
+          interop.isNull(value) -> "NULL"
+          interop.isExecutable(value) -> "Function"
+          interop.hasMembers(value) -> "Object"
+          else -> "Unsupported"
+        }
+      } catch (e: UnsupportedMessageException) {
+        panic("toString: unknown type", e)
+      }
+    }
+  }
+
+class Detector : TruffleFile.FileTypeDetector {
+  override fun findEncoding(@Suppress("UNUSED_PARAMETER") file: TruffleFile): Charset = StandardCharsets.UTF_8
+  override fun findMimeType(file: TruffleFile): String? {
+    val name = file.name ?: return null
+    if (name.endsWith(LANGUAGE_EXTENSION)) return LANGUAGE_MIME_TYPE
+    try {
+      file.newBufferedReader(StandardCharsets.UTF_8).use { fileContent ->
+        val firstLine = fileContent.readLine()
+        if (firstLine != null && LANGUAGE_SHEBANG_REGEXP.matcher(firstLine).matches())
+          return LANGUAGE_MIME_TYPE
+      }
+    } catch (e: IOException) { // ok
+    } catch (e: SecurityException) { // ok
+    }
+    return null
+  }
+
 }
+
+class Context(
+  val language: Language,
+  var env: TruffleLanguage.Env
+) {
+  val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")!!
+  fun shutdown() {}
+}
+
 
 @Option.Group("cadenza")
 @TruffleLanguage.Registration(
@@ -83,26 +120,9 @@ fun toString(value: Any?): String {
 )
 class Language : TruffleLanguage<Context>() {
   val singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active")
-
-  override fun createContext(env: TruffleLanguage.Env): Context {
-    return Context(this, env)
-  } // cheap and easy
-
+  override fun createContext(env: TruffleLanguage.Env) = Context(this, env)
   override fun initializeContext(ctx: Context?) {}
   override fun finalizeContext(ctx: Context) = ctx.shutdown()
-
-  // stubbed: for now inline parsing requests just return 'const'
-  override fun parse(request: TruffleLanguage.InlineParsingRequest?): InlineCode {
-    val body = K(Nat, Nat)
-    return InlineCode(this, body)
-  }
-
-  // stubbed: returns a calculation that adds two numbers
-  override fun parse(request: TruffleLanguage.ParsingRequest): CallTarget {
-    val rootNode = ProgramRootNode(this, intLiteral(0), FrameDescriptor())
-    return Truffle.getRuntime().createCallTarget(rootNode)
-  }
-
   override fun isObjectOfLanguage(obj: Any) = obj is TruffleObject
   override fun initializeMultipleContexts() = singleContextAssumption.invalidate()
   override fun areOptionsCompatible(a: OptionValues?, b: OptionValues?) = true
@@ -118,6 +138,18 @@ class Language : TruffleLanguage<Context>() {
   override fun patchContext(ctx: Context, env: TruffleLanguage.Env): Boolean {
     ctx.env = env
     return true
+  }
+
+  // stubbed: for now inline parsing requests just return 'const'
+  override fun parse(request: TruffleLanguage.InlineParsingRequest?): InlineCode {
+    val body = K(Nat, Nat)
+    return InlineCode(this, body)
+  }
+
+  // stubbed: returns a calculation that adds two numbers
+  override fun parse(request: TruffleLanguage.ParsingRequest): CallTarget {
+    val rootNode = ProgramRootNode(this, intLiteral(0), FrameDescriptor())
+    return Truffle.getRuntime().createCallTarget(rootNode)
   }
 
   fun findExportedSymbol(
@@ -142,67 +174,8 @@ class Language : TruffleLanguage<Context>() {
   fun S(tx: Type, ty: Type, tz: Type): Code = todo("S")
 
   @Suppress("UNUSED_PARAMETER")
-  fun unary(f: (x: Term) -> Term, argument: Type): Code = todo("unary")
+  inline fun unary(f: (x: Term) -> Term, argument: Type): Code = todo("unary")
 
   @Suppress("UNUSED_PARAMETER")
-  fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo("binary")
-
-//        val OPTION_DESCRIPTORS: OptionDescriptors = LanguageOptionDescriptors()
-//        @com.oracle.truffle.api.Option(name = "tco", help = "Tail-call optimization", category = com.oracle.truffle.api.OptionCategory.USER, stability = com.oracle.truffle.api.OptionStability.EXPERIMENTAL)
-//        const val TAIL_CALL_OPTIMIZATION = OptionKey(false)
-}
-
-class Detector : TruffleFile.FileTypeDetector {
-  override fun findMimeType(file: TruffleFile): String? {
-    val name = file.name ?: return null
-    if (name.endsWith(LANGUAGE_EXTENSION)) return LANGUAGE_MIME_TYPE
-    try {
-      file.newBufferedReader(StandardCharsets.UTF_8).use { fileContent ->
-        val firstLine = fileContent.readLine()
-        if (firstLine != null && LANGUAGE_SHEBANG_REGEXP.matcher(firstLine).matches())
-          return LANGUAGE_MIME_TYPE
-      }
-    } catch (e: IOException) { // ok
-    } catch (e: SecurityException) { // ok
-    }
-    return null
-  }
-
-  override fun findEncoding(_file: TruffleFile) = StandardCharsets.UTF_8
-}
-
-class Context(
-  val language: Language,
-  var env: TruffleLanguage.Env
-) {
-  val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")!!
-  fun shutdown() {}
-}
-
-fun panic(msg: String, base: Exception?): Nothing {
-  CompilerDirectives.transferToInterpreter();
-  val e = RuntimeException(msg, base)
-  e.stackTrace = e.stackTrace.drop(1).toTypedArray()
-  throw e;
-}
-
-fun panic(msg: String): Nothing {
-  CompilerDirectives.transferToInterpreter();
-  val e = RuntimeException(msg, null)
-  e.stackTrace = e.stackTrace.drop(1).toTypedArray()
-  throw e;
-}
-
-fun todo(msg: String, base: Exception?): Nothing {
-  CompilerDirectives.transferToInterpreter();
-  val e = RuntimeException(msg, base)
-  e.stackTrace = e.stackTrace.drop(1).toTypedArray()
-  throw e;
-}
-
-fun todo(msg: String): Nothing {
-  CompilerDirectives.transferToInterpreter();
-  val e = RuntimeException(msg, null)
-  e.stackTrace = e.stackTrace.drop(1).toTypedArray()
-  throw e;
+  inline fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo("binary")
 }
