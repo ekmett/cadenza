@@ -151,8 +151,10 @@ project(":launcher") {
 val jar = tasks.getByName<Jar>("jar") {
   baseName = "cadenza"
   description = "Build the cadenza component for graal"
+
   from("LICENSE.txt") { rename("LICENSE.txt","LICENSE_cadenza.txt") }
   from("LICENSE.txt") { rename("LICENSE.txt","jre/languages/cadenza/LICENSE.txt") }
+
   from(tasks.getByPath(":startScripts")) {
     rename("(.*)","jre/languages/cadenza/bin/$1")
     filesMatching("**/cadenza") {
@@ -162,25 +164,19 @@ val jar = tasks.getByName<Jar>("jar") {
       filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "%~dp0.."))
     }
   }
-  from(tasks.getByPath(":language:jar")) {
-    rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
-  }
-  from(tasks.getByPath(":launcher:jar")) {
-    rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
-  }
 
-  from(project(":language").configurations.getByName("kotlinRuntime")) {
+  from(files(
+    tasks.getByPath(":language:jar"),
+    tasks.getByPath(":launcher:jar"),
+    project(":language").configurations.getByName("kotlinRuntime"),
+    project(":language").configurations.getByName("runtime")
+  )) {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
-    exclude("annotations*.jar")
-  }
-
-  // grab top-level deps.
-  from(project(":language").configurations.getByName("runtime")) {
     exclude(
       "graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar", // graal/truffle parts that ship with graalvm and shouldn't be shadowed
-      "antlr4-4*.jar", "javax.json*.jar", "org.abego.*.jar", "ST4*.jar" // unused runtime bits of antlr
+      "antlr4-4*.jar", "javax.json*.jar", "org.abego.*.jar", "ST4*.jar", // unused runtime bits of antlr
+      "annotations*.jar"
     )
-    rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
   }
 
   manifest {
@@ -195,9 +191,12 @@ val jar = tasks.getByName<Jar>("jar") {
 }
 
 tasks.withType<ProcessResources> {
-  from("native-image.properties") {
+  from("etc/native-image.properties") {
     expand(project.properties)
-    rename("native-image.properties","jre/languages/cadenza/native-image.properties")
+    rename("etc/native-image.properties","jre/languages/cadenza/native-image.properties")
+  }
+  from(files("etc/symlinks","etc/permissions")) {
+    rename("(.*)","META-INF/$1")
   }
 }
 
@@ -303,8 +302,7 @@ tasks.withType<DokkaTask> {
   subProjects = listOf("language","launcher")
   configuration {
     jdkVersion = 8
-    includes = listOf("module.md")
-      //  "antlr4-4*.jar", "javax.json*.jar", "org.abego.*.jar", "ST4*.jar",
+    includes = listOf("etc/module.md")
     sourceLink {
       path = "language/src/main/kotlin"
       url = "https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/"
