@@ -39,6 +39,11 @@ allprojects {
     implementation(kotlin("stdlib-jdk8"))
   }
 
+  java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+  }
+
   tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
   }
@@ -321,6 +326,7 @@ tasks.register("runInstalled", Exec::class) {
   description = "Run a version of cadenza from the distribution dir"
   dependsOn(":installDist")
   executable = "$buildDir/install/cadenza/bin/cadenza"
+  environment("JAVA_HOME", graalHome)
   outputs.upToDateWhen { false }
 }
 
@@ -345,6 +351,7 @@ tasks.register("runRegistered", Exec::class) {
   description = "Run a registered version of cadenza"
   dependsOn(":register")
   executable = "$graalBinDir/cadenza"
+  environment("JAVA_HOME", graalHome)
   outputs.upToDateWhen { false }
 }
 
