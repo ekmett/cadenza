@@ -174,78 +174,33 @@ class If(
 @TypeSystemReference(Types::class)
 @NodeInfo(shortName = "Lambda")
 class Lam(
-  internal val closureFrameDescriptor: FrameDescriptor?,
+  private val closureFrameDescriptor: FrameDescriptor?,
   @field:Children internal val captureSteps: Array<FrameBuilder>,
-  internal val arity: Int,
+  private val arity: Int,
   @field:Child internal var callTarget: RootCallTarget,
   internal val type: Type
 ) : Code() {
 
   // do we need to capture an environment?
-  val isSuperCombinator: Boolean
-    get() = closureFrameDescriptor != null
+  private inline fun isSuperCombinator() = closureFrameDescriptor != null
 
-  override fun execute(frame: VirtualFrame): Closure {
-    return Closure(captureEnv(frame), arity, type, callTarget)
-  }
-
-  override fun executeClosure(frame: VirtualFrame): Closure {
-    return Closure(captureEnv(frame), arity, type, callTarget)
-  }
+  override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), arity, type, callTarget)
+  override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), arity, type, callTarget)
 
   @ExplodeLoop
   private fun captureEnv(frame: VirtualFrame): MaterializedFrame? {
-    if (!isSuperCombinator) return null
+    if (!isSuperCombinator()) return null
     val env = Truffle.getRuntime().createMaterializedFrame(arrayOf(), closureFrameDescriptor)
     for (captureStep in captureSteps) captureStep.build(env, frame)
     return env.materialize()
   }
 
   // root to render capture steps opaque
-  override fun hasTag(tag: Class<out Tag>?): Boolean {
-    return tag == StandardTags.RootTag::class.java || tag == StandardTags.ExpressionTag::class.java
-  }
-
-  companion object {
-
-    // invariant callTarget points to a native function body with known arity
-    fun create(callTarget: RootCallTarget, type: Type): Lam {
-      val root = callTarget.rootNode
-      assert(root is ClosureRootNode)
-      return create((root as ClosureRootNode).arity, callTarget, type)
-    }
-
-    // package a foreign root call target with known arity
-    fun create(arity: Int, callTarget: RootCallTarget, type: Type): Lam {
-      return create(null, noFrameBuilders, arity, callTarget, type)
-    }
-
-    fun create(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type): Lam {
-      val root = callTarget.rootNode
-      assert(root is ClosureRootNode)
-      return create(closureFrameDescriptor, captureSteps, (root as ClosureRootNode).arity, callTarget, type)
-    }
-
-    // ensures that all the invariants for the constructor are satisfied
-    fun create(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type): Lam {
-      assert(arity > 0)
-      val hasCaptureSteps = captureSteps.size != 0
-      assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }
-      return Lam(
-        if (hasCaptureSteps)
-          null
-        else closureFrameDescriptor ?: FrameDescriptor(),
-        captureSteps,
-        arity,
-        callTarget,
-        type
-      )
-    }
-  }
+  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java || tag == StandardTags.ExpressionTag::class.java
 }
 
 // utility
-internal fun isSuperCombinator(callTarget: RootCallTarget): Boolean {
+inline fun isSuperCombinator(callTarget: RootCallTarget): Boolean {
   val root = callTarget.rootNode
   return root is ClosureRootNode && root.isSuperCombinator
 }
@@ -328,34 +283,56 @@ internal var arg: Code) : Code() {
 const val NO_SOURCE = -1
 const val UNAVAILABLE_SOURCE = -2
 
-fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
+// invariant callTarget points to a native function body with known arity
+inline fun lam(callTarget: RootCallTarget, type: Type): Lam {
+  val root = callTarget.rootNode
+  assert(root is ClosureRootNode)
+  return lam((root as ClosureRootNode).arity, callTarget, type)
+}
 
-fun lam(callTarget: RootCallTarget, type: Type) = Lam.create(callTarget, type)
+// package a foreign root call target with known arity
+inline fun lam(arity: Int, callTarget: RootCallTarget, type: Type): Lam {
+  return lam(null, noFrameBuilders, arity, callTarget, type)
+}
 
-fun lam(arity: Int, callTarget: RootCallTarget, type: Type) = Lam.create(arity, callTarget, type)
+inline fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type): Lam {
+  val root = callTarget.rootNode
+  assert(root is ClosureRootNode)
+  return lam(closureFrameDescriptor, captureSteps, (root as ClosureRootNode).arity, callTarget, type)
+}
 
-fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type)
-  = Lam.create(closureFrameDescriptor, captureSteps, callTarget, type)
+// ensures that all the invariants for the constructor are satisfied
+inline fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type): Lam {
+  assert(arity > 0)
+  val hasCaptureSteps = captureSteps.size != 0
+  assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }
+  return Lam(
+    if (hasCaptureSteps) null else closureFrameDescriptor ?: FrameDescriptor(),
+    captureSteps,
+    arity,
+    callTarget,
+    type
+  )
+}
 
-fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type)
-  = Lam.create(closureFrameDescriptor, captureSteps, arity, callTarget, type)
+inline fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
 
-fun put(slot: FrameSlot, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)
+inline fun put(slot: FrameSlot, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)
 
 @Suppress("UNUSED_PARAMETER")
-fun booleanLiteral(b: Boolean): Code = object : Code() {
+inline fun booleanLiteral(b: Boolean): Code = object : Code() {
   override fun execute(frame: VirtualFrame) = b
   override fun executeBoolean(frame: VirtualFrame) = b
 }
 
 @Suppress("UNUSED_PARAMETER")
-fun intLiteral(i: Int): Code = object : Code() {
+inline fun intLiteral(i: Int): Code = object : Code() {
   override fun execute(frame: VirtualFrame) = i
   override fun executeInteger(frame: VirtualFrame) = i
 }
 
 @Suppress("UNUSED_PARAMETER")
-fun bigLiteral(i: BigInt): Code = object : Code() {
+inline fun bigLiteral(i: BigInt): Code = object : Code() {
   override fun execute(frame: VirtualFrame) = i
   @Throws(UnexpectedResultException::class)
   override fun executeInteger(frame: VirtualFrame): Int =

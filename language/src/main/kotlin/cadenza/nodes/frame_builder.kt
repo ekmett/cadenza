@@ -10,7 +10,7 @@ import com.oracle.truffle.api.nodes.Node
 import com.oracle.truffle.api.nodes.NodeInfo
 import com.oracle.truffle.api.nodes.UnexpectedResultException
 
-internal val noFrameBuilders = arrayOf<FrameBuilder>() // can't make const because kotlin is silly
+val noFrameBuilders = arrayOf<FrameBuilder>() // can't make const because kotlin is silly
 
 // this copies information from the VirtualFrame frame into a materialized frame
 @TypeSystemReference(Types::class)
