@@ -20,9 +20,23 @@ import com.oracle.truffle.api.source.SourceSection
 import org.graalvm.options.*
 
 @Option.Group("cadenza")
-@TruffleLanguage.Registration(id = Language.ID, name = Language.NAME, version = Language.VERSION, defaultMimeType = Language.MIME_TYPE, characterMimeTypes = [Language.MIME_TYPE], contextPolicy = ContextPolicy.SHARED, fileTypeDetectors = [Detector::class])
-
-@ProvidedTags(CallTag::class, StatementTag::class, RootTag::class, RootBodyTag::class, ExpressionTag::class, DebuggerTags.AlwaysHalt::class)
+@TruffleLanguage.Registration(
+  id = Language.ID,
+  name = Language.NAME,
+  version = Language.VERSION,
+  defaultMimeType = Language.MIME_TYPE,
+  characterMimeTypes = [Language.MIME_TYPE],
+  contextPolicy = ContextPolicy.SHARED,
+  fileTypeDetectors = [Detector::class]
+)
+@ProvidedTags(
+  CallTag::class,
+  StatementTag::class,
+  RootTag::class,
+  RootBodyTag::class,
+  ExpressionTag::class,
+  DebuggerTags.AlwaysHalt::class
+)
 class Language : TruffleLanguage<Context>() {
 
   val singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active")
