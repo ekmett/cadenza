@@ -16,11 +16,11 @@ internal val noArguments = arrayOf<Any>()
 
 @TypeSystemReference(Types::class)
 abstract class CadenzaNode : Node(), InstrumentableNode;// root nodes are needed by Truffle.getRuntime().createCallTarget(someRoot), which is the way to manufacture callable
-// things in truffle.
+
 @NodeInfo(language = "core", description = "A root of a core tree.")
 @TypeSystemReference(Types::class)
 class ProgramRootNode constructor(
-  val language: Language,
+  language: Language,
   @field:Child private var body: Code,
   fd: FrameDescriptor
 ) : RootNode(language, fd) {
@@ -38,15 +38,8 @@ class InlineCode(
 @GenerateWrapper
 open class ClosureBody : Node, InstrumentableNode {
   @Child protected var content: Code
-
-  constructor(content: Code) {
-    this.content = content
-  }
-
-  constructor(that: ClosureBody) {
-    this.content = that.content
-  }
-
+  constructor(content: Code) { this.content = content }
+  constructor(that: ClosureBody) { this.content = that.content }
   open fun execute(frame: VirtualFrame): Any? = content.executeAny(frame)
   override fun isInstrumentable() = true
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = ClosureBodyWrapper(this, this, probe)
@@ -57,14 +50,13 @@ open class ClosureBody : Node, InstrumentableNode {
 @GenerateWrapper
 @TypeSystemReference(Types::class)
 open class ClosureRootNode : RootNode, InstrumentableNode {
-  @Children private val envPreamble: Array<FrameBuilder>
-  @Children private val argPreamble: Array<FrameBuilder>
+  @Children val envPreamble: Array<FrameBuilder>
+  @Children val argPreamble: Array<FrameBuilder>
   val arity: Int
   @Child var body: ClosureBody
   protected val language: TruffleLanguage<*>
 
-  val isSuperCombinator: Boolean
-    get() = envPreamble.size != 0
+  inline fun isSuperCombinator() = envPreamble.size != 0
 
   constructor(
     language: TruffleLanguage<*>,
@@ -93,7 +85,7 @@ open class ClosureRootNode : RootNode, InstrumentableNode {
   private fun preamble(frame: VirtualFrame): VirtualFrame {
     val local = Truffle.getRuntime().createVirtualFrame(noArguments, frameDescriptor)
     for (builder in argPreamble) builder.build(local, frame)
-    if (isSuperCombinator) { // supercombinator, needs environment
+    if (isSuperCombinator()) { // supercombinator, needs environment
       val env = frame.arguments[0] as MaterializedFrame
       for (builder in envPreamble) builder.build(local, env)
     }
@@ -101,10 +93,8 @@ open class ClosureRootNode : RootNode, InstrumentableNode {
   }
 
   override fun execute(frame: VirtualFrame) = body.execute(preamble(frame))
-
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java
   override fun isInstrumentable() = super.isInstrumentable()
   override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode
     = ClosureRootNodeWrapper(this, this, probeNode)
 }
-

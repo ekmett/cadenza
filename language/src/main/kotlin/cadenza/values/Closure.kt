@@ -15,23 +15,22 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
-class Closure// invariant: target should have been constructed from a FunctionBody
-// also assumes that env matches the shape expected by the function body
-(val env: MaterializedFrame? = null, val arity: Int // local minimum arity to do anything, below this construct PAPs, above this pump arguments.
- , val type: Type // tells us the maximum number of arguments this can take and how to lint foreign arguments.
- , val callTarget: RootCallTarget) : TruffleObject {
-  val isSuperCombinator: Boolean
-    get() = env != null
-
-  val isExecutable: Boolean
-    @ExportMessage
-    get() = true
+class Closure (
+  val env: MaterializedFrame? = null,
+  val arity: Int,
+  val type: Type,
+  val callTarget: RootCallTarget
+) : TruffleObject {
+  private inline fun isSuperCombinator() = env != null
 
   init {
     assert(callTarget.rootNode is ClosureRootNode) { "not a function body" }
-    assert(env != null == (callTarget.rootNode as ClosureRootNode).isSuperCombinator) { "calling convention mismatch" }
+    assert(env != null == (callTarget.rootNode as ClosureRootNode).isSuperCombinator()) { "calling convention mismatch" }
     assert(arity <= type.arity)
   }
+
+  @ExportMessage
+  fun isExecutable() = true
 
   // allow the use of our closures from other polyglot languages
   @ExportMessage
@@ -51,26 +50,20 @@ class Closure// invariant: target should have been constructed from a FunctionBo
     return call(arguments as Array<Any?>)
   }
 
-  // this logic needs to be copied into Code.App
   fun call(arguments: Array<Any?>): Any? {
     val len = arguments.size
-    if (len < arity) {
-      return pap(arguments)
-    } else if (len == arity) {
-      return if (isSuperCombinator)
-        callTarget.call(cons(env, arguments))
-      else
-        callTarget.call(arguments)
-    } else {
-      // the result _must_ be a closure.
-      val next = callTarget.call(consTake(env, arity, arguments)) as Closure
-      return next.call(drop(arity, arguments))
+    return when {
+      len < arity -> pap(arguments)
+      len == arity ->
+        if (isSuperCombinator()) callTarget.call(cons(env, arguments))
+        else callTarget.call(arguments)
+      else -> (callTarget.call(consTake(env, arity, arguments)) as Closure).call(drop(arity, arguments))
     }
   }
 
   // construct a partial application node, which should check that it is a PAP itself
   @ExplodeLoop
-  fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<Any?>): Closure? {
+  inline fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<Any?>): Closure? {
     return null // TODO
   }
 }
@@ -94,6 +87,6 @@ private inline fun <reified T> consTake(x: T, n: Int, xs: Array<T>): Array<T> {
 }
 
 @ExplodeLoop
-private fun <T> drop(k: Int, xs: Array<T>): Array<T> {
+private inline fun <T> drop(k: Int, xs: Array<T>): Array<T> {
   return xs.copyOfRange<T>(k, xs.size)
 }

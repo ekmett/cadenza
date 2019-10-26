@@ -20,7 +20,7 @@ abstract class FrameBuilder(
   @field:Child protected var rhs: Code
 ) : Node() {
 
-  fun build(frame: VirtualFrame, oldFrame: VirtualFrame): Unit {
+  inline fun build(frame: VirtualFrame, oldFrame: VirtualFrame): Unit {
     execute(frame, 0, oldFrame)
   }
 
@@ -85,3 +85,5 @@ abstract class FrameBuilder(
 
   override fun isAdoptable() = false
 }
+
+inline fun put(slot: FrameSlot, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)

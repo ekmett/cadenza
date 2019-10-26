@@ -93,6 +93,6 @@ abstract class Def(protected val slot: FrameSlot, @field:Child var arg: Code) : 
   protected fun allowsIntegerSlot(frame: VirtualFrame) = allowsSlotKind(frame, FrameSlotKind.Int)
 }
 
-fun def(slot: FrameSlot, body: Code): Def {
+inline fun def(slot: FrameSlot, body: Code): Def {
   return DefNodeGen.create(slot, body)
 }

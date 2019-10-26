@@ -6,7 +6,7 @@ import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.nodes.SlowPathException
 
 @Throws(NeutralException::class)
-fun neutral(type: Type, term: Neutral) : Nothing {
+inline fun neutral(type: Type, term: Neutral) : Nothing {
   throw NeutralException(type, term)
 }
 
@@ -28,7 +28,7 @@ abstract class Neutral {
 }
 
 class NeutralException(val type: Type, val term: Neutral) : SlowPathException() {
-  fun get() = NeutralValue(type, term)
+  inline fun get() = NeutralValue(type, term)
 
   fun apply(rands: Array<Any?>): Nothing {
     val len = rands.size

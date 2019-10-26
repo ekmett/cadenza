@@ -174,7 +174,7 @@ class If(
 @TypeSystemReference(Types::class)
 @NodeInfo(shortName = "Lambda")
 class Lam(
-  private val closureFrameDescriptor: FrameDescriptor?,
+  val closureFrameDescriptor: FrameDescriptor?,
   @field:Children internal val captureSteps: Array<FrameBuilder>,
   private val arity: Int,
   @field:Child internal var callTarget: RootCallTarget,
@@ -182,7 +182,7 @@ class Lam(
 ) : Code() {
 
   // do we need to capture an environment?
-  private inline fun isSuperCombinator() = closureFrameDescriptor != null
+  inline fun isSuperCombinator() = closureFrameDescriptor != null
 
   override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), arity, type, callTarget)
   override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), arity, type, callTarget)
@@ -202,7 +202,7 @@ class Lam(
 // utility
 inline fun isSuperCombinator(callTarget: RootCallTarget): Boolean {
   val root = callTarget.rootNode
-  return root is ClosureRootNode && root.isSuperCombinator
+  return root is ClosureRootNode && root.isSuperCombinator()
 }
 
 @NodeInfo(shortName = "Read")
@@ -317,7 +317,6 @@ inline fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<Fra
 
 inline fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
 
-inline fun put(slot: FrameSlot, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)
 
 @Suppress("UNUSED_PARAMETER")
 inline fun booleanLiteral(b: Boolean): Code = object : Code() {
