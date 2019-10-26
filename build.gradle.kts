@@ -50,10 +50,18 @@ subprojects {
 
 plugins {
   application
+  `build-scan`
   idea
   id("com.palantir.graal") version "0.6.0"
   id("org.jetbrains.dokka") version "0.9.17" // apply false
   id("org.ajoberstar.git-publish") version "2.1.1"
+}
+
+// disable for private
+buildScan {
+  termsOfServiceUrl = "https://gradle.com/terms-of-service"
+  termsOfServiceAgree = "yes"
+  publishAlways()
 }
 
 gitPublish {
