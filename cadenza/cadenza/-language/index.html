@@ -1,0 +1,263 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Language - cadenza</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">Language</a><br/>
+<br/>
+<h1>Language</h1>
+<code><span class="keyword">class </span><span class="identifier">Language</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleLanguage</span><span class="symbol">&lt;</span><a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">&gt;</span></code> <a href="https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/cadenza/Language.kt#L34">(source)</a>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<code><span class="identifier">Language</span><span class="symbol">(</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="single-context-assumption.html">singleContextAssumption</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">singleContextAssumption</span><span class="symbol">: </span><span class="identifier">Assumption</span><span class="symbol">!</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="are-options-compatible.html">areOptionsCompatible</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">areOptionsCompatible</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$areOptionsCompatible(org.graalvm.options.OptionValues, org.graalvm.options.OptionValues)/a">a</span><span class="symbol">:</span>&nbsp;<span class="identifier">OptionValues</span><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="cadenza.Language$areOptionsCompatible(org.graalvm.options.OptionValues, org.graalvm.options.OptionValues)/b">b</span><span class="symbol">:</span>&nbsp;<span class="identifier">OptionValues</span><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="binary.html">binary</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">binary</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$binary(kotlin.Function2((cadenza.types.Term, , )), cadenza.types.Type, cadenza.types.Type)/f">f</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><span class="identifier">x</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-term/index.html"><span class="identifier">Term</span></a><span class="symbol">,</span>&nbsp;<span class="identifier">y</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-term/index.html"><span class="identifier">Term</span></a><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="../../cadenza.types/-term/index.html"><span class="identifier">Term</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$binary(kotlin.Function2((cadenza.types.Term, , )), cadenza.types.Type, cadenza.types.Type)/tx">tx</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$binary(kotlin.Function2((cadenza.types.Term, , )), cadenza.types.Type, cadenza.types.Type)/ty">ty</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../cadenza.nodes/-code/index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="create-context.html">createContext</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">createContext</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$createContext(com.oracle.truffle.api.TruffleLanguage.Env)/env">env</span><span class="symbol">:</span>&nbsp;<span class="identifier">Env</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-context/index.html"><span class="identifier">Context</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="dispose-thread.html">disposeThread</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">disposeThread</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$disposeThread(cadenza.Context, java.lang.Thread)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$disposeThread(cadenza.Context, java.lang.Thread)/thread">thread</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html"><span class="identifier">Thread</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="finalize-context.html">finalizeContext</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">finalizeContext</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$finalizeContext(cadenza.Context)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="find-exported-symbol.html">findExportedSymbol</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">findExportedSymbol</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$findExportedSymbol(org.graalvm.polyglot.Context, kotlin.String, kotlin.Boolean)/context">context</span><span class="symbol">:</span>&nbsp;<span class="identifier">Context</span><span class="symbol">, </span><span class="identifier" id="cadenza.Language$findExportedSymbol(org.graalvm.polyglot.Context, kotlin.String, kotlin.Boolean)/globalName">globalName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$findExportedSymbol(org.graalvm.polyglot.Context, kotlin.String, kotlin.Boolean)/onlyExplicit">onlyExplicit</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="find-meta-object.html">findMetaObject</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">findMetaObject</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$findMetaObject(cadenza.Context, kotlin.Any)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$findMetaObject(cadenza.Context, kotlin.Any)/value">value</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="find-source-location.html">findSourceLocation</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">findSourceLocation</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$findSourceLocation(cadenza.Context, kotlin.Any)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$findSourceLocation(cadenza.Context, kotlin.Any)/value">value</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">SourceSection</span><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="get-option-descriptors.html">getOptionDescriptors</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">getOptionDescriptors</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">OptionDescriptors</span><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-i.html">I</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">I</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$I(cadenza.types.Type)/tx">tx</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../cadenza.nodes/-code/index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="initialize-context.html">initializeContext</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">initializeContext</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$initializeContext(cadenza.Context)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="initialize-multiple-contexts.html">initializeMultipleContexts</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">initializeMultipleContexts</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="initialize-multi-threading.html">initializeMultiThreading</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">initializeMultiThreading</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$initializeMultiThreading(cadenza.Context)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="initialize-thread.html">initializeThread</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">initializeThread</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$initializeThread(cadenza.Context, java.lang.Thread)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$initializeThread(cadenza.Context, java.lang.Thread)/thread">thread</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html"><span class="identifier">Thread</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="is-object-of-language.html">isObjectOfLanguage</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">isObjectOfLanguage</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$isObjectOfLanguage(kotlin.Any)/obj">obj</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="is-thread-access-allowed.html">isThreadAccessAllowed</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">isThreadAccessAllowed</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$isThreadAccessAllowed(java.lang.Thread, kotlin.Boolean)/thread">thread</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html"><span class="identifier">Thread</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$isThreadAccessAllowed(java.lang.Thread, kotlin.Boolean)/singleThreaded">singleThreaded</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="is-visible.html">isVisible</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">isVisible</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$isVisible(cadenza.Context, kotlin.Any)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$isVisible(cadenza.Context, kotlin.Any)/value">value</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-k.html">K</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">K</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$K(cadenza.types.Type, cadenza.types.Type)/tx">tx</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$K(cadenza.types.Type, cadenza.types.Type)/ty">ty</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../cadenza.nodes/-code/index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="parse.html">parse</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">parse</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$parse(com.oracle.truffle.api.TruffleLanguage.InlineParsingRequest)/request">request</span><span class="symbol">:</span>&nbsp;<span class="identifier">InlineParsingRequest</span><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="../../cadenza.nodes/-inline-code/index.html"><span class="identifier">InlineCode</span></a></code><br/>
+<code><span class="keyword">fun </span><span class="identifier">parse</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$parse(com.oracle.truffle.api.TruffleLanguage.ParsingRequest)/request">request</span><span class="symbol">:</span>&nbsp;<span class="identifier">ParsingRequest</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">CallTarget</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="patch-context.html">patchContext</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">patchContext</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$patchContext(cadenza.Context, com.oracle.truffle.api.TruffleLanguage.Env)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$patchContext(cadenza.Context, com.oracle.truffle.api.TruffleLanguage.Env)/env">env</span><span class="symbol">:</span>&nbsp;<span class="identifier">Env</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-s.html">S</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">S</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$S(cadenza.types.Type, cadenza.types.Type, cadenza.types.Type)/tx">tx</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$S(cadenza.types.Type, cadenza.types.Type, cadenza.types.Type)/ty">ty</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$S(cadenza.types.Type, cadenza.types.Type, cadenza.types.Type)/tz">tz</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../cadenza.nodes/-code/index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="to-string.html">toString</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">toString</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$toString(cadenza.Context, kotlin.Any)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$toString(cadenza.Context, kotlin.Any)/value">value</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="unary.html">unary</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">unary</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$unary(kotlin.Function1((cadenza.types.Term, )), cadenza.types.Type)/f">f</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><span class="identifier">x</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-term/index.html"><span class="identifier">Term</span></a><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="../../cadenza.types/-term/index.html"><span class="identifier">Term</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$unary(kotlin.Function1((cadenza.types.Term, )), cadenza.types.Type)/argument">argument</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../cadenza.nodes/-code/index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-e-x-t-e-n-s-i-o-n.html">EXTENSION</a></h4>
+</td>
+<td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">EXTENSION</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-i-d.html">ID</a></h4>
+</td>
+<td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">ID</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-m-i-m-e_-t-y-p-e.html">MIME_TYPE</a></h4>
+</td>
+<td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">MIME_TYPE</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-n-a-m-e.html">NAME</a></h4>
+</td>
+<td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">NAME</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-v-e-r-s-i-o-n.html">VERSION</a></h4>
+</td>
+<td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">VERSION</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="get-meta-object.html">getMetaObject</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">getMetaObject</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language.Companion$getMetaObject(kotlin.Any)/value">value</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="to-string.html">toString</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">toString</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language.Companion$toString(kotlin.Any)/value">value</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

@@ -1,0 +1,11 @@
+$dokka.format:html
+$dokka.linkExtension:html
+
+cadenza
+cadenza.launcher
+cadenza.nbe
+cadenza.nodes
+cadenza.syntax
+cadenza.types
+cadenza.util
+cadenza.values

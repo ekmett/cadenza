@@ -1,0 +1,285 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>CadenzaParser - cadenza</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza.syntax</a>&nbsp;/&nbsp;<a href="./index.html">CadenzaParser</a><br/>
+<br/>
+<h1>CadenzaParser</h1>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">CadenzaParser</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/Parser.html"><span class="identifier">Parser</span></a></code>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-application-context/index.html">ApplicationContext</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ApplicationContext</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/ParserRuleContext.html"><span class="identifier">ParserRuleContext</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-expression-context/index.html">ExpressionContext</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ExpressionContext</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/ParserRuleContext.html"><span class="identifier">ParserRuleContext</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-function-context/index.html">FunctionContext</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">FunctionContext</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/ParserRuleContext.html"><span class="identifier">ParserRuleContext</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-lambda-context/index.html">LambdaContext</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">LambdaContext</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/ParserRuleContext.html"><span class="identifier">ParserRuleContext</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-scope-context/index.html">ScopeContext</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ScopeContext</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/ParserRuleContext.html"><span class="identifier">ParserRuleContext</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<code><span class="identifier">CadenzaParser</span><span class="symbol">(</span><span class="identifier" id="cadenza.syntax.CadenzaParser$<init>(org.antlr.v4.runtime.TokenStream)/input">input</span><span class="symbol">:</span>&nbsp;<a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/TokenStream.html"><span class="identifier">TokenStream</span></a><span class="symbol">!</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="_-a-t-n.html">_ATN</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">_ATN</span><span class="symbol">: </span><a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/atn/ATN.html"><span class="identifier">ATN</span></a><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="_decision-to-d-f-a.html">_decisionToDFA</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">_decisionToDFA</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/dfa/DFA.html"><span class="identifier">DFA</span></a><span class="symbol">!</span><span class="symbol">&gt;</span><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="_serialized-a-t-n.html">_serializedATN</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">_serializedATN</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="_shared-context-cache.html">_sharedContextCache</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">_sharedContextCache</span><span class="symbol">: </span><a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/atn/PredictionContextCache.html"><span class="identifier">PredictionContextCache</span></a><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-r-u-l-e_application.html">RULE_application</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">RULE_application</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-r-u-l-e_expression.html">RULE_expression</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">RULE_expression</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-r-u-l-e_function.html">RULE_function</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">RULE_function</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-r-u-l-e_lambda.html">RULE_lambda</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">RULE_lambda</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-r-u-l-e_scope.html">RULE_scope</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">RULE_scope</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="rule-names.html">ruleNames</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">ruleNames</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">!</span><span class="symbol">&gt;</span><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-t__0.html">T__0</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">T__0</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-t__1.html">T__1</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">T__1</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-t__2.html">T__2</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">T__2</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-t__3.html">T__3</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">T__3</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-t__4.html">T__4</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">T__4</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="token-names.html">tokenNames</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">tokenNames</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">!</span><span class="symbol">&gt;</span><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-v-a-r-i-a-b-l-e.html">VARIABLE</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">VARIABLE</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-v-o-c-a-b-u-l-a-r-y.html">VOCABULARY</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">VOCABULARY</span><span class="symbol">: </span><a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/Vocabulary.html"><span class="identifier">Vocabulary</span></a><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-w-s.html">WS</a></h4>
+</td>
+<td>
+<code><span class="keyword">static</span> <span class="keyword">val </span><span class="identifier">WS</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="application.html">application</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">application</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">ApplicationContext</span><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="expression.html">expression</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">expression</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">ExpressionContext</span><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="function.html">function</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">function</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">FunctionContext</span><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="get-a-t-n.html">getATN</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">getATN</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/atn/ATN.html"><span class="identifier">ATN</span></a><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="get-grammar-file-name.html">getGrammarFileName</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">getGrammarFileName</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="get-rule-names.html">getRuleNames</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">getRuleNames</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">!</span><span class="symbol">&gt;</span><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="get-serialized-a-t-n.html">getSerializedATN</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">getSerializedATN</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="get-token-names.html">getTokenNames</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><s><span class="identifier">getTokenNames</span></s><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">!</span><span class="symbol">&gt;</span><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="get-vocabulary.html">getVocabulary</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">getVocabulary</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://www.antlr.org/api/Java/org/antlr/v4/runtime/Vocabulary.html"><span class="identifier">Vocabulary</span></a><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="lambda.html">lambda</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">lambda</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">LambdaContext</span><span class="symbol">!</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="scope.html">scope</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">scope</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">ScopeContext</span><span class="symbol">!</span></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>
