@@ -42,4 +42,12 @@ tasks.withType<AntlrTask> {
 tasks.withType<DokkaTask> {
   outputFormat = "html"
   outputDirectory = "$buildDir/javadoc"
+  configuration {
+   includes = listOf("README.md")
+   sourceLink {
+     path = "language/src/main/kotlin"
+     url = "https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/"
+     lineSuffix = "#L"
+   }
+  } 
 }

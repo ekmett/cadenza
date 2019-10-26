@@ -9,9 +9,11 @@ version = project.properties["version"].toString()
 buildscript {
   repositories {
     mavenCentral()
+    maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
   }
   dependencies {
     classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.41")
+    classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
   }
 }
 
@@ -33,6 +35,8 @@ allprojects {
     implementation(kotlin("stdlib"))
     implementation(kotlin("stdlib-jdk8"))
   }
+
+  // sourceCompatibility = 1.8
 }
 
 subprojects {
@@ -190,6 +194,7 @@ tasks.replace("run", JavaExec::class.java).run {
 
 // assumes we are building on graal
 tasks.register("runInstalled", Exec::class) {
+  group = "application"
   if (needsExtract) dependsOn(":extractGraalTooling")
   description = "Run a version of cadenza from the distribution dir"
   dependsOn(":installDist")
@@ -198,6 +203,7 @@ tasks.register("runInstalled", Exec::class) {
 }
 
 tasks.register("register", Exec::class) {
+  group = "installation"
   if (needsExtract) dependsOn(":extractGraalTooling")
   dependsOn(jar)
   description = "Register cadenza with graal"
@@ -212,6 +218,7 @@ tasks.register("register", Exec::class) {
 
 // assumes we are building on graal
 tasks.register("runRegistered", Exec::class) {
+  group = "application"
   if (needsExtract) dependsOn(":extractGraalTooling")
   description = "Run a registered version of cadenza"
   dependsOn(":register")
@@ -220,10 +227,12 @@ tasks.register("runRegistered", Exec::class) {
 }
 
 tasks.getByName<NativeImageTask>("nativeImage") {
+  group="build"
   dependsOn(":register")
 }
 
 tasks.register("unregister", Exec::class) {
+  group = "installation"
   if (needsExtract) dependsOn(":extractGraalTooling")
   description = "Unregister cadenza with graal"
   commandLine = listOf(
