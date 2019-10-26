@@ -1,7 +1,6 @@
 apply(plugin = "antlr")
 apply(plugin = "kotlin")
 apply(plugin = "kotlin-kapt")
-apply(plugin = "org.jetbrains.dokka")
 
 val antlrRuntime by configurations.creating
 val kotlinRuntime by configurations.creating
