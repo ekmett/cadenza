@@ -125,7 +125,7 @@ abstract class Code : Node(), InstrumentableNode {
       } catch (e: UnexpectedResultException) {
         panic("closure expected", e)
       } catch (e: NeutralException) {
-        throw e.apply(executeRands(frame))
+        e.apply(executeRands(frame))
       }
 
       if (fn.arity == rands.size) {
@@ -391,8 +391,8 @@ abstract class Code : Node(), InstrumentableNode {
 
     // instrumentation
 
-    val NO_SOURCE = -1
-    val UNAVAILABLE_SOURCE = -2
+    const val NO_SOURCE = -1
+    const val UNAVAILABLE_SOURCE = -2
 
     fun `var`(slot: FrameSlot): Var {
       return CodeFactory.VarNodeGen.create(slot)
@@ -418,7 +418,6 @@ abstract class Code : Node(), InstrumentableNode {
       return FrameBuilderNodeGen.create(slot, value)
     }
 
-    //  public static Add add(Expr x, Expr y) { return ExprFactory.AddNodeGen.create(x,y); }
     fun booleanLiteral(b: Boolean): Code {
       @Suppress("UNUSED_PARAMETER")
       return object : Code() {

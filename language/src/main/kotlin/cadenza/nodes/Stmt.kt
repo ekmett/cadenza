@@ -14,7 +14,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException
 
 // these will typically be 'IO' actions
 @GenerateWrapper
-abstract class Stmt : CadenzaNode.Simple() {
+abstract class Stmt : CadenzaNode() {
 
     @GenerateWrapper.OutgoingConverter
     internal fun convertOutgoing(@Suppress("UNUSED_PARAMETER") obj : Any): Any? {

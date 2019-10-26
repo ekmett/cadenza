@@ -12,12 +12,11 @@ class NeutralException(val type: Type, val term: Neutral) : SlowPathException() 
     return NeutralValue(type, term)
   }
 
-  // TODO: throw NeutralException and return Nothing
-  fun apply(rands: Array<Any?>): NeutralException {
+  fun apply(rands: Array<Any?>): Nothing {
     val len = rands.size
     var currentType = type
     for (i in 0 until len) currentType = (currentType as Type.Arr).result
-    return NeutralException(currentType, term.apply(rands))
+    throw NeutralException(currentType, term.apply(rands))
   }
 
   companion object {
