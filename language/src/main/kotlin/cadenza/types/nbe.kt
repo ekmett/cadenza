@@ -28,9 +28,7 @@ abstract class Neutral {
 }
 
 class NeutralException(val type: Type, val term: Neutral) : SlowPathException() {
-  fun get(): NeutralValue {
-    return NeutralValue(type, term)
-  }
+  fun get() = NeutralValue(type, term)
 
   fun apply(rands: Array<Any?>): Nothing {
     val len = rands.size

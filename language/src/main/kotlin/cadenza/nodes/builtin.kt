@@ -13,6 +13,8 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException
 
 import java.io.Serializable
 
+val print: Builtin = Print()
+
 @TypeSystemReference(Types::class)
 abstract class Builtin(val resultType: Type) : Node(), Serializable {
 
@@ -25,35 +27,25 @@ abstract class Builtin(val resultType: Type) : Node(), Serializable {
   }
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  fun executeClosure(frame: VirtualFrame, arg: Code): Closure {
-    return TypesGen.expectClosure(execute(frame, arg))
-  }
+  fun executeClosure(frame: VirtualFrame, arg: Code): Closure =
+    TypesGen.expectClosure(execute(frame, arg))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  fun executeBoolean(frame: VirtualFrame, arg: Code): Boolean {
-    return TypesGen.expectBoolean(execute(frame, arg))
-  }
+  fun executeBoolean(frame: VirtualFrame, arg: Code): Boolean =
+    TypesGen.expectBoolean(execute(frame, arg))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  fun executeInteger(frame: VirtualFrame, arg: Code): Int {
-    return TypesGen.expectInteger(execute(frame, arg))
-  }
+  fun executeInteger(frame: VirtualFrame, arg: Code): Int =
+    TypesGen.expectInteger(execute(frame, arg))
+}
 
-  @NodeInfo(shortName = "print$")
-  internal class Print : Builtin(Type.Action) {
-    @Throws(NeutralException::class)
-    override fun execute(frame: VirtualFrame, arg: Code): Any? {
-      executeUnit(frame, arg)
-      return Unit
-    }
+@NodeInfo(shortName = "print$")
+internal class Print : Builtin(Type.Action) {
+  @Throws(NeutralException::class)
+  override fun execute(frame: VirtualFrame, arg: Code) = executeUnit(frame, arg)
 
-    @Throws(NeutralException::class)
-    override fun executeUnit(frame: VirtualFrame, arg: Code): Unit {
-      println(arg.execute(frame))
-    }
-  }
-
-  companion object {
-    var print: Builtin = Print()
+  @Throws(NeutralException::class)
+  override fun executeUnit(frame: VirtualFrame, arg: Code) {
+    println(arg.execute(frame))
   }
 }

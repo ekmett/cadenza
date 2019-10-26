@@ -15,29 +15,13 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException
 // these will typically be 'IO' actions
 @GenerateWrapper
 abstract class Stmt : CadenzaNode() {
-
   @GenerateWrapper.OutgoingConverter
-  internal fun convertOutgoing(@Suppress("UNUSED_PARAMETER") obj: Any): Any? {
-    return null
-  }
-
-  override fun isInstrumentable(): Boolean {
-    return true
-  }
-
-  internal abstract fun execute(frame: VirtualFrame)
-
-  override fun isAdoptable(): Boolean {
-    return true
-  }
-
-  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode {
-    return StmtWrapper(this, probe)
-  }
-
-  override fun hasTag(tag: Class<out Tag>?): Boolean {
-    return tag == StandardTags.StatementTag::class.java || super.hasTag(tag)
-  }
+  internal fun convertOutgoing(@Suppress("UNUSED_PARAMETER") obj: Any): Any? = null
+  abstract fun execute(frame: VirtualFrame): Unit
+  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = StmtWrapper(this, probe)
+  override fun isInstrumentable() = true
+  override fun isAdoptable() = true
+  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.StatementTag::class.java || super.hasTag(tag)
 }
 
 @NodeInfo(shortName = "Do")
@@ -51,7 +35,7 @@ class Do internal constructor(@field:Children internal var body: Array<Stmt>) : 
 @NodeInfo(shortName = "Def")
 abstract class Def(protected val slot: FrameSlot, @field:Child var arg: Code) : Stmt() {
 
-  public override fun execute(frame: VirtualFrame) {
+  public override fun execute(frame: VirtualFrame): Unit {
     executeDef(frame)
   }
 
@@ -60,10 +44,9 @@ abstract class Def(protected val slot: FrameSlot, @field:Child var arg: Code) : 
   @Specialization(guards = ["allowsIntegerSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
   @Throws(UnexpectedResultException::class)
   protected fun defInteger(frame: VirtualFrame): Int {
+    val result: Int
     try {
-      val result = arg.executeInteger(frame)
-      frame.setInt(slot, result)
-      return result
+      result = arg.executeInteger(frame)
     } catch (e: UnexpectedResultException) {
       frame.setObject(slot, e)
       throw e
@@ -71,16 +54,16 @@ abstract class Def(protected val slot: FrameSlot, @field:Child var arg: Code) : 
       frame.setObject(slot, e.get())
       return 0 // this result is never used
     }
-
+    frame.setInt(slot, result)
+    return result
   }
 
   @Specialization(guards = ["allowsBooleanSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
   @Throws(UnexpectedResultException::class)
   protected fun defBoolean(frame: VirtualFrame): Boolean {
+    val result: Boolean
     try {
-      val result = arg.executeBoolean(frame)
-      frame.setBoolean(slot, result)
-      return result
+      result = arg.executeBoolean(frame)
     } catch (e: UnexpectedResultException) {
       frame.setObject(slot, e)
       throw e
@@ -88,6 +71,8 @@ abstract class Def(protected val slot: FrameSlot, @field:Child var arg: Code) : 
       frame.setObject(slot, e.get())
       return false // never used
     }
+    frame.setBoolean(slot, result)
+    return result
   }
 
   @Specialization(replaces = ["defInteger", "defBoolean"])
@@ -104,13 +89,8 @@ abstract class Def(protected val slot: FrameSlot, @field:Child var arg: Code) : 
     return currentKind == kind
   }
 
-  protected fun allowsBooleanSlot(frame: VirtualFrame): Boolean {
-    return allowsSlotKind(frame, FrameSlotKind.Boolean)
-  }
-
-  protected fun allowsIntegerSlot(frame: VirtualFrame): Boolean {
-    return allowsSlotKind(frame, FrameSlotKind.Int)
-  }
+  protected fun allowsBooleanSlot(frame: VirtualFrame) = allowsSlotKind(frame, FrameSlotKind.Boolean)
+  protected fun allowsIntegerSlot(frame: VirtualFrame) = allowsSlotKind(frame, FrameSlotKind.Int)
 }
 
 fun def(slot: FrameSlot, body: Code): Def {

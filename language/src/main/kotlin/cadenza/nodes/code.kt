@@ -255,51 +255,28 @@ abstract class Var protected constructor(protected val slot: FrameSlot) : Code()
 
   @Specialization(rewriteOn = [FrameSlotTypeException::class])
   @Throws(FrameSlotTypeException::class)
-  protected fun readLong(frame: VirtualFrame): Long {
-    return frame.getLong(slot)
-  }
+  protected fun readLong(frame: VirtualFrame): Long = frame.getLong(slot)
 
   @Specialization(rewriteOn = [FrameSlotTypeException::class])
   @Throws(FrameSlotTypeException::class)
-  protected fun readBoolean(frame: VirtualFrame): Boolean {
-    return frame.getBoolean(slot)
-  }
+  protected fun readBoolean(frame: VirtualFrame): Boolean = frame.getBoolean(slot)
 
   @Specialization(replaces = ["readLong", "readBoolean"])
-  protected fun read(frame: VirtualFrame): Any {
-    return frame.getValue(slot)
-  }
+  protected fun read(frame: VirtualFrame): Any = frame.getValue(slot)
 
-  override fun isAdoptable(): Boolean {
-    return false
-  }
+  override fun isAdoptable() = false
 }
 
 class Ann(@field:Child protected var body: Code, val type: Type) : Code() {
-
   @Throws(NeutralException::class)
-  override fun execute(frame: VirtualFrame): Any? {
-    return body.execute(frame)
-  }
-
-  override fun executeAny(frame: VirtualFrame): Any? {
-    return body.executeAny(frame)
-  }
-
+  override fun execute(frame: VirtualFrame): Any? = body.execute(frame)
+  override fun executeAny(frame: VirtualFrame): Any? = body.executeAny(frame)
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  override fun executeInteger(frame: VirtualFrame): Int {
-    return body.executeInteger(frame)
-  }
-
+  override fun executeInteger(frame: VirtualFrame): Int = body.executeInteger(frame)
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  override fun executeBoolean(frame: VirtualFrame): Boolean {
-    return body.executeBoolean(frame)
-  }
-
+  override fun executeBoolean(frame: VirtualFrame): Boolean = body.executeBoolean(frame)
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  override fun executeClosure(frame: VirtualFrame): Closure {
-    return body.executeClosure(frame)
-  }
+  override fun executeClosure(frame: VirtualFrame): Closure = body.executeClosure(frame)
 }
 
 // a fully saturated call to a builtin
@@ -351,57 +328,41 @@ internal var arg: Code) : Code() {
 const val NO_SOURCE = -1
 const val UNAVAILABLE_SOURCE = -2
 
-fun `var`(slot: FrameSlot): Var {
-  return VarNodeGen.create(slot)
+fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
+
+fun lam(callTarget: RootCallTarget, type: Type) = Lam.create(callTarget, type)
+
+fun lam(arity: Int, callTarget: RootCallTarget, type: Type) = Lam.create(arity, callTarget, type)
+
+fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type)
+  = Lam.create(closureFrameDescriptor, captureSteps, callTarget, type)
+
+fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type)
+  = Lam.create(closureFrameDescriptor, captureSteps, arity, callTarget, type)
+
+fun put(slot: FrameSlot, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)
+
+@Suppress("UNUSED_PARAMETER")
+fun booleanLiteral(b: Boolean): Code = object : Code() {
+  override fun execute(frame: VirtualFrame) = b
+  override fun executeBoolean(frame: VirtualFrame) = b
 }
 
-fun lam(callTarget: RootCallTarget, type: Type): Lam {
-  return Lam.create(callTarget, type)
+@Suppress("UNUSED_PARAMETER")
+fun intLiteral(i: Int): Code = object : Code() {
+  override fun execute(frame: VirtualFrame) = i
+  override fun executeInteger(frame: VirtualFrame) = i
 }
 
-fun lam(arity: Int, callTarget: RootCallTarget, type: Type): Lam {
-  return Lam.create(arity, callTarget, type)
-}
-
-fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type): Lam {
-  return Lam.create(closureFrameDescriptor, captureSteps, callTarget, type)
-}
-
-fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type): Lam {
-  return Lam.create(closureFrameDescriptor, captureSteps, arity, callTarget, type)
-}
-
-fun put(slot: FrameSlot, value: Code): FrameBuilder {
-  return FrameBuilderNodeGen.create(slot, value)
-}
-
-fun booleanLiteral(b: Boolean): Code {
-  @Suppress("UNUSED_PARAMETER")
-  return object : Code() {
-    override fun execute(frame: VirtualFrame) = b
-    override fun executeBoolean(frame: VirtualFrame) = b
-  }
-}
-
-fun intLiteral(i: Int): Code {
-  @Suppress("UNUSED_PARAMETER")
-  return object : Code() {
-    override fun execute(frame: VirtualFrame) = i
-    override fun executeInteger(frame: VirtualFrame) = i
-  }
-}
-
-fun bigLiteral(i: BigInt): Code {
-  @Suppress("UNUSED_PARAMETER")
-  return object : Code() {
-    override fun execute(frame: VirtualFrame) = i
-    @Throws(UnexpectedResultException::class)
-    override fun executeInteger(frame: VirtualFrame): Int {
-      try {
-        if (i.fitsInInt()) return i.asInt().toInt()
-      } catch (e: UnsupportedMessageException) {
-      }
-      throw UnexpectedResultException(i)
+@Suppress("UNUSED_PARAMETER")
+fun bigLiteral(i: BigInt): Code = object : Code() {
+  override fun execute(frame: VirtualFrame) = i
+  @Throws(UnexpectedResultException::class)
+  override fun executeInteger(frame: VirtualFrame): Int =
+    try {
+      if (i.fitsInInt()) i.asInt().toInt()
+      else throw UnexpectedResultException(i)
+    } catch (e: UnsupportedMessageException) {
+      panic("fitsInInt lied", e)
     }
-  }
 }

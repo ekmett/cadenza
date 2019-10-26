@@ -20,7 +20,7 @@ abstract class FrameBuilder(
   @field:Child protected var rhs: Code
 ) : Node() {
 
-  fun build(frame: VirtualFrame, oldFrame: VirtualFrame) {
+  fun build(frame: VirtualFrame, oldFrame: VirtualFrame): Unit {
     execute(frame, 0, oldFrame)
   }
 
@@ -35,13 +35,9 @@ abstract class FrameBuilder(
     return currentKind == kind
   }
 
-  protected fun allowsBooleanSlot(frame: VirtualFrame): Boolean {
-    return allowsSlotKind(frame, FrameSlotKind.Boolean)
-  }
+  protected fun allowsBooleanSlot(frame: VirtualFrame) = allowsSlotKind(frame, FrameSlotKind.Boolean)
 
-  protected fun allowsIntegerSlot(frame: VirtualFrame): Boolean {
-    return allowsSlotKind(frame, FrameSlotKind.Int)
-  }
+  protected fun allowsIntegerSlot(frame: VirtualFrame) = allowsSlotKind(frame, FrameSlotKind.Int)
 
   // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
   @Specialization(guards = ["allowsBooleanSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
@@ -87,8 +83,5 @@ abstract class FrameBuilder(
     return result
   }
 
-  override fun isAdoptable(): Boolean {
-    return false
-  }
-
+  override fun isAdoptable() = false
 }
