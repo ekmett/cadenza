@@ -32,7 +32,7 @@ additional terms or conditions.
 
 Contact Information
 ===================
- us
+
 Contributions and bug reports are welcome!
 
 Please feel free to contact me through github or on the ##coda or #haskell IRC channels on irc.freenode.net.
