@@ -61,7 +61,11 @@ plugins {
 buildScan {
   termsOfServiceUrl = "https://gradle.com/terms-of-service"
   termsOfServiceAgree = "yes"
-  publishAlways()
+  if (System.getenv("CI")) { // on travis, always publish build-scan
+    publishAlways()
+    tag("CI")
+  }
+  tag(System.getProperty("os.name"))
 }
 
 gitPublish {
