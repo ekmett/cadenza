@@ -4,6 +4,7 @@ import java.net.URL
 import java.util.Properties
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = project.properties["group"].toString()
 version = project.properties["version"].toString()
@@ -38,7 +39,9 @@ allprojects {
     implementation(kotlin("stdlib-jdk8"))
   }
 
-  // sourceCompatibility = 1.8
+  tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
+  }
 }
 
 subprojects {
