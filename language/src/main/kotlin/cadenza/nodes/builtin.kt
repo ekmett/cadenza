@@ -1,6 +1,6 @@
 package cadenza.nodes
 
-import cadenza.nbe.NeutralException
+import cadenza.NeutralException
 import cadenza.types.Type
 import cadenza.types.Types
 import cadenza.types.TypesGen

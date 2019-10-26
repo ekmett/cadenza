@@ -82,10 +82,7 @@ gitPublish {
   branch.set("gh-pages")
   repoDir.set(file("$buildDir/javadoc"))
   contents {
-    from(file("etc/gh-pages.html")) {
-      rename("gh-pages.html","index.html")
-    }
-    // from(file("etc/.nojekyll"))
+    from("etc/gh-pages")
   }
 }
 
@@ -98,13 +95,13 @@ dependencies {
 
 graal {
   graalVersion("19.2.0.1")
-  mainClass("cadenza.launcher.Launcher")
+  mainClass("cadenza.Launcher")
   outputName("cadenza-native")
   option("--language:cadenza")
 }
 
 application {
-  mainClassName = "cadenza.launcher.Launcher"
+  mainClassName = "cadenza.Launcher"
   applicationDefaultJvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
@@ -175,7 +172,7 @@ project(":launcher") {
   tasks.getByName<Jar>("jar") {
     archiveBaseName.set("cadenza-launcher")
     manifest {
-      attributes["Main-Class"] = "cadenza.launcher.Launcher"
+      attributes["Main-Class"] = "cadenza.Launcher"
       attributes["Class-Path"] = configurations.runtimeClasspath.get().files.map { it.getAbsolutePath() } .joinToString(separator = " ")
     }
   }
@@ -316,7 +313,7 @@ tasks.replace("run", JavaExec::class.java).run {
     "-XX:+EnableJVMCI",
     "-Dtruffle.class.path.append=language/build/libs/cadenza-language-${project.version}.jar"
   )
-  main = "cadenza.launcher.Launcher"
+  main = "cadenza.Launcher"
 }
 
 // assumes we are building on graal

@@ -1,8 +1,7 @@
 package cadenza.nodes
 
 import cadenza.*
-import cadenza.nbe.*
-import cadenza.nbe.Neutral.*
+import cadenza.Neutral.*
 import cadenza.types.*
 import cadenza.values.*
 import com.oracle.truffle.api.CompilerDirectives
@@ -341,7 +340,7 @@ internal var arg: Code) : Code() {
     try {
       return builtin.execute(frame, arg)
     } catch (n: NeutralException) {
-      return NeutralValue(type, Neutral.NCallBuiltin(builtin, n.term))
+      return NeutralValue(type, NCallBuiltin(builtin, n.term))
     }
 
   }
@@ -351,7 +350,7 @@ internal var arg: Code) : Code() {
     try {
       return builtin.execute(frame, arg)
     } catch (n: NeutralException) {
-      throw NeutralException(type, Neutral.NCallBuiltin(builtin, n.term))
+      throw NeutralException(type, NCallBuiltin(builtin, n.term))
     }
 
   }
@@ -361,7 +360,7 @@ internal var arg: Code) : Code() {
     try {
       return builtin.executeInteger(frame, arg)
     } catch (n: NeutralException) {
-      throw NeutralException(type, Neutral.NCallBuiltin(builtin, n.term))
+      throw NeutralException(type, NCallBuiltin(builtin, n.term))
     }
   }
 
@@ -370,7 +369,7 @@ internal var arg: Code) : Code() {
     try {
       return builtin.executeUnit(frame, arg)
     } catch (n: NeutralException) {
-      throw NeutralException(type, Neutral.NCallBuiltin(builtin, n.term))
+      throw NeutralException(type, NCallBuiltin(builtin, n.term))
     }
 
   }
@@ -380,7 +379,7 @@ internal var arg: Code) : Code() {
     try {
       return builtin.executeBoolean(frame, arg)
     } catch (n: NeutralException) {
-      throw NeutralException(type, Neutral.NCallBuiltin(builtin, n.term))
+      throw NeutralException(type, NCallBuiltin(builtin, n.term))
     }
 
   }

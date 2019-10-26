@@ -1,5 +1,6 @@
 package cadenza.nodes
 
+import cadenza.Language
 import cadenza.types.Types
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.TruffleLanguage
@@ -8,8 +9,64 @@ import com.oracle.truffle.api.frame.FrameDescriptor
 import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.instrumentation.*
-import com.oracle.truffle.api.nodes.ExplodeLoop
-import com.oracle.truffle.api.nodes.RootNode
+import com.oracle.truffle.api.nodes.*
+import com.oracle.truffle.api.source.SourceSection
+
+@TypeSystemReference(Types::class)
+abstract class CadenzaNode : Node(), InstrumentableNode;// root nodes are needed by Truffle.getRuntime().createCallTarget(someRoot), which is the way to manufacture callable
+// things in truffle.
+@NodeInfo(language = "core", description = "A root of a core tree.")
+@TypeSystemReference(Types::class)
+class ProgramRootNode constructor(
+  val language: Language,
+  @field:Child private var body: Code,
+  fd: FrameDescriptor
+) : RootNode(language, fd) {
+
+  // eventually disallow selectively when we have the equivalent of NOINLINE / top level implicitly constructed references?
+  override fun isCloningAllowed(): Boolean {
+    return true
+  }
+
+  // returns neutral terms
+  override fun execute(frame: VirtualFrame): Any? {
+    return body.executeAny(frame)
+  }
+}
+
+@GenerateWrapper
+open class ClosureBody : Node, InstrumentableNode {
+  @Child
+  protected var content: Code
+
+  constructor(content: Code) {
+    this.content = content
+  }
+
+  constructor(that: ClosureBody) {
+    this.content = that.content
+  }
+
+  open fun execute(frame: VirtualFrame): Any? {
+    return content.executeAny(frame)
+  }
+
+  override fun isInstrumentable(): Boolean {
+    return true
+  }
+
+  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode {
+    return ClosureBodyWrapper(this, this, probe)
+  }
+
+  override fun hasTag(tag: Class<out Tag>?): Boolean {
+    return tag == StandardTags.RootBodyTag::class.java
+  }
+
+  override fun getSourceSection(): SourceSection {
+    return parent.sourceSection
+  }
+}
 
 @GenerateWrapper
 @TypeSystemReference(Types::class)
@@ -96,4 +153,10 @@ open class ClosureRootNode : RootNode, InstrumentableNode {
   // then converting to debruijn form.
 
   // we'd also need to convert the hashcode to work similarly.
+}
+
+class InlineCode(language: Language, @field:Child var body: Code) : ExecutableNode(language) {
+  override fun execute(frame: VirtualFrame): Any? {
+    return body.executeAny(frame)
+  }
 }

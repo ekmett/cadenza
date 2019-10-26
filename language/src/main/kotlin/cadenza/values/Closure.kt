@@ -1,11 +1,9 @@
 package cadenza.values
 
-import cadenza.*
 import cadenza.nodes.*
 import cadenza.types.Type
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
-import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.interop.ArityException
 import com.oracle.truffle.api.interop.InteropLibrary
@@ -15,13 +13,11 @@ import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 import com.oracle.truffle.api.nodes.ExplodeLoop
 
-import java.util.Arrays
-
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class Closure// invariant: target should have been constructed from a FunctionBody
 // also assumes that env matches the shape expected by the function body
-(val env: MaterializedFrame?, val arity: Int // local minimum arity to do anything, below this construct PAPs, above this pump arguments.
+(val env: MaterializedFrame? = null, val arity: Int // local minimum arity to do anything, below this construct PAPs, above this pump arguments.
  , val type: Type // tells us the maximum number of arguments this can take and how to lint foreign arguments.
  , val callTarget: RootCallTarget) : TruffleObject {
   val isSuperCombinator: Boolean
@@ -36,9 +32,6 @@ class Closure// invariant: target should have been constructed from a FunctionBo
     assert(env != null == (callTarget.rootNode as ClosureRootNode).isSuperCombinator) { "calling convention mismatch" }
     assert(arity <= type.arity)
   }
-
-  // combinator
-  constructor(arity: Int, type: Type, callTarget: RootCallTarget) : this(null, arity, type, callTarget) {}
 
   // allow the use of our closures from other polyglot languages
   @ExportMessage
@@ -75,34 +68,32 @@ class Closure// invariant: target should have been constructed from a FunctionBo
     }
   }
 
-
   // construct a partial application node, which should check that it is a PAP itself
   @ExplodeLoop
   fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<Any?>): Closure? {
     return null // TODO
   }
+}
 
-  @ExplodeLoop
-  private inline fun <reified T> cons(x: T, xs: Array<T>): Array<T> {
-    val ys = arrayOfNulls<T>(xs.size + 1)
-    ys[0] = x
-    System.arraycopy(xs, 0, ys, 1, xs.size)
-    @Suppress("UNCHECKED_CAST")
-    return ys as Array<T>
-  }
+@ExplodeLoop
+private inline fun <reified T> cons(x: T, xs: Array<T>): Array<T> {
+  val ys = arrayOfNulls<T>(xs.size + 1)
+  ys[0] = x
+  System.arraycopy(xs, 0, ys, 1, xs.size)
+  @Suppress("UNCHECKED_CAST")
+  return ys as Array<T>
+}
 
-  @ExplodeLoop
-  private inline fun <reified T> consTake(x: T, n: Int, xs: Array<T>): Array<T> {
-    val ys = arrayOfNulls<T>(n + 1)
-    ys[0] = x
-    System.arraycopy(xs, 0, ys, 1, n)
-    @Suppress("UNCHECKED_CAST")
-    return ys as Array<T>
-  }
+@ExplodeLoop
+private inline fun <reified T> consTake(x: T, n: Int, xs: Array<T>): Array<T> {
+  val ys = arrayOfNulls<T>(n + 1)
+  ys[0] = x
+  System.arraycopy(xs, 0, ys, 1, n)
+  @Suppress("UNCHECKED_CAST")
+  return ys as Array<T>
+}
 
-  @ExplodeLoop
-  private fun <T> drop(k: Int, xs: Array<T>): Array<T> {
-    return xs.copyOfRange<T>(k, xs.size)
-  }
-
+@ExplodeLoop
+private fun <T> drop(k: Int, xs: Array<T>): Array<T> {
+  return xs.copyOfRange<T>(k, xs.size)
 }

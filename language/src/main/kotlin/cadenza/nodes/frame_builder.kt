@@ -1,6 +1,6 @@
 package cadenza.nodes
 
-import cadenza.nbe.NeutralException
+import cadenza.NeutralException
 import cadenza.types.Types
 import com.oracle.truffle.api.dsl.Fallback
 import com.oracle.truffle.api.dsl.Specialization
