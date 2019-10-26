@@ -59,10 +59,11 @@ plugins {
 gitPublish {
   repoUri.set("git@github.com:ekmett/cadenza.git") // defaults to this project's origin URI
   branch.set("gh-pages")
+  repoDir.set(file("$buildDir/pages"))
   contents {
     from(tasks.getByPath(":dokka"))
-    from(file("etc/index.html")) {
-      rename("etc/index.hmtl","index.html")
+    from(file("etc/gh-pages.html")) {
+      rename("gh-pages.html","index.html")
     }
   }
 }
