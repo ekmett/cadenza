@@ -78,125 +78,76 @@ fun toString(value: Any?): String {
   fileTypeDetectors = [Detector::class]
 )
 @ProvidedTags(
-  CallTag::class,
-  StatementTag::class,
-  RootTag::class,
-  RootBodyTag::class,
-  ExpressionTag::class,
+  CallTag::class, StatementTag::class, RootTag::class, RootBodyTag::class, ExpressionTag::class,
   DebuggerTags.AlwaysHalt::class
 )
 class Language : TruffleLanguage<Context>() {
-
   val singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active")
 
-  public override fun createContext(env: TruffleLanguage.Env): Context {
+  override fun createContext(env: TruffleLanguage.Env): Context {
     return Context(this, env)
   } // cheap and easy
 
-  public override fun initializeContext(ctx: Context?) {}
-
-  public override fun finalizeContext(ctx: Context) {
-    ctx.shutdown()
-  }
+  override fun initializeContext(ctx: Context?) {}
+  override fun finalizeContext(ctx: Context) = ctx.shutdown()
 
   // stubbed: for now inline parsing requests just return 'const'
-  public override fun parse(request: TruffleLanguage.InlineParsingRequest?): InlineCode {
+  override fun parse(request: TruffleLanguage.InlineParsingRequest?): InlineCode {
     val body = K(Nat, Nat)
     return InlineCode(this, body)
   }
 
   // stubbed: returns a calculation that adds two numbers
-  public override fun parse(request: TruffleLanguage.ParsingRequest): CallTarget {
+  override fun parse(request: TruffleLanguage.ParsingRequest): CallTarget {
     val rootNode = ProgramRootNode(this, intLiteral(0), FrameDescriptor())
     return Truffle.getRuntime().createCallTarget(rootNode)
   }
 
-  public override fun isObjectOfLanguage(obj: Any): Boolean {
-    return obj is TruffleObject
-  }
-
-  public override fun initializeMultipleContexts() {
-    singleContextAssumption.invalidate()
-  }
-
-  public override fun areOptionsCompatible(a: OptionValues?, b: OptionValues?): Boolean {
-    return true
-  } // no options!
-
-  override fun getOptionDescriptors(): OptionDescriptors? {
-    return null; // Language.OPTION_DESCRIPTORS
-  }
-
-  public override fun initializeMultiThreading(ctx: Context) {
-    ctx.singleThreadedAssumption.invalidate()
-  }
-
-  public override fun isThreadAccessAllowed(thread: Thread, singleThreaded: Boolean): Boolean {
-    return true
-  }
-
-  public override fun initializeThread(ctx: Context, thread: Thread?) {}
-
-  public override fun disposeThread(ctx: Context, thread: Thread?) {}
-
-  public override fun findMetaObject(ctx: Context, value: Any?): Any {
-    return getMetaObject(value)
-  }
-
-  public override fun findSourceLocation(ctx: Context, value: Any?): SourceSection? {
-    return null
-  }
-
-  public override fun isVisible(ctx: Context, value: Any?): Boolean {
-    return true
-  }
-
-  public override fun toString(ctx: Context, value: Any?): String {
-    return toString(value)
-  }
-
-  public override fun patchContext(ctx: Context, env: TruffleLanguage.Env): Boolean {
+  override fun isObjectOfLanguage(obj: Any) = obj is TruffleObject
+  override fun initializeMultipleContexts() = singleContextAssumption.invalidate()
+  override fun areOptionsCompatible(a: OptionValues?, b: OptionValues?) = true
+  override fun getOptionDescriptors(): OptionDescriptors? = null // Language.OPTION_DESCRIPTORS
+  override fun initializeMultiThreading(ctx: Context) = ctx.singleThreadedAssumption.invalidate()
+  override fun isThreadAccessAllowed(thread: Thread, singleThreaded: Boolean) = true
+  override fun initializeThread(ctx: Context, thread: Thread?) {}
+  override fun disposeThread(ctx: Context, thread: Thread?) {}
+  override fun findMetaObject(ctx: Context, value: Any?): Any = getMetaObject(value)
+  override fun findSourceLocation(ctx: Context, value: Any?): SourceSection? = null
+  override fun isVisible(ctx: Context, value: Any?) = true
+  override fun toString(ctx: Context, value: Any?): String = toString(value)
+  override fun patchContext(ctx: Context, env: TruffleLanguage.Env): Boolean {
     ctx.env = env
     return true
   }
 
-  fun findExportedSymbol(@Suppress("UNUSED_PARAMETER") context: org.graalvm.polyglot.Context, globalName: String, @Suppress("UNUSED_PARAMETER") onlyExplicit: Boolean): Any? {
+  fun findExportedSymbol(
+    @Suppress("UNUSED_PARAMETER") context: org.graalvm.polyglot.Context,
+    globalName: String,
+    @Suppress("UNUSED_PARAMETER") onlyExplicit: Boolean
+  ): Any? =
     when (globalName) {
-      "S" -> return S(Arr(Type.Nat, Arr(Type.Nat, Type.Nat)), Arr(Type.Nat, Type.Nat), Type.Nat)
-      "K" -> return K(Type.Nat, Type.Nat)
-      "I" -> return I(Type.Nat)
-      "main" -> return 42
+      "S" -> S(Arr(Type.Nat, Arr(Type.Nat, Type.Nat)), Arr(Type.Nat, Type.Nat), Type.Nat)
+      "K" -> K(Type.Nat, Type.Nat)
+      "I" -> I(Type.Nat)
+      "main" -> 42
+      else -> null
     }
-    return null
-  }
 
   // for testing
 
-  fun I(tx: Type): Code {
-    return unary({ x -> x }, tx)
-  }
-
-  fun K(tx: Type, ty: Type): Code {
-    return binary({ x, _ -> x }, tx, ty)
-  }
+  fun I(tx: Type) = unary({ x -> x }, tx)
+  fun K(tx: Type, ty: Type) = binary({ x, _ -> x }, tx, ty)
 
   @Suppress("UNUSED_PARAMETER")
-  fun S(tx: Type, ty: Type, tz: Type): Code {
-    throw RuntimeException("nope")
-  }
+  fun S(tx: Type, ty: Type, tz: Type): Code = todo("S")
 
   @Suppress("UNUSED_PARAMETER")
-  fun unary(f: (x: Term) -> Term, argument: Type): Code {
-    throw RuntimeException("unary")
-  }
+  fun unary(f: (x: Term) -> Term, argument: Type): Code = todo("unary")
 
   @Suppress("UNUSED_PARAMETER")
-  fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code {
-    throw RuntimeException("binary")
-  }
+  fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo("binary")
 
 //        val OPTION_DESCRIPTORS: OptionDescriptors = LanguageOptionDescriptors()
-
 //        @com.oracle.truffle.api.Option(name = "tco", help = "Tail-call optimization", category = com.oracle.truffle.api.OptionCategory.USER, stability = com.oracle.truffle.api.OptionStability.EXPERIMENTAL)
 //        const val TAIL_CALL_OPTIMIZATION = OptionKey(false)
 }
@@ -211,25 +162,22 @@ class Detector : TruffleFile.FileTypeDetector {
         if (firstLine != null && LANGUAGE_SHEBANG_REGEXP.matcher(firstLine).matches())
           return LANGUAGE_MIME_TYPE
       }
-    } catch (e: IOException) {
-      // ok
-    } catch (e: SecurityException) {
-      // ok
+    } catch (e: IOException) { // ok
+    } catch (e: SecurityException) { // ok
     }
     return null
   }
 
-  override fun findEncoding(_file: TruffleFile): Charset {
-    return StandardCharsets.UTF_8
-  }
+  override fun findEncoding(_file: TruffleFile) = StandardCharsets.UTF_8
 }
 
-class Context(val language: Language, var env: TruffleLanguage.Env) {
-  val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")
-
+class Context(
+  val language: Language,
+  var env: TruffleLanguage.Env
+) {
+  val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")!!
   fun shutdown() {}
 }
-
 
 fun panic(msg: String, base: Exception?): Nothing {
   CompilerDirectives.transferToInterpreter();
@@ -239,6 +187,20 @@ fun panic(msg: String, base: Exception?): Nothing {
 }
 
 fun panic(msg: String): Nothing {
+  CompilerDirectives.transferToInterpreter();
+  val e = RuntimeException(msg, null)
+  e.stackTrace = e.stackTrace.drop(1).toTypedArray()
+  throw e;
+}
+
+fun todo(msg: String, base: Exception?): Nothing {
+  CompilerDirectives.transferToInterpreter();
+  val e = RuntimeException(msg, base)
+  e.stackTrace = e.stackTrace.drop(1).toTypedArray()
+  throw e;
+}
+
+fun todo(msg: String): Nothing {
   CompilerDirectives.transferToInterpreter();
   val e = RuntimeException(msg, null)
   e.stackTrace = e.stackTrace.drop(1).toTypedArray()
