@@ -6,6 +6,10 @@
       <entry_point TYPE="method" FQNAME="core.nodes.Expr$1 java.lang.Object execute(com.oracle.truffle.api.frame.VirtualFrame frame)" />
       <entry_point TYPE="method" FQNAME="core.nodes.Expr$1 boolean executeBoolean(com.oracle.truffle.api.frame.VirtualFrame frame)" />
     </entry_points>
+    <list size="2">
+      <item index="0" class="java.lang.String" itemvalue="com.oracle.truffle.api.dsl.ImplicitCast" />
+      <item index="1" class="java.lang.String" itemvalue="com.oracle.truffle.api.dsl.TypeCast" />
+    </list>
     <pattern value="core.Detector" />
     <pattern value="core.nodes.ExpressionInterface" method="executeBoolean" />
     <pattern value="cadenza.syntax.CadenzaBaseListener" />
