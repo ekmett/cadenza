@@ -92,7 +92,6 @@ class Detector : TruffleFile.FileTypeDetector {
     }
     return null
   }
-
 }
 
 class Context(
