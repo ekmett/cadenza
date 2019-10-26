@@ -60,7 +60,10 @@ gitPublish {
   repoUri.set("git@github.com:ekmett/cadenza.git") // defaults to this project's origin URI
   branch.set("gh-pages")
   contents {
-    from(tasks.getByPath(":dokka")) // into "docs/${version}"
+    from(tasks.getByPath(":dokka"))
+    from(file("etc/index.html")) {
+      rename("etc/index.hmtl","index.html")
+    }
   }
 }
 
