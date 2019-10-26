@@ -1,4 +1,5 @@
 import com.palantir.gradle.graal.ExtractGraalTask;
+import org.apache.tools.ant.filters.ReplaceTokens
 import com.palantir.gradle.graal.NativeImageTask;
 import java.util.Properties;
 
@@ -77,27 +78,6 @@ subprojects {
   version = project.properties["version"]
 }
 
-project(":component") {
-  val jar = tasks.getByName<Jar>("jar")
-
-  tasks.register("register", Exec::class) {
-    if (needsExtract) dependsOn(":extractGraalTooling")
-    dependsOn(jar)
-    description = "Register the language with graal"
-    commandLine = listOf(
-      "$graalBinDir/gu",
-      "install",
-      "-f",
-      "-L",
-      jar.archiveFile.get().getAsFile().getPath()
-    )
-  }
-}
-
-tasks.getByName<NativeImageTask>("nativeImage") {
-  dependsOn(":component:register")
-}
-
 application {
   mainClassName = "cadenza.launcher.Launcher"
   applicationDefaultJvmArgs = listOf(
@@ -108,13 +88,70 @@ application {
   )
 }
 
-tasks.replace("jar").run { } // no top level jar ?
+tasks.withType<ProcessResources> {
+  from("native-image.properties") {
+    expand(project.properties)
+  }
+  rename("native-image.properties","jre/languages/cadenza/native-image.properties")
+}
+
+val jar = tasks.getByName<Jar>("jar") {
+  baseName = "cadenza"
+  from("../LICENSE.txt") { rename("LICENSE.txt","LICENSE_CADENZA") }
+  from("../LICENSE.txt") { rename("LICENSE.txt","jre/languages/cadenza/LICENSE.txt") }
+  from(tasks.getByPath(":startScripts")) {
+    rename("(.*)","jre/languages/cadenza/bin/$1")
+    filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "\$APP_HOME"))
+  }
+  from(tasks.getByPath(":language:jar")) {
+    rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
+  }
+  from(tasks.getByPath(":launcher:jar")) {
+    rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
+  }
+
+  from(project(":language").configurations.getByName("antlrRuntime")) {
+    rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
+  }
+
+  // grab top-level deps.
+  from(project(":language").configurations.getByName("runtime")) {
+    rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
+  }
+
+  manifest {
+    attributes["Bundle-Name"] = "Cadenza"
+    attributes["Bundle-Description"] = "The cadenza language"
+    attributes["Bundle-DocURL"] = "https://github.com/ekmett/cadenza"
+    attributes["Bundle-Symbolic-Name"] = "cadenza"
+    attributes["Bundle-Version"] = project.version.toString()
+    attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=19.2.0)(os_arch=amd64))\""
+    attributes["x-GraalVM-Polyglot-Part"] = "True"
+  }
+}
+
+tasks.register("register", Exec::class) {
+  if (needsExtract) dependsOn(":extractGraalTooling")
+  dependsOn(jar)
+  description = "Register the language with graal"
+  commandLine = listOf(
+    "$graalBinDir/gu",
+    "install",
+    "-f",
+    "-L",
+    jar.archiveFile.get().getAsFile().getPath()
+  )
+}
 
 // assumes we are building on graal
 tasks.register("runRegistered", Exec::class) {
   if (needsExtract) dependsOn(":extractGraalTooling")
-  dependsOn(":component:register")
+  dependsOn(":register")
   executable = "$graalBinDir/cadenza"
+}
+
+tasks.getByName<NativeImageTask>("nativeImage") {
+  dependsOn(":register")
 }
 
 tasks.replace("run", JavaExec::class.java).run {
@@ -129,3 +166,4 @@ tasks.replace("run", JavaExec::class.java).run {
   )
   main = "cadenza.launcher.Launcher"
 }
+
