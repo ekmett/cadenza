@@ -102,8 +102,23 @@ tasks.getByName<Jar>("jar") {
   }
 }
 
-tasks.replace("run", Exec::class.java).run {
+// assumes we are building on graal
+tasks.register("runRegistered", Exec::class) {
   if (needsExtract) dependsOn(":extractGraalTooling")
   dependsOn(":component:register")
   executable = "$graalBinDir/cadenza"
+}
+
+tasks.replace("run", JavaExec::class.java).run {
+//tasks.register("runLocal", JavaExec::class) {
+  if (needsExtract) dependsOn(":extractGraalTooling")
+  dependsOn(":launcher:jar")
+  executable = "$graalBinDir/java"
+  classpath = project(":launcher").sourceSets["main"].runtimeClasspath
+  jvmArgs = listOf(
+    "-XX:+UnlockExperimentalVMOptions",
+    "-XX:+EnableJVMCI",
+    "-Dtruffle.class.path.append=language/build/libs/cadenza-language-${project.version}.jar"
+  )
+  main = "cadenza.launcher.Launcher"
 }

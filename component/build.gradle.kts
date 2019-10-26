@@ -19,7 +19,6 @@ val jar = tasks.getByName<Jar>("jar") {
   from(tasks.getByPath(":launcher:jar")) {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
   }
-  // we need to copy all the dependency jars for kotlin as well?
 
   from(tasks.getByPath(":startScripts")) {
     rename("(.*)","jre/languages/cadenza/bin/$1")
@@ -29,8 +28,8 @@ val jar = tasks.getByName<Jar>("jar") {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
   }
 
-  // grab top-level kotlin build deps
-  from(project(":").configurations.getByName("runtime")) {
+  // grab top-level deps.
+  from(project(":language").configurations.getByName("runtime")) {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
   }
 

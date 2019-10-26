@@ -148,7 +148,7 @@ class Launcher : AbstractLanguageLauncher() {
     @JvmStatic
     fun main(args: Array<String>) {
       println("main.start")
-      Launcher().launch(arrayOf("Foo.za")) // args
+      Launcher().launch(if (args.isEmpty()) arrayOf("main.za") else args)
     }
 
     protected fun printOption(option: String, description: String) {
