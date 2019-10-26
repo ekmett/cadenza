@@ -61,7 +61,7 @@ plugins {
 buildScan {
   termsOfServiceUrl = "https://gradle.com/terms-of-service"
   termsOfServiceAgree = "yes"
-  if (System.getenv("CI")) { // on travis, always publish build-scan
+  if (System.getenv("CI") != null) { // on travis, always publish build-scan
     publishAlways()
     tag("CI")
   }
@@ -69,7 +69,7 @@ buildScan {
 }
 
 gitPublish {
-  if (System.getenv("CI")) {
+  if (System.getenv("CI") != null) {
     repoUri.set("https://github.com/ekmett/cadenza.git") // only pulling on CI, use https
   } else {
     repoUri.set("git@github.com:ekmett/cadenza.git")
