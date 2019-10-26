@@ -1,8 +1,12 @@
+**/*.iml
+**/.idea/gradle.xml
+**/.idea/modules.xml
+**/.idea/shelf/*
+**/.idea/tasks.xml
+**/.idea/usage.statistics.xml
+**/.idea/workspace.xml
+**/build/*
 **/dist-newstyle/**
 **/dist/**
-.bloop
 .gradle
-.idea
-build
 old
-target
