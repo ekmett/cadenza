@@ -1,22 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
+    <option name="USE_RELEASE_OPTION" value="false" />
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true">
         <outputRelativeToContentRoot value="true" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="cadenza.component.main" target="1.8" />
-      <module name="cadenza.component.test" target="1.8" />
-      <module name="cadenza.language.main" target="1.8" />
-      <module name="cadenza.language.test" target="1.8" />
-      <module name="cadenza.launcher.main" target="1.8" />
-      <module name="cadenza.launcher.test" target="1.8" />
-      <module name="cadenza.main" target="1.8" />
-      <module name="cadenza.test" target="1.8" />
-      <module name="core.main" target="1.8" />
-      <module name="core.test" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
