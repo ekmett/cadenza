@@ -29,7 +29,7 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
   }
 
   @CompilerDirectives.ValueType
-  class Arr(val argument: Type, val result: Type) : Type(FrameSlotKind.Object) {
+  data class Arr(val argument: Type, val result: Type) : Type(FrameSlotKind.Object) {
     override val arity: Int
 
     init {
@@ -45,37 +45,20 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
           t
         )
     }
-
-    override fun hashCode(): Int {
-      return Objects.hash(argument, result)
-    }
-
-    override fun equals(other: Any?): Boolean {
-      return other is Arr && argument == other.argument && result == other.result
-    }
   }
 
   // IO actions represented ML-style as nullary functions
   @CompilerDirectives.ValueType
-  class IO(val result: Type)// closure
+  data class IO(val result: Type)// closure
     : Type(FrameSlotKind.Object) {
 
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) {
       unsupported("expected io", t)
     }
-
-    override fun hashCode(): Int {
-      return result.hashCode()
-    }
-
-    override fun equals(other: Any?): Boolean {
-      return other is Arr && result == other.result
-    }
   }
 
   companion object {
-
     val Bool: Type = object : Type(FrameSlotKind.Boolean) {
       @Throws(UnsupportedTypeException::class)
       override fun validate(t: Any?) {
