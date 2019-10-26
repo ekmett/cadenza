@@ -9,60 +9,6 @@
 <br/>
 <h1>Code</h1>
 <code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Code</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code> <a href="https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/cadenza/nodes/Code.kt#L24">(source)</a>
-<h3>Types</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="-ann/index.html">Ann</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Ann</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-app/index.html">App</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">App</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-arg/index.html">Arg</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Arg</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-call-builtin/index.html">CallBuiltin</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">CallBuiltin</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-if/index.html">If</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">If</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-lam/index.html">Lam</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Lam</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-var/index.html">Var</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Var</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-</tbody>
-</table>
 <h3>Constructors</h3>
 <table>
 <tbody>
@@ -171,72 +117,57 @@
 </tr>
 </tbody>
 </table>
-<h3>Companion Object Properties</h3>
+<h3>Inheritors</h3>
 <table>
 <tbody>
 <tr>
 <td>
-<h4><a href="-n-o_-s-o-u-r-c-e.html">NO_SOURCE</a></h4>
+<h4><a href="../-ann/index.html">Ann</a></h4>
 </td>
 <td>
-<code><span class="keyword">val </span><span class="identifier">NO_SOURCE</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+<code><span class="keyword">class </span><span class="identifier">Ann</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
 </tr>
 <tr>
 <td>
-<h4><a href="-u-n-a-v-a-i-l-a-b-l-e_-s-o-u-r-c-e.html">UNAVAILABLE_SOURCE</a></h4>
+<h4><a href="../-app/index.html">App</a></h4>
 </td>
 <td>
-<code><span class="keyword">val </span><span class="identifier">UNAVAILABLE_SOURCE</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
-</tr>
-</tbody>
-</table>
-<h3>Companion Object Functions</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="big-literal.html">bigLiteral</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">bigLiteral</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes.Code.Companion$bigLiteral(cadenza.values.BigInt)/i">i</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.values/-big-int/index.html"><span class="identifier">BigInt</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Code</span></a></code></td>
+<code><span class="keyword">class </span><span class="identifier">App</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
 </tr>
 <tr>
 <td>
-<h4><a href="boolean-literal.html">booleanLiteral</a></h4>
+<h4><a href="../-arg/index.html">Arg</a></h4>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">booleanLiteral</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes.Code.Companion$booleanLiteral(kotlin.Boolean)/b">b</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Code</span></a></code></td>
+<code><span class="keyword">class </span><span class="identifier">Arg</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
 </tr>
 <tr>
 <td>
-<h4><a href="int-literal.html">intLiteral</a></h4>
+<h4><a href="../-call-builtin/index.html">CallBuiltin</a></h4>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">intLiteral</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes.Code.Companion$intLiteral(kotlin.Int)/i">i</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Code</span></a></code></td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">CallBuiltin</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
 </tr>
 <tr>
 <td>
-<h4><a href="lam.html">lam</a></h4>
+<h4><a href="../-if/index.html">If</a></h4>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Lam</span></code><br/>
-<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Lam</span></code><br/>
-<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/closureFrameDescriptor">closureFrameDescriptor</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameDescriptor</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/captureSteps">captureSteps</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Lam</span></code><br/>
-<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/closureFrameDescriptor">closureFrameDescriptor</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameDescriptor</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/captureSteps">captureSteps</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Lam</span></code></td>
+<code><span class="keyword">class </span><span class="identifier">If</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
 </tr>
 <tr>
 <td>
-<h4><a href="put.html">put</a></h4>
+<h4><a href="../-lam/index.html">Lam</a></h4>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes.Code.Companion$put(com.oracle.truffle.api.frame.FrameSlot, cadenza.nodes.Code)/slot">slot</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameSlot</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes.Code.Companion$put(com.oracle.truffle.api.frame.FrameSlot, cadenza.nodes.Code)/value">value</span><span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a></code></td>
+<code><span class="keyword">class </span><span class="identifier">Lam</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
 </tr>
 <tr>
 <td>
-<h4><a href="var.html">var</a></h4>
+<h4><a href="../-var/index.html">Var</a></h4>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">var</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes.Code.Companion$var(com.oracle.truffle.api.frame.FrameSlot)/slot">slot</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameSlot</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Var</span></code></td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Var</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
 </tr>
 </tbody>
 </table>
