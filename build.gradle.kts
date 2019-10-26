@@ -80,6 +80,7 @@ gitPublish {
     from(file("etc/gh-pages.html")) {
       rename("gh-pages.html","index.html")
     }
+    // from(file("etc/.nojekyll"))
   }
 }
 
