@@ -14,6 +14,13 @@
 <tbody>
 <tr>
 <td>
+<h4><a href="-ctx/index.html">Ctx</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Ctx</span></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="-term/index.html">Term</a></h4>
 </td>
 <td>
@@ -31,7 +38,14 @@
 <h4><a href="-types/index.html">Types</a></h4>
 </td>
 <td>
-<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">Types</span></code></td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Types</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-witness/index.html">Witness</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Witness</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -44,6 +58,39 @@
 </td>
 <td>
 <code><span class="keyword">class </span><span class="identifier">TypeError</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="tapp.html">tapp</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">tapp</span><span class="symbol">(</span><span class="identifier" id="cadenza.types$tapp(cadenza.types.Term, kotlin.Array((cadenza.types.Term)))/trator">trator</span><span class="symbol">:</span>&nbsp;<a href="-term/index.html"><span class="identifier">Term</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="cadenza.types$tapp(cadenza.types.Term, kotlin.Array((cadenza.types.Term)))/trands">trands</span><span class="symbol">:</span>&nbsp;<a href="-term/index.html"><span class="identifier">Term</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-term/index.html"><span class="identifier">Term</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="tif.html">tif</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">tif</span><span class="symbol">(</span><span class="identifier" id="cadenza.types$tif(cadenza.types.Term, cadenza.types.Term, cadenza.types.Term)/body">body</span><span class="symbol">:</span>&nbsp;<a href="-term/index.html"><span class="identifier">Term</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.types$tif(cadenza.types.Term, cadenza.types.Term, cadenza.types.Term)/thenTerm">thenTerm</span><span class="symbol">:</span>&nbsp;<a href="-term/index.html"><span class="identifier">Term</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.types$tif(cadenza.types.Term, cadenza.types.Term, cadenza.types.Term)/elseTerm">elseTerm</span><span class="symbol">:</span>&nbsp;<a href="-term/index.html"><span class="identifier">Term</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-term/index.html"><span class="identifier">Term</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="tlam.html">tlam</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">tlam</span><span class="symbol">(</span><span class="identifier" id="cadenza.types$tlam(kotlin.Array((kotlin.String)), cadenza.types.Term)/names">names</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.types$tlam(kotlin.Array((kotlin.String)), cadenza.types.Term)/body">body</span><span class="symbol">:</span>&nbsp;<a href="-term/index.html"><span class="identifier">Term</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-term/index.html"><span class="identifier">Term</span></a><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="tname.html">tname</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">tname</span><span class="symbol">(</span><span class="identifier" id="cadenza.types$tname(kotlin.String)/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-term/index.html"><span class="identifier">Term</span></a></code></td>
 </tr>
 </tbody>
 </table>
