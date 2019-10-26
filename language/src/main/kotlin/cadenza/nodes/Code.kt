@@ -5,7 +5,6 @@ import cadenza.nbe.Neutral.*
 import cadenza.types.*
 import cadenza.util.Errors.panic
 import cadenza.values.*
-import com.oracle.truffle.api.CompilerAsserts
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
@@ -19,16 +18,12 @@ import com.oracle.truffle.api.profiles.ConditionProfile
 import com.oracle.truffle.api.source.SourceSection
 import java.util.Arrays
 
-
-// Used for expressions: variables, applications, abstractions, etc.
-
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(Types::class)
 abstract class Code : Node(), InstrumentableNode {
   private var sourceCharIndex = NO_SOURCE
   private var sourceLength = 0
-  // execution
 
   @Throws(NeutralException::class)
   abstract fun execute(frame: VirtualFrame): Any?
@@ -39,7 +34,6 @@ abstract class Code : Node(), InstrumentableNode {
     } catch (e: NeutralException) {
       return e.get()
     }
-
   }
 
   @Throws(UnexpectedResultException::class, NeutralException::class)

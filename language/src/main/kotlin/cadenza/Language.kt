@@ -16,16 +16,65 @@ import com.oracle.truffle.api.instrumentation.StandardTags.*
 import com.oracle.truffle.api.interop.InteropLibrary
 import com.oracle.truffle.api.interop.TruffleObject
 import com.oracle.truffle.api.interop.UnsupportedMessageException
+import com.oracle.truffle.api.nodes.NodeInfo
 import com.oracle.truffle.api.source.SourceSection
 import org.graalvm.options.*
+import org.graalvm.polyglot.Source
+import java.io.IOException
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
+import java.util.regex.Pattern
+
+const val LANGUAGE_ID = "cadenza"
+const val LANGUAGE_NAME = "Cadenza"
+const val LANGUAGE_VERSION = "0"
+const val LANGUAGE_MIME_TYPE = "application/x-cadenza"
+const val LANGUAGE_EXTENSION = "za"
+val LANGUAGE_BUILTIN_SOURCE = Source.newBuilder(LANGUAGE_ID, "", "[cadenza builtin]").buildLiteral()
+private val LANGUAGE_SHEBANG_REGEXP = Pattern.compile("^#! ?/usr/bin/(env +cadenza|cadenza).*")
+
+fun lookupNodeInfo(clazz: Class<*>?): NodeInfo? {
+  if (clazz == null) return null
+  val info = clazz.getAnnotation<NodeInfo>(NodeInfo::class.java)
+  return info ?: lookupNodeInfo(clazz.superclass)
+}
+
+fun getMetaObject(value: Any?): String {
+  if (value == null) return "ANY"
+  val interop = InteropLibrary.getFactory().getUncached(value)
+  if (interop.isNumber(value) || value is Number) return "Number"
+  if (interop.isBoolean(value)) return "Boolean"
+  if (interop.isString(value)) return "String"
+  if (interop.isNull(value)) return "NULL"
+  if (interop.isExecutable(value)) return "Function"
+  return if (interop.hasMembers(value)) "Object" else "Unsupported"
+}
+
+fun toString(value: Any?): String {
+  try {
+    if (value == null) return "null"
+    if (value is Number) return value.toString()
+    if (value is Closure) return value.toString()
+    val interop = InteropLibrary.getFactory().getUncached(value)
+    if (interop.fitsInLong(value)) return java.lang.Long.toString(interop.asLong(value))
+    if (interop.isBoolean(value)) return java.lang.Boolean.toString(interop.asBoolean(value))
+    if (interop.isString(value)) return interop.asString(value)
+    if (interop.isNull(value)) return "NULL"
+    if (interop.isExecutable(value)) return "Function"
+    return if (interop.hasMembers(value)) "Object" else "Unsupported"
+  } catch (e: UnsupportedMessageException) {
+    CompilerDirectives.transferToInterpreter()
+    throw RuntimeException("unknown type")
+  }
+}
 
 @Option.Group("cadenza")
 @TruffleLanguage.Registration(
-  id = Language.ID,
-  name = Language.NAME,
-  version = Language.VERSION,
-  defaultMimeType = Language.MIME_TYPE,
-  characterMimeTypes = [Language.MIME_TYPE],
+  id = LANGUAGE_ID,
+  name = LANGUAGE_NAME,
+  version = LANGUAGE_VERSION,
+  defaultMimeType = LANGUAGE_MIME_TYPE,
+  characterMimeTypes = [LANGUAGE_MIME_TYPE],
   contextPolicy = ContextPolicy.SHARED,
   fileTypeDetectors = [Detector::class]
 )
@@ -147,45 +196,37 @@ class Language : TruffleLanguage<Context>() {
     throw RuntimeException("binary")
   }
 
-  companion object {
-    const val ID = "cadenza"
-    const val NAME = "Cadenza"
-    const val VERSION = "0"
-    const val MIME_TYPE = "application/x-cadenza"
-    const val EXTENSION = "za"
-
 //        val OPTION_DESCRIPTORS: OptionDescriptors = LanguageOptionDescriptors()
 
 //        @com.oracle.truffle.api.Option(name = "tco", help = "Tail-call optimization", category = com.oracle.truffle.api.OptionCategory.USER, stability = com.oracle.truffle.api.OptionStability.EXPERIMENTAL)
 //        const val TAIL_CALL_OPTIMIZATION = OptionKey(false)
+}
 
-    fun getMetaObject(value: Any?): String {
-      if (value == null) return "ANY"
-      val interop = InteropLibrary.getFactory().getUncached(value)
-      if (interop.isNumber(value) || value is Number) return "Number"
-      if (interop.isBoolean(value)) return "Boolean"
-      if (interop.isString(value)) return "String"
-      if (interop.isNull(value)) return "NULL"
-      if (interop.isExecutable(value)) return "Function"
-      return if (interop.hasMembers(value)) "Object" else "Unsupported"
-    }
-
-    fun toString(value: Any?): String {
-      try {
-        if (value == null) return "null"
-        if (value is Number) return value.toString()
-        if (value is Closure) return value.toString()
-        val interop = InteropLibrary.getFactory().getUncached(value)
-        if (interop.fitsInLong(value)) return java.lang.Long.toString(interop.asLong(value))
-        if (interop.isBoolean(value)) return java.lang.Boolean.toString(interop.asBoolean(value))
-        if (interop.isString(value)) return interop.asString(value)
-        if (interop.isNull(value)) return "NULL"
-        if (interop.isExecutable(value)) return "Function"
-        return if (interop.hasMembers(value)) "Object" else "Unsupported"
-      } catch (e: UnsupportedMessageException) {
-        CompilerDirectives.transferToInterpreter()
-        throw RuntimeException("unknown type")
+class Detector : TruffleFile.FileTypeDetector {
+  override fun findMimeType(file: TruffleFile): String? {
+    val name = file.name ?: return null
+    if (name.endsWith(LANGUAGE_EXTENSION)) return LANGUAGE_MIME_TYPE
+    try {
+      file.newBufferedReader(StandardCharsets.UTF_8).use { fileContent ->
+        val firstLine = fileContent.readLine()
+        if (firstLine != null && LANGUAGE_SHEBANG_REGEXP.matcher(firstLine).matches())
+          return LANGUAGE_MIME_TYPE
       }
+    } catch (e: IOException) {
+      // ok
+    } catch (e: SecurityException) {
+      // ok
     }
+    return null
   }
+
+  override fun findEncoding(_file: TruffleFile): Charset {
+    return StandardCharsets.UTF_8
+  }
+}
+
+class Context(val language: Language, var env: TruffleLanguage.Env) {
+  val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")
+
+  fun shutdown() {}
 }

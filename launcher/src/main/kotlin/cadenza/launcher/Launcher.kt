@@ -7,7 +7,6 @@ import org.graalvm.options.OptionCategory
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.PolyglotException
 import org.graalvm.polyglot.Source
-import org.graalvm.polyglot.Value
 
 import java.io.File
 import java.io.IOException
@@ -21,9 +20,8 @@ class Launcher : AbstractLanguageLauncher() {
   internal var file: File? = null
 
   override fun getLanguageId(): String {
-    return Language.ID
+    return LANGUAGE_ID
   }
-
 
   override fun launch(contextBuilder: Context.Builder) {
     System.exit(execute(contextBuilder))
@@ -140,7 +138,7 @@ class Launcher : AbstractLanguageLauncher() {
   }
 
   override fun getDefaultLanguages(): Array<String> {
-    return arrayOf(Language.ID) // "js","llvm",getLanguageId()};
+    return arrayOf(LANGUAGE_ID) // "js","llvm",getLanguageId()};
   }
 
   companion object {
