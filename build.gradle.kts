@@ -329,3 +329,8 @@ tasks.withType<DokkaTask> {
   }
 }
 
+tasks.register("pages") {
+  description = "Publish documentation"
+  group = "documentation"
+  dependsOn(":gitPublishPush")
+}
