@@ -71,7 +71,7 @@ buildScan {
 gitPublish {
   if (System.getenv("CI")) {
     repoUri.set("https://github.com/ekmett/cadenza.git") // only pulling on CI, use https
-  } else
+  } else {
     repoUri.set("git@github.com:ekmett/cadenza.git")
   }
   branch.set("gh-pages")
