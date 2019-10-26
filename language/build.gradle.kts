@@ -1,18 +1,23 @@
+import org.jetbrains.dokka.gradle.DokkaTask
 
 apply(plugin = "antlr")
 apply(plugin = "kotlin")
 apply(plugin = "kotlin-kapt")
+apply(plugin = "org.jetbrains.dokka")
 
 val antlrRuntime by configurations.creating
+val kotlinRuntime by configurations.creating
 
 dependencies {
   "kapt"("org.graalvm.truffle:truffle-api:19.2.0.1")
   "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
   "antlr"("org.antlr:antlr4:4.7.2")
-  "antlrRuntime"("org.antlr:antlr4-runtime:4.7.2")
+  antlrRuntime("org.antlr:antlr4-runtime:4.7.2")
   implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
   implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
   implementation("org.antlr:antlr4-runtime:4.7.2")
+  kotlinRuntime(kotlin("stdlib"))
+  kotlinRuntime(kotlin("stdlib-jdk8"))
   testImplementation("org.testng:testng:6.14.3")
 }
 
@@ -32,4 +37,9 @@ tasks.getByName<Jar>("jar") {
 
 tasks.withType<AntlrTask> {
   arguments.addAll(listOf("-package", "cadenza.syntax", "-no-listener", "-visitor"))
+}
+
+tasks.withType<DokkaTask> {
+  outputFormat = "html"
+  outputDirectory = "$buildDir/javadoc"
 }

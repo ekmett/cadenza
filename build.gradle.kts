@@ -39,6 +39,7 @@ plugins {
   application
   idea
   id("com.palantir.graal") version "0.6.0"
+  id("org.jetbrains.dokka") version "0.9.17" apply false
 }
 
 dependencies {
@@ -95,13 +96,38 @@ tasks.withType<ProcessResources> {
   rename("native-image.properties","jre/languages/cadenza/native-image.properties")
 }
 
+distributions {
+  main {
+    baseName = "cadenza"
+    contents {
+      exclude(
+        "graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar",
+        "antlr4-4*.jar", "javax.json*.jar", "org.abego.*.jar", "ST4*.jar",
+        "annotations*.jar"
+      )
+      filesMatching("**/cadenza") {
+        filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "\$APP_HOME"))
+      }
+      filesMatching("**/cadenza.bat") {
+        filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "%~dp0.."))
+      }
+      from("LICENSE.txt")
+    }
+  }
+}
+
 val jar = tasks.getByName<Jar>("jar") {
   baseName = "cadenza"
-  from("../LICENSE.txt") { rename("LICENSE.txt","LICENSE_CADENZA") }
-  from("../LICENSE.txt") { rename("LICENSE.txt","jre/languages/cadenza/LICENSE.txt") }
+  from("LICENSE.txt") { rename("LICENSE.txt","LICENSE_cadenza.txt") }
+  from("LICENSE.txt") { rename("LICENSE.txt","jre/languages/cadenza/LICENSE.txt") }
   from(tasks.getByPath(":startScripts")) {
     rename("(.*)","jre/languages/cadenza/bin/$1")
-    filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "\$APP_HOME"))
+    filesMatching("**/cadenza") {
+      filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "\$APP_HOME"))
+    }
+    filesMatching("**/cadenza.bat") {
+      filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "%~dp0.."))
+    }
   }
   from(tasks.getByPath(":language:jar")) {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
@@ -110,12 +136,17 @@ val jar = tasks.getByName<Jar>("jar") {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
   }
 
-  from(project(":language").configurations.getByName("antlrRuntime")) {
+  from(project(":language").configurations.getByName("kotlinRuntime")) {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
+    exclude("annotations*.jar")
   }
 
   // grab top-level deps.
   from(project(":language").configurations.getByName("runtime")) {
+    exclude(
+      "graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar", // graal/truffle parts that ship with graalvm and shouldn't be shadowed
+      "antlr4-4*.jar", "javax.json*.jar", "org.abego.*.jar", "ST4*.jar" // unused runtime bits of antlr
+    )
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
   }
 
