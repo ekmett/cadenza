@@ -106,7 +106,6 @@ application {
   )
 }
 
-
 distributions {
   main {
     baseName = "cadenza"
@@ -151,7 +150,7 @@ project(":language") {
   tasks.getByName<Jar>("jar") {
     archiveBaseName.set("cadenza-language")
     manifest {
-      attributes["Class-Path"] =  configurations.runtimeClasspath.get().files.map { it.getAbsolutePath() } .joinToString(separator = " ")
+      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.map { it.getAbsolutePath() } .joinToString(separator = " ")
     }
   }
 
