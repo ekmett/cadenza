@@ -1,6 +1,6 @@
 package cadenza.types
 
-import cadenza.nodes.Code
+import cadenza.nodes.*
 import com.oracle.truffle.api.frame.FrameDescriptor
 
 import java.util.Arrays
@@ -50,7 +50,7 @@ abstract class Term {
         override fun check(ctx: Ctx, @Suppress("UNUSED_PARAMETER") expectedType: Type?): Witness {
           return object : Witness(lookup(ctx, name)) {
             override fun compile(fd: FrameDescriptor): Code {
-              return Code.`var`(fd.findOrAddFrameSlot(name))
+              return `var`(fd.findOrAddFrameSlot(name))
             }
           }
         }
@@ -67,7 +67,7 @@ abstract class Term {
           val elseWitness = elseTerm.check(ctx, actualType)
           return object : Witness(actualType) {
             override fun compile(fd: FrameDescriptor): Code {
-              return Code.If(actualType, bodyWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd))
+              return If(actualType, bodyWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd))
             }
           }
         }
