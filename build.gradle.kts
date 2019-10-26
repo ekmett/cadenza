@@ -179,6 +179,15 @@ tasks.register("runRegistered", Exec::class) {
   if (needsExtract) dependsOn(":extractGraalTooling")
   dependsOn(":register")
   executable = "$graalBinDir/cadenza"
+  outputs.upToDateWhen { false }
+}
+
+// assumes we are building on graal
+tasks.register("runInstalled", Exec::class) {
+  if (needsExtract) dependsOn(":extractGraalTooling")
+  dependsOn(":installDist")
+  executable = "$buildDir/install/cadenza/bin/cadenza"
+  outputs.upToDateWhen { false }
 }
 
 tasks.getByName<NativeImageTask>("nativeImage") {
