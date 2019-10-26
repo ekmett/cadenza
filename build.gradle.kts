@@ -53,6 +53,15 @@ plugins {
   idea
   id("com.palantir.graal") version "0.6.0"
   id("org.jetbrains.dokka") version "0.9.17" // apply false
+  id("org.ajoberstar.git-publish") version "2.1.1"
+}
+
+gitPublish {
+  repoUri.set("git@github.com:ekmett/cadenza.git") // defaults to this project's origin URI
+  branch.set("gh-pages")
+  contents {
+    from(tasks.getByPath(":dokka")) // into "docs/${version}"
+  }
 }
 
 dependencies {
