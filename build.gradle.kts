@@ -59,14 +59,15 @@ plugins {
 gitPublish {
   repoUri.set("git@github.com:ekmett/cadenza.git") // defaults to this project's origin URI
   branch.set("gh-pages")
-  repoDir.set(file("$buildDir/pages"))
+  repoDir.set(file("$buildDir/javadoc"))
   contents {
-    from(tasks.getByPath(":dokka"))
     from(file("etc/gh-pages.html")) {
       rename("gh-pages.html","index.html")
     }
   }
 }
+
+tasks.getByName("gitPublishCommit").dependsOn(":dokka")
 
 dependencies {
   implementation(project(":language"))
@@ -213,6 +214,36 @@ tasks.withType<ProcessResources> {
   }
 }
 
+tasks.withType<DokkaTask> {
+  outputFormat = "html"
+  outputDirectory = gitPublish.repoDir.get().getAsFile().getAbsolutePath()
+  dependsOn(":gitPublishReset")
+  subProjects = listOf("language","launcher")
+  configuration {
+    jdkVersion = 8
+    includes = listOf("etc/module.md")
+    sourceLink {
+      path = "language/src/main/kotlin"
+      url = "https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/"
+      lineSuffix = "#L"
+    }
+    sourceLink {
+      path = "launcher/src/main/kotlin"
+      url = "https://github.com/ekmett/cadenza/blob/master/launcher/src/main/kotlin/"
+      lineSuffix = "#L"
+    }
+    externalDocumentationLink {
+      url = URL("https://www.antlr.org/api/Java/")
+      packageListUrl = URL("https://www.antlr.org/api/Java/package-list")
+    }
+  }
+}
+
+tasks.register("pages") {
+  description = "Publish documentation"
+  group = "documentation"
+  dependsOn(":gitPublishPush")
+}
 
 val os = System.getProperty("os.name")
 logger.info("os = {}",os)
@@ -309,32 +340,3 @@ tasks.register("unregister", Exec::class) {
   )
 }
 
-tasks.withType<DokkaTask> {
-  outputFormat = "html"
-  outputDirectory = "$buildDir/javadoc"
-  subProjects = listOf("language","launcher")
-  configuration {
-    jdkVersion = 8
-    includes = listOf("etc/module.md")
-    sourceLink {
-      path = "language/src/main/kotlin"
-      url = "https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/"
-      lineSuffix = "#L"
-    }
-    sourceLink {
-      path = "launcher/src/main/kotlin"
-      url = "https://github.com/ekmett/cadenza/blob/master/launcher/src/main/kotlin/"
-      lineSuffix = "#L"
-    }
-    externalDocumentationLink {
-      url = URL("https://www.antlr.org/api/Java/")
-      packageListUrl = URL("https://www.antlr.org/api/Java/package-list")
-    }
-  }
-}
-
-tasks.register("pages") {
-  description = "Publish documentation"
-  group = "documentation"
-  dependsOn(":gitPublishPush")
-}
