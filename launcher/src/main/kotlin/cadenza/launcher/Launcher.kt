@@ -35,7 +35,7 @@ class Launcher : AbstractLanguageLauncher() {
       contextBuilder.build().use { // context ->
           runVersionAction(versionAction, it.getEngine())
           val library = it.eval(Source.newBuilder(languageId, file).build())
-          if (!library.canExecute()) throw abort("no main function found")
+          if (!library.canExecute()) return library.asInt(); // throw abort("no main function found")
           return library.execute().asInt()
       }
     } catch (e: PolyglotException) {
