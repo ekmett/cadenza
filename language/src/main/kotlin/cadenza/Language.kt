@@ -6,7 +6,6 @@ import cadenza.types.Type
 import cadenza.types.Type.*
 import cadenza.types.Type.Companion.Nat
 import cadenza.values.Closure
-
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
 import com.oracle.truffle.api.debug.DebuggerTags
@@ -229,4 +228,19 @@ class Context(val language: Language, var env: TruffleLanguage.Env) {
   val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")
 
   fun shutdown() {}
+}
+
+
+fun panic(msg: String, base: Exception?): Nothing {
+  CompilerDirectives.transferToInterpreter();
+  val e = RuntimeException(msg, base)
+  e.stackTrace = e.stackTrace.drop(1).toTypedArray()
+  throw e;
+}
+
+fun panic(msg: String): Nothing {
+  CompilerDirectives.transferToInterpreter();
+  val e = RuntimeException(msg, null)
+  e.stackTrace = e.stackTrace.drop(1).toTypedArray()
+  throw e;
 }

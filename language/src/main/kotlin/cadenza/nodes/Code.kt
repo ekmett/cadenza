@@ -1,9 +1,9 @@
 package cadenza.nodes
 
+import cadenza.*
 import cadenza.nbe.*
 import cadenza.nbe.Neutral.*
 import cadenza.types.*
-import cadenza.util.Errors.panic
 import cadenza.values.*
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget

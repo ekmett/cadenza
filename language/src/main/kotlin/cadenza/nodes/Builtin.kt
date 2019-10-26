@@ -16,44 +16,44 @@ import java.io.Serializable
 @TypeSystemReference(Types::class)
 abstract class Builtin(val resultType: Type) : Node(), Serializable {
 
+  @Throws(NeutralException::class)
+  abstract fun execute(frame: VirtualFrame, arg: Code): Any?
+
+  @Throws(NeutralException::class)
+  open fun executeUnit(frame: VirtualFrame, arg: Code): Unit {
+    execute(frame, arg)
+  }
+
+  @Throws(UnexpectedResultException::class, NeutralException::class)
+  fun executeClosure(frame: VirtualFrame, arg: Code): Closure {
+    return TypesGen.expectClosure(execute(frame, arg))
+  }
+
+  @Throws(UnexpectedResultException::class, NeutralException::class)
+  fun executeBoolean(frame: VirtualFrame, arg: Code): Boolean {
+    return TypesGen.expectBoolean(execute(frame, arg))
+  }
+
+  @Throws(UnexpectedResultException::class, NeutralException::class)
+  fun executeInteger(frame: VirtualFrame, arg: Code): Int {
+    return TypesGen.expectInteger(execute(frame, arg))
+  }
+
+  @NodeInfo(shortName = "print$")
+  internal class Print : Builtin(Type.Action) {
     @Throws(NeutralException::class)
-    abstract fun execute(frame: VirtualFrame, arg: Code): Any?
+    override fun execute(frame: VirtualFrame, arg: Code): Any? {
+      executeUnit(frame, arg)
+      return Unit
+    }
 
     @Throws(NeutralException::class)
-    open fun executeUnit(frame: VirtualFrame, arg: Code): Unit {
-        execute(frame, arg)
+    override fun executeUnit(frame: VirtualFrame, arg: Code): Unit {
+      println(arg.execute(frame))
     }
+  }
 
-    @Throws(UnexpectedResultException::class, NeutralException::class)
-    fun executeClosure(frame: VirtualFrame, arg: Code): Closure {
-        return TypesGen.expectClosure(execute(frame, arg))
-    }
-
-    @Throws(UnexpectedResultException::class, NeutralException::class)
-    fun executeBoolean(frame: VirtualFrame, arg: Code): Boolean {
-        return TypesGen.expectBoolean(execute(frame, arg))
-    }
-
-    @Throws(UnexpectedResultException::class, NeutralException::class)
-    fun executeInteger(frame: VirtualFrame, arg: Code): Int {
-        return TypesGen.expectInteger(execute(frame, arg))
-    }
-
-    @NodeInfo(shortName = "print$")
-    internal class Print : Builtin(Type.Action) {
-        @Throws(NeutralException::class)
-        override fun execute(frame: VirtualFrame, arg: Code): Any? {
-            executeUnit(frame, arg)
-            return Unit
-        }
-
-        @Throws(NeutralException::class)
-        override fun executeUnit(frame: VirtualFrame, arg: Code): Unit {
-            println(arg.execute(frame))
-        }
-    }
-
-    companion object {
-        var print: Builtin = Print()
-    }
+  companion object {
+    var print: Builtin = Print()
+  }
 }

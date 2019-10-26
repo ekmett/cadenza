@@ -13,6 +13,7 @@ import java.io.IOException
 import java.nio.file.Paths
 import java.util.*
 import kotlin.io.*
+import kotlin.system.exitProcess
 
 class Launcher : AbstractLanguageLauncher() {
   internal var programArgs: Array<String> = emptyArray()
@@ -24,17 +25,18 @@ class Launcher : AbstractLanguageLauncher() {
   }
 
   override fun launch(contextBuilder: Context.Builder) {
-    System.exit(execute(contextBuilder))
+    exitProcess(execute(contextBuilder))
   }
 
   protected fun execute(contextBuilder: Context.Builder): Int {
     contextBuilder.arguments(languageId, programArgs)
     try {
-      contextBuilder.build().use { // context ->
-          runVersionAction(versionAction, it.getEngine())
-          val library = it.eval(Source.newBuilder(languageId, file).build())
-          if (!library.canExecute()) return library.asInt(); // throw abort("no main function found")
-          return library.execute().asInt()
+      contextBuilder.build().use {
+        // context ->
+        runVersionAction(versionAction, it.getEngine())
+        val library = it.eval(Source.newBuilder(languageId, file).build())
+        if (!library.canExecute()) return library.asInt(); // throw abort("no main function found")
+        return library.execute().asInt()
       }
     } catch (e: PolyglotException) {
       if (e.isExit) throw e
@@ -123,7 +125,7 @@ class Launcher : AbstractLanguageLauncher() {
 
   override fun printHelp(_maxCategory: OptionCategory) {
     println()
-    println("Usage: cadenza [OPTION]... [FILE] [PROGRAM ARGS]")
+    println("Usage: cadenza [OPTION]... [FILE] [PROGRAM ARGS]\n")
     println("Run cadenza programs on GraalVM\n")
     println("Mandatory arguments to long options are mandatory for short options too.\n")
     println("Options:")
@@ -142,38 +144,36 @@ class Launcher : AbstractLanguageLauncher() {
   }
 
   companion object {
-
     @JvmStatic
     fun main(args: Array<String>) {
-      println("main.start")
       Launcher().launch(if (args.isEmpty()) arrayOf("main.za") else args)
     }
+  }
+}
 
-    protected fun printOption(option: String, description: String) {
-      var o = option
-      if (option.length >= 22) {
-        println(String.format("%s%s", "  ", o))
-        o = ""
-      }
-      println(String.format("  %-22s%s", o, description))
-    }
+internal fun printOption(option: String, description: String) {
+  var o = option
+  if (option.length >= 22) {
+    println(String.format("%s%s", "  ", o))
+    o = ""
+  }
+  println(String.format("  %-22s%s", o, description))
+}
 
-    private fun printStackTraceSkipTrailingHost(e: PolyglotException) {
-      val stackTrace = ArrayList<PolyglotException.StackFrame>()
-      for (s in e.polyglotStackTrace)
-        stackTrace.add(s)
-      val iterator = stackTrace.listIterator(stackTrace.size)
-      while (iterator.hasPrevious()) {
-        val s = iterator.previous()
-        if (s.isHostFrame)
-          iterator.remove()
-        else
-          break
-      }
-      System.err.println(if (e.isHostException) e.asHostException().toString() else e.message)
-      for (s in stackTrace) {
-        System.err.println("\tat $s")
-      }
-    }
+internal fun printStackTraceSkipTrailingHost(e: PolyglotException) {
+  val stackTrace = ArrayList<PolyglotException.StackFrame>()
+  for (s in e.polyglotStackTrace)
+    stackTrace.add(s)
+  val iterator = stackTrace.listIterator(stackTrace.size)
+  while (iterator.hasPrevious()) {
+    val s = iterator.previous()
+    if (s.isHostFrame)
+      iterator.remove()
+    else
+      break
+  }
+  System.err.println(if (e.isHostException) e.asHostException().toString() else e.message)
+  for (s in stackTrace) {
+    System.err.println("\tat $s")
   }
 }

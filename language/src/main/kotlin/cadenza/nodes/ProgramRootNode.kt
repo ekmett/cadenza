@@ -13,18 +13,18 @@ import com.oracle.truffle.api.nodes.RootNode
 @NodeInfo(language = "core", description = "A root of a core tree.")
 @TypeSystemReference(Types::class)
 class ProgramRootNode constructor(
-        val language: Language,
-        @field:Child private var body: Code,
-        fd: FrameDescriptor
+  val language: Language,
+  @field:Child private var body: Code,
+  fd: FrameDescriptor
 ) : RootNode(language, fd) {
 
-    // eventually disallow selectively when we have the equivalent of NOINLINE / top level implicitly constructed references?
-    override fun isCloningAllowed(): Boolean {
-        return true
-    }
+  // eventually disallow selectively when we have the equivalent of NOINLINE / top level implicitly constructed references?
+  override fun isCloningAllowed(): Boolean {
+    return true
+  }
 
-    // returns neutral terms
-    override fun execute(frame: VirtualFrame): Any? {
-        return body.executeAny(frame)
-    }
+  // returns neutral terms
+  override fun execute(frame: VirtualFrame): Any? {
+    return body.executeAny(frame)
+  }
 }

@@ -16,79 +16,79 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException
 abstract class FrameBuilder(protected val slot: FrameSlot, @field:Child
 protected var rhs: Code) : Node() {
 
-    fun build(frame: VirtualFrame, oldFrame: VirtualFrame) {
-        execute(frame, 0, oldFrame)
+  fun build(frame: VirtualFrame, oldFrame: VirtualFrame) {
+    execute(frame, 0, oldFrame)
+  }
+
+  abstract fun execute(frame: VirtualFrame, hack: Int, oldFrame: VirtualFrame): Any
+
+  protected fun allowsSlotKind(frame: VirtualFrame, kind: FrameSlotKind): Boolean {
+    val currentKind = frame.frameDescriptor.getFrameSlotKind(slot)
+    if (currentKind == FrameSlotKind.Illegal) {
+      frame.frameDescriptor.setFrameSlotKind(slot, kind)
+      return true
+    }
+    return currentKind == kind
+  }
+
+  protected fun allowsBooleanSlot(frame: VirtualFrame): Boolean {
+    return allowsSlotKind(frame, FrameSlotKind.Boolean)
+  }
+
+  protected fun allowsIntegerSlot(frame: VirtualFrame): Boolean {
+    return allowsSlotKind(frame, FrameSlotKind.Int)
+  }
+
+  // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
+  @Specialization(guards = ["allowsBooleanSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
+  @Throws(UnexpectedResultException::class)
+  internal fun buildBoolean(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Boolean {
+    val result: Boolean
+    try {
+      result = rhs.executeBoolean(oldFrame)
+    } catch (e: UnexpectedResultException) {
+      frame.setObject(slot, e)
+      throw e
+    } catch (e: NeutralException) {
+      frame.setObject(slot, e.get())
+      return false // nonsense, the results are never used, result is to use @Specialization only
     }
 
-    abstract fun execute(frame: VirtualFrame, hack: Int, oldFrame: VirtualFrame): Any
+    frame.setBoolean(slot, result)
+    return result
+  }
 
-    protected fun allowsSlotKind(frame: VirtualFrame, kind: FrameSlotKind): Boolean {
-        val currentKind = frame.frameDescriptor.getFrameSlotKind(slot)
-        if (currentKind == FrameSlotKind.Illegal) {
-            frame.frameDescriptor.setFrameSlotKind(slot, kind)
-            return true
-        }
-        return currentKind == kind
+  @Specialization(guards = ["allowsIntegerSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
+  @Throws(UnexpectedResultException::class)
+  internal fun buildInteger(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Int {
+    val result: Int
+    try {
+      result = rhs.executeInteger(oldFrame)
+    } catch (e: UnexpectedResultException) {
+      frame.setObject(slot, e)
+      throw e
+    } catch (e: NeutralException) {
+      frame.setObject(slot, e.get())
+      return 0
     }
 
-    protected fun allowsBooleanSlot(frame: VirtualFrame): Boolean {
-        return allowsSlotKind(frame, FrameSlotKind.Boolean)
-    }
+    frame.setInt(slot, result)
+    return result
+  }
 
-    protected fun allowsIntegerSlot(frame: VirtualFrame): Boolean {
-        return allowsSlotKind(frame, FrameSlotKind.Int)
-    }
+  @Fallback
+  internal fun buildObject(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Any? {
+    val result = rhs.executeAny(oldFrame)
+    frame.setObject(slot, result)
+    return result
+  }
 
-    // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
-    @Specialization(guards = ["allowsBooleanSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
-    @Throws(UnexpectedResultException::class)
-    internal fun buildBoolean(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Boolean {
-        val result: Boolean
-        try {
-            result = rhs.executeBoolean(oldFrame)
-        } catch (e: UnexpectedResultException) {
-            frame.setObject(slot, e)
-            throw e
-        } catch (e: NeutralException) {
-            frame.setObject(slot, e.get())
-            return false // nonsense, the results are never used, result is to use @Specialization only
-        }
+  override fun isAdoptable(): Boolean {
+    return false
+  }
 
-        frame.setBoolean(slot, result)
-        return result
-    }
+  companion object {
 
-    @Specialization(guards = ["allowsIntegerSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
-    @Throws(UnexpectedResultException::class)
-    internal fun buildInteger(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Int {
-        val result: Int
-        try {
-            result = rhs.executeInteger(oldFrame)
-        } catch (e: UnexpectedResultException) {
-            frame.setObject(slot, e)
-            throw e
-        } catch (e: NeutralException) {
-            frame.setObject(slot, e.get())
-            return 0
-        }
-
-        frame.setInt(slot, result)
-        return result
-    }
-
-    @Fallback
-    internal fun buildObject(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Any? {
-        val result = rhs.executeAny(oldFrame)
-        frame.setObject(slot, result)
-        return result
-    }
-
-    override fun isAdoptable(): Boolean {
-        return false
-    }
-
-    companion object {
-
-        val noFrameBuilders = arrayOf<FrameBuilder>()
-    }
+    val noFrameBuilders = arrayOf<FrameBuilder>()
+  }
 }

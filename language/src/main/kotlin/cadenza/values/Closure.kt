@@ -1,5 +1,7 @@
 package cadenza.values
 
+import cadenza.*
+import cadenza.nodes.*
 import cadenza.types.Type
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
@@ -12,8 +14,6 @@ import com.oracle.truffle.api.interop.UnsupportedTypeException
 import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 import com.oracle.truffle.api.nodes.ExplodeLoop
-import cadenza.nodes.*
-import cadenza.util.Errors.panic
 
 import java.util.Arrays
 
