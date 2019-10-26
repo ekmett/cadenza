@@ -42,7 +42,7 @@ protected var rhs: Code) : Node() {
     // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
     @Specialization(guards = ["allowsBooleanSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
     @Throws(UnexpectedResultException::class)
-    internal fun buildBoolean(frame: VirtualFrame, _hack: Int, oldFrame: VirtualFrame): Boolean {
+    internal fun buildBoolean(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Boolean {
         val result: Boolean
         try {
             result = rhs.executeBoolean(oldFrame)
@@ -60,7 +60,7 @@ protected var rhs: Code) : Node() {
 
     @Specialization(guards = ["allowsIntegerSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
     @Throws(UnexpectedResultException::class)
-    internal fun buildInteger(frame: VirtualFrame, _hack: Int, oldFrame: VirtualFrame): Int {
+    internal fun buildInteger(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Int {
         val result: Int
         try {
             result = rhs.executeInteger(oldFrame)
@@ -77,7 +77,7 @@ protected var rhs: Code) : Node() {
     }
 
     @Fallback
-    internal fun buildObject(frame: VirtualFrame, _hack: Int, oldFrame: VirtualFrame): Any? {
+    internal fun buildObject(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Any? {
         val result = rhs.executeAny(oldFrame)
         frame.setObject(slot, result)
         return result

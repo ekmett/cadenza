@@ -14,14 +14,20 @@ dependencies {
   implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
   implementation("org.antlr:antlr4-runtime:4.7.2")
   testImplementation("org.testng:testng:6.14.3")
-  //compile("com.palantir.safe-logging:preconditions:1.11.0")
-  //testCompile("com.palantir.safe-logging:preconditions-assertj:1.11.0")
-  //implementation("com.palantir.safe-logging:safe-logging")
-  //implementation("com.palantir.safe-logging:preconditions")
 }
 
 tasks.getByName<Jar>("jar") {
   baseName = "cadenza-language"
+  manifest {
+    attributes["Main-Class"] = "cadenza.Main"
+    attributes["Specification-Title"] = "cadenza-language"
+    attributes["Specification-Version"] = project.version
+    attributes["Specification-Vendor"] = "Machine Intelligence Research Institute"
+    attributes["Implementation-Title"] = "cadenza-language"
+    attributes["Implementation-Version"] = project.version
+    attributes["Implementation-Vendor"] = "Machine Intelligence Research Institute"
+    attributes["Class-Path"] =  configurations.runtimeClasspath.get().files.map { it.getAbsolutePath() } .joinToString(separator = " ")
+  }
 }
 
 tasks.withType<AntlrTask> {

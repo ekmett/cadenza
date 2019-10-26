@@ -11,7 +11,7 @@ import cadenza.nodes.Code.*
 abstract class Term {
   // expected is optional for some types, giving us bidirectional type checking.
   @Throws(TypeError::class)
-  abstract fun check(ctx: Ctx, expected: Type?): Witness
+  abstract fun check(ctx: Ctx, expectedType: Type?): Witness
 
   @Throws(TypeError::class)
   fun infer(ctx: Ctx): Witness {
@@ -47,7 +47,7 @@ abstract class Term {
     fun tname(name: String): Term {
       return object : Term() {
         @Throws(TypeError::class)
-        override fun check(ctx: Ctx, _expectedType: Type?): Witness {
+        override fun check(ctx: Ctx, @Suppress("UNUSED_PARAMETER") expectedType: Type?): Witness {
           return object : Witness(lookup(ctx, name)) {
             override fun compile(fd: FrameDescriptor): Code {
               return Code.`var`(fd.findOrAddFrameSlot(name))
@@ -80,9 +80,8 @@ abstract class Term {
         override fun check(ctx: Ctx, expectedType: Type?): Witness {
           val wrator = trator.check(ctx, expectedType)
           var currentType = wrator.type
-          val len = trands.size
           val wrands = trands.map {
-            val arr = currentType as Type.Arr ?: throw TypeError("not a fun type")
+            val arr = currentType as Type.Arr? ?: throw TypeError("not a fun type")
             val out = it.check(ctx, arr.argument)
             currentType = arr.result
             return out
@@ -99,7 +98,8 @@ abstract class Term {
       }
     }
 
-    fun tlam(_names: Array<String>, _body: Term): Term? {
+    @Suppress("UNUSED_PARAMETER")
+    fun tlam(names: Array<String>, body: Term): Term? {
       return null
     }
 

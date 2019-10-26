@@ -24,8 +24,8 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
     if (!equals(expected)) throw TypeError("type mismatch", this, expected)
   }
 
-  internal fun unsupported(msg: String, vararg objects: Any?): UnsupportedTypeException {
-    return UnsupportedTypeException.create(objects, msg)
+  internal fun unsupported(msg: String, vararg objects: Any?): Nothing {
+    throw UnsupportedTypeException.create(objects, msg)
   }
 
   @CompilerDirectives.ValueType
@@ -38,9 +38,9 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
 
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) {
-      if (t !is Closure) throw unsupported("expected closure", t)
+      if (t !is Closure) unsupported("expected closure", t)
       if (this.argument != t.type)
-        throw unsupported(
+        unsupported(
           "expected closure of type: " + this.toString() + ", but received one of type " + t.type.toString(),
           t
         )
@@ -50,10 +50,8 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
       return Objects.hash(argument, result)
     }
 
-    override fun equals(o: Any?): Boolean {
-      if (o !is Arr) return false
-      val that = o as Arr?
-      return argument == that!!.argument && result == that.result
+    override fun equals(other: Any?): Boolean {
+      return other is Arr && argument == other.argument && result == other.result
     }
   }
 
@@ -64,15 +62,15 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
 
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) {
-      throw unsupported("expected io", t)
+      unsupported("expected io", t)
     }
 
     override fun hashCode(): Int {
       return result.hashCode()
     }
 
-    override fun equals(o: Any?): Boolean {
-      return if (o !is IO) false else result == o.result
+    override fun equals(other: Any?): Boolean {
+      return other is Arr && result == other.result
     }
   }
 
@@ -81,23 +79,23 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
     val Bool: Type = object : Type(FrameSlotKind.Boolean) {
       @Throws(UnsupportedTypeException::class)
       override fun validate(t: Any?) {
-        if (t !is Boolean) throw unsupported("expected boolean", t)
+        if (t !is Boolean) unsupported("expected boolean", t)
       }
     }
     val Obj: Type = object : Type(FrameSlotKind.Object) {
-      override fun validate(_t: Any?) {}
+      override fun validate(@Suppress("UNUSED_PARAMETER") t: Any?) {}
     }
     val Unit: Type = object : Type(FrameSlotKind.Object) {
       @Throws(UnsupportedTypeException::class)
       override fun validate(t: Any?) {
-        if (t != null) throw unsupported("expected unit", t)
+        if (kotlin.Unit != t) unsupported("expected unit", t)
       }
     } // always null. use byte or something else instead?
     val Nat: Type = object : Type(FrameSlotKind.Int) {
       @Throws(UnsupportedTypeException::class)
       override fun validate(t: Any?) {
         if (!(t is Int && t >= 0 || t is BigInt && t.isNatural()))
-          throw unsupported("expected nat", t)
+          unsupported("expected nat", t)
       }
     }
     val Action = IO(Unit)
@@ -105,10 +103,10 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
     // assumes validity
     @ExplodeLoop
     fun after(t: Type, n: Int): Type {
-      var t = t
+      var current = t
       for (i in 0 until n)
-        t = (t as Type.Arr).result
-      return t
+        current = (current as Type.Arr).result
+      return current
     }
   }
 

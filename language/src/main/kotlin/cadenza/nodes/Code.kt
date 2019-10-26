@@ -129,7 +129,7 @@ abstract class Code : Node(), InstrumentableNode {
       try {
         fn = rator.executeClosure(frame)
       } catch (e: UnexpectedResultException) {
-        throw panic("closure expected", e)
+        panic("closure expected", e)
       } catch (e: NeutralException) {
         throw e.apply(executeRands(frame))
       }
@@ -183,7 +183,7 @@ abstract class Code : Node(), InstrumentableNode {
       try {
         return conditionProfile.profile(bodyNode.executeBoolean(frame))
       } catch (e: UnexpectedResultException) {
-        throw panic("non-boolean branch", e)
+        panic("non-boolean branch", e)
       } catch (e: NeutralException) {
         throw NeutralException(type, NIf(e.term, thenNode.executeAny(frame), elseNode.executeAny(frame)))
       }
@@ -426,24 +426,27 @@ abstract class Code : Node(), InstrumentableNode {
 
     //  public static Add add(Expr x, Expr y) { return ExprFactory.AddNodeGen.create(x,y); }
     fun booleanLiteral(b: Boolean): Code {
+      @Suppress("UNUSED_PARAMETER")
       return object : Code() {
-        override fun execute(_frame: VirtualFrame) = b
-        override fun executeBoolean(_frame: VirtualFrame) = b
+        override fun execute(frame: VirtualFrame) = b
+        override fun executeBoolean(frame: VirtualFrame) = b
       }
     }
 
     fun intLiteral(i: Int): Code {
+      @Suppress("UNUSED_PARAMETER")
       return object : Code() {
-        override fun execute(_frame: VirtualFrame) = i
-        override fun executeInteger(_frame: VirtualFrame) = i
+        override fun execute(frame: VirtualFrame) = i
+        override fun executeInteger(frame: VirtualFrame) = i
       }
     }
 
     fun bigLiteral(i: BigInt): Code {
+      @Suppress("UNUSED_PARAMETER")
       return object : Code() {
-        override fun execute(_frame: VirtualFrame) = i
+        override fun execute(frame: VirtualFrame) = i
         @Throws(UnexpectedResultException::class)
-        override fun executeInteger(_frame: VirtualFrame): Int {
+        override fun executeInteger(frame: VirtualFrame): Int {
           try {
             if (i.fitsInInt()) return i.asInt().toInt()
           } catch (e: UnsupportedMessageException) {

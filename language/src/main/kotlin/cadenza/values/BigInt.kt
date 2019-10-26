@@ -9,6 +9,17 @@ import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 import java.math.BigInteger
 
+private val LONG_MAX_SAFE_DOUBLE = 9007199254740991L // 2 ** 53 - 1
+private val INT_MAX_SAFE_FLOAT = 16777215 // 2 ** 24 - 1
+
+private fun inSafeDoubleRange(l: Long): Boolean {
+  return l >= -LONG_MAX_SAFE_DOUBLE && l <= LONG_MAX_SAFE_DOUBLE
+}
+
+private fun inSafeFloatRange(i: Int): Boolean {
+  return i >= -INT_MAX_SAFE_FLOAT && i <= INT_MAX_SAFE_FLOAT
+}
+
 @ValueType
 @ExportLibrary(InteropLibrary::class)
 class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
@@ -22,8 +33,8 @@ class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
   constructor(value: Long) : this(BigInteger.valueOf(value)) {}
 
   @TruffleBoundary
-  override fun compareTo(o: BigInt): Int {
-    return value.compareTo(o.value)
+  override fun compareTo(other: BigInt): Int {
+    return value.compareTo(other.value)
   }
 
   @TruffleBoundary
@@ -36,8 +47,8 @@ class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
   }
 
   @TruffleBoundary
-  override fun equals(obj: Any?): Boolean {
-    return if (obj is BigInt) value == obj.value else false
+  override fun equals(other: Any?): Boolean {
+    return other is BigInt && value == other.value
   }
 
   @ExportMessage
@@ -122,19 +133,5 @@ class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
   fun asDouble(): Double {
     if (fitsInDouble()) return value.toDouble()
     throw UnsupportedMessageException.create()
-  }
-
-  companion object {
-
-    private val LONG_MAX_SAFE_DOUBLE = 9007199254740991L // 2 ** 53 - 1
-    private val INT_MAX_SAFE_FLOAT = 16777215 // 2 ** 24 - 1
-
-    private fun inSafeDoubleRange(l: Long): Boolean {
-      return l >= -LONG_MAX_SAFE_DOUBLE && l <= LONG_MAX_SAFE_DOUBLE
-    }
-
-    private fun inSafeFloatRange(i: Int): Boolean {
-      return i >= -INT_MAX_SAFE_FLOAT && i <= INT_MAX_SAFE_FLOAT
-    }
   }
 }

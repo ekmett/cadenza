@@ -1,9 +1,6 @@
 package cadenza
 
-import cadenza.nodes.ClosureRootNode
-import cadenza.nodes.Code
-import cadenza.nodes.FrameBuilder
-import cadenza.nodes.InlineCode
+import cadenza.nodes.*
 import cadenza.types.Term
 import cadenza.types.Type
 import cadenza.types.Type.*
@@ -50,28 +47,18 @@ class Language : TruffleLanguage<Context>() {
 
   // stubbed: for now inline parsing requests just return 'const'
   public override fun parse(request: TruffleLanguage.InlineParsingRequest?): InlineCode {
-    println("parse0")
     val body = K(Nat, Nat)
     return InlineCode(this, body)
   }
 
   // stubbed: returns a calculation that adds two numbers
   public override fun parse(request: TruffleLanguage.ParsingRequest): CallTarget {
-/*
-        val fd = FrameDescriptor()
-        val argSlots : FrameSlot[] = null; = request.argumentNames.stream().map { fd.addFrameSlot(it) }.toArray<FrameSlot>(FrameSlot[]::new  /* Currently unsupported in Kotlin */)
-        val preamble = IntStream.range(0, argSlots.size).mapToObj { i -> put(argSlots[i], arg(i)) }.toArray<FrameBuilder>(FrameBuilder[]::new  /* Currently unsupported in Kotlin */)
-        val arity = argSlots.size
-        val content: Code? = null // Expr.intLiteral(-42);
-        val body = ClosureRootNode.create(this, arity, preamble, content)
-        return Truffle.getRuntime().createCallTarget(body)
-        //  }
-*/
-    throw RuntimeException("parse")
+    val rootNode = ProgramRootNode(this, Code.intLiteral(4), FrameDescriptor())
+    return Truffle.getRuntime().createCallTarget(rootNode)
   }
 
   public override fun isObjectOfLanguage(obj: Any): Boolean {
-    return if (obj !is TruffleObject) false else obj is BigInt || obj is Closure
+    return obj is TruffleObject
   }
 
   public override fun initializeMultipleContexts() {
@@ -119,7 +106,7 @@ class Language : TruffleLanguage<Context>() {
     return true
   }
 
-  fun findExportedSymbol(_context: org.graalvm.polyglot.Context, globalName: String, onlyExplicit: Boolean): Any? {
+  fun findExportedSymbol(@Suppress("UNUSED_PARAMETER") context: org.graalvm.polyglot.Context, globalName: String, @Suppress("UNUSED_PARAMETER") onlyExplicit: Boolean): Any? {
     when (globalName) {
       "S" -> return S(Arr(Type.Nat, Arr(Type.Nat, Type.Nat)), Arr(Type.Nat, Type.Nat), Type.Nat)
       "K" -> return K(Type.Nat, Type.Nat)
@@ -131,24 +118,26 @@ class Language : TruffleLanguage<Context>() {
 
   // for testing
 
-  internal fun I(tx: Type): Code {
+  fun I(tx: Type): Code {
     return unary({ x -> x }, tx)
   }
 
-  internal fun K(tx: Type, ty: Type): Code {
-    return binary({ x, y -> x }, tx, ty)
+  fun K(tx: Type, ty: Type): Code {
+    return binary({ x, _ -> x }, tx, ty)
   }
 
-  internal fun S(_tx: Type, _ty: Type, _tz: Type): Code {
+  @Suppress("UNUSED_PARAMETER")
+  fun S(tx: Type, ty: Type, tz: Type): Code {
     throw RuntimeException("nope")
   }
 
-  fun unary(_f: (x: Term) -> Term, _argument: Type): Code {
+  @Suppress("UNUSED_PARAMETER")
+  fun unary(f: (x: Term) -> Term, argument: Type): Code {
     throw RuntimeException("unary")
   }
 
-  // construct a binary function
-  fun binary(_f: (x: Term, y: Term) -> Term, _tx: Type, _ty: Type): Code {
+  @Suppress("UNUSED_PARAMETER")
+  fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code {
     throw RuntimeException("binary")
   }
 

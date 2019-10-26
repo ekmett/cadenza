@@ -25,9 +25,10 @@ class NeutralValue(val type: Type, val term: Neutral) : TruffleObject {
   fun execute(vararg arguments: Any?): NeutralValue {
     var resultType = type
     for (i in arguments.indices) {
-      val arr = resultType as Type.Arr ?: throw ArityException.create(i, arguments.size)
-      resultType = arr.result
+      if (resultType !is Type.Arr) throw ArityException.create(i, arguments.size)
+      resultType = resultType.result
     }
+    @Suppress("UNCHECKED_CAST")
     return NeutralValue(resultType, term.apply(arguments as Array<Any?>))
   }
 

@@ -40,8 +40,8 @@ plugins {
 }
 
 dependencies {
-  runtime(project(":language"))
-  runtime(project(":launcher"))
+  implementation(project(":language"))
+  implementation(project(":launcher"))
 }
 
 graal {
@@ -90,12 +90,20 @@ application {
   applicationDefaultJvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
-    "-Dtruffle.class.path.append=" + project("language").tasks.getByName<Jar>("jar").archiveFile.get().getAsFile().getPath()
+    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-language-${project.version}.jar"
+    // "-Dtruffle.class.path.append=language/build/libs/cadenza-language-${project.version}.jar"
   )
 }
 
-tasks.getByName<JavaExec>("run") {
+tasks.getByName<Jar>("jar") {
+  manifest {
+    attributes["Main-Class"] = "cadenza.launcher.Launcher"
+    attributes["Class-Path"] =  configurations.runtimeClasspath.get().files.map { it.getAbsolutePath() } .joinToString(separator = " ")
+  }
+}
+
+tasks.replace("run", Exec::class.java).run {
   if (needsExtract) dependsOn(":extractGraalTooling")
-  dependsOn(":language:jar",":launcher:jar")
-  executable = "$graalBinDir/java"
+  dependsOn(":component:register")
+  executable = "$graalBinDir/cadenza"
 }

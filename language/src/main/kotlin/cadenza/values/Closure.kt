@@ -13,7 +13,7 @@ import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 import com.oracle.truffle.api.nodes.ExplodeLoop
 import cadenza.nodes.*
-import jdk.jshell.spi.ExecutionControl
+import cadenza.util.Errors.panic
 
 import java.util.Arrays
 
@@ -54,6 +54,7 @@ class Closure// invariant: target should have been constructed from a FunctionBo
       arr.argument.validate(argument)
       currentType = arr.result
     }
+    @Suppress("UNCHECKED_CAST")
     return call(arguments as Array<Any?>)
   }
 
@@ -77,29 +78,31 @@ class Closure// invariant: target should have been constructed from a FunctionBo
 
   // construct a partial application node, which should check that it is a PAP itself
   @ExplodeLoop
-  fun pap(arguments: Array<Any?>): Closure? {
+  fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<Any?>): Closure? {
     return null // TODO
   }
 
   @ExplodeLoop
-  private fun cons(x: Any?, xs: Array<Any?>): Array<Any?> {
-    val ys = arrayOfNulls<Any>(xs.size + 1)
+  private inline fun <reified T> cons(x: T, xs: Array<T>): Array<T> {
+    val ys = arrayOfNulls<T>(xs.size + 1)
     ys[0] = x
     System.arraycopy(xs, 0, ys, 1, xs.size)
-    return ys
+    @Suppress("UNCHECKED_CAST")
+    return ys as Array<T>
   }
 
   @ExplodeLoop
-  private fun consTake(x: Any?, n: Int, xs: Array<Any?>): Array<Any?> {
-    val ys = arrayOfNulls<Any>(n + 1)
+  private inline fun <reified T> consTake(x: T, n: Int, xs: Array<T>): Array<T> {
+    val ys = arrayOfNulls<T>(n + 1)
     ys[0] = x
     System.arraycopy(xs, 0, ys, 1, n)
-    return ys
+    @Suppress("UNCHECKED_CAST")
+    return ys as Array<T>
   }
 
   @ExplodeLoop
-  private fun drop(k: Int, xs: Array<Any?>): Array<Any?> {
-    return Arrays.copyOfRange<Any?>(xs, k, xs.size)
+  private fun <T> drop(k: Int, xs: Array<T>): Array<T> {
+    return xs.copyOfRange<T>(k, xs.size)
   }
 
 }

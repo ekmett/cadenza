@@ -152,12 +152,12 @@ class Launcher : AbstractLanguageLauncher() {
     }
 
     protected fun printOption(option: String, description: String) {
-      var option = option
+      var o = option
       if (option.length >= 22) {
-        println(String.format("%s%s", "  ", option))
-        option = ""
+        println(String.format("%s%s", "  ", o))
+        o = ""
       }
-      println(String.format("  %-22s%s", option, description))
+      println(String.format("  %-22s%s", o, description))
     }
 
     private fun printStackTraceSkipTrailingHost(e: PolyglotException) {
