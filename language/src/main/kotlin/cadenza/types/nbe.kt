@@ -6,15 +6,14 @@ import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.nodes.SlowPathException
 
 @Throws(NeutralException::class)
+@Suppress("NOTHING_TO_INLINE")
 inline fun neutral(type: Type, term: Neutral) : Nothing {
   throw NeutralException(type, term)
 }
 
 @CompilerDirectives.ValueType
 abstract class Neutral {
-  open fun apply(arguments: Array<Any?>): NApp {
-    return NApp(this, arguments)
-  }
+  open fun apply(arguments: Array<Any?>) = NApp(this, arguments)
 
   data class NIf(val body: Neutral, val thenValue: Any?, val elseValue: Any?) : Neutral()
 
@@ -28,13 +27,14 @@ abstract class Neutral {
 }
 
 class NeutralException(val type: Type, val term: Neutral) : SlowPathException() {
+  @Suppress("NOTHING_TO_INLINE")
   inline fun get() = NeutralValue(type, term)
 
   fun apply(rands: Array<Any?>): Nothing {
     val len = rands.size
     var currentType = type
     for (i in 0 until len) currentType = (currentType as Type.Arr).result
-    throw NeutralException(currentType, term.apply(rands))
+    neutral(currentType, term.apply(rands))
   }
 
   companion object {

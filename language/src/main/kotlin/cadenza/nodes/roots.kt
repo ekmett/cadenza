@@ -56,6 +56,7 @@ open class ClosureRootNode : RootNode, InstrumentableNode {
   @Child var body: ClosureBody
   protected val language: TruffleLanguage<*>
 
+  @Suppress("NOTHING_TO_INLINE")
   inline fun isSuperCombinator() = envPreamble.size != 0
 
   constructor(

@@ -21,6 +21,7 @@ class Closure (
   val type: Type,
   val callTarget: RootCallTarget
 ) : TruffleObject {
+  @Suppress("NOTHING_TO_INLINE")
   private inline fun isSuperCombinator() = env != null
 
   init {
@@ -63,12 +64,14 @@ class Closure (
 
   // construct a partial application node, which should check that it is a PAP itself
   @ExplodeLoop
-  inline fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<Any?>): Closure? {
+  fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<Any?>): Closure? {
     return null // TODO
   }
 }
 
+// TODO: incompatible, pick one
 @ExplodeLoop
+@Suppress("NOTHING_TO_INLINE")
 private inline fun <reified T> cons(x: T, xs: Array<T>): Array<T> {
   val ys = arrayOfNulls<T>(xs.size + 1)
   ys[0] = x
@@ -78,6 +81,7 @@ private inline fun <reified T> cons(x: T, xs: Array<T>): Array<T> {
 }
 
 @ExplodeLoop
+@Suppress("NOTHING_TO_INLINE")
 private inline fun <reified T> consTake(x: T, n: Int, xs: Array<T>): Array<T> {
   val ys = arrayOfNulls<T>(n + 1)
   ys[0] = x
@@ -87,6 +91,7 @@ private inline fun <reified T> consTake(x: T, n: Int, xs: Array<T>): Array<T> {
 }
 
 @ExplodeLoop
+@Suppress("NOTHING_TO_INLINE")
 private inline fun <T> drop(k: Int, xs: Array<T>): Array<T> {
   return xs.copyOfRange<T>(k, xs.size)
 }
