@@ -175,6 +175,14 @@ project(":launcher") {
   }
 }
 
+val languageRuntime by configurations.creating {
+  val languageConfigurations = project(":language").configurations
+  extendsFrom(
+    languageConfigurations.getByName("kotlinRuntime"),
+    languageConfigurations.getByName("runtime")
+  )
+}
+
 // calculate local platform values
 
 val jar = tasks.getByName<Jar>("jar") {
@@ -197,8 +205,7 @@ val jar = tasks.getByName<Jar>("jar") {
   from(files(
     tasks.getByPath(":language:jar"),
     tasks.getByPath(":launcher:jar"),
-    project(":language").configurations.getByName("kotlinRuntime"),
-    project(":language").configurations.getByName("runtime")
+    languageRuntime
   )) {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
     exclude(
@@ -218,6 +225,7 @@ val jar = tasks.getByName<Jar>("jar") {
     attributes["x-GraalVM-Polyglot-Part"] = "True"
   }
 }
+
 
 tasks.withType<ProcessResources> {
   from("etc/native-image.properties") {
