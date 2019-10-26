@@ -8,6 +8,8 @@ import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.util.regex.Pattern
 
+private val SHEBANG_REGEXP = Pattern.compile("^#! ?/usr/bin/(env +ccc|ccc).*")
+
 class Detector : TruffleFile.FileTypeDetector {
   override fun findMimeType(file: TruffleFile): String? {
     val name = file.name ?: return null
@@ -21,16 +23,12 @@ class Detector : TruffleFile.FileTypeDetector {
     } catch (e: IOException) {
       // ok
     } catch (e: SecurityException) {
+      // ok
     }
-
     return null
   }
 
   override fun findEncoding(_file: TruffleFile): Charset {
     return StandardCharsets.UTF_8
-  }
-
-  companion object {
-    private val SHEBANG_REGEXP = Pattern.compile("^#! ?/usr/bin/(env +ccc|ccc).*")
   }
 }

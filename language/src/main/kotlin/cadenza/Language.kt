@@ -6,13 +6,11 @@ import cadenza.types.Type
 import cadenza.types.Type.*
 import cadenza.types.Type.Companion.Nat
 import cadenza.values.Closure
-import cadenza.values.BigInt
 
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
 import com.oracle.truffle.api.debug.DebuggerTags
 import com.oracle.truffle.api.frame.FrameDescriptor
-import com.oracle.truffle.api.frame.FrameSlot
 import com.oracle.truffle.api.instrumentation.ProvidedTags
 import com.oracle.truffle.api.instrumentation.StandardTags.*
 import com.oracle.truffle.api.interop.InteropLibrary
@@ -20,12 +18,6 @@ import com.oracle.truffle.api.interop.TruffleObject
 import com.oracle.truffle.api.interop.UnsupportedMessageException
 import com.oracle.truffle.api.source.SourceSection
 import org.graalvm.options.*
-
-import java.util.function.BiFunction
-import java.util.function.Function
-import java.util.stream.IntStream
-
-import cadenza.nodes.Code.*
 
 @Option.Group("cadenza")
 @TruffleLanguage.Registration(id = Language.ID, name = Language.NAME, version = Language.VERSION, defaultMimeType = Language.MIME_TYPE, characterMimeTypes = [Language.MIME_TYPE], contextPolicy = ContextPolicy.SHARED, fileTypeDetectors = [Detector::class])
