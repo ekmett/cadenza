@@ -1,5 +1,6 @@
 import com.palantir.gradle.graal.ExtractGraalTask;
 import com.palantir.gradle.graal.NativeImageTask;
+import java.util.Properties;
 
 group = project.properties["group"].toString()
 version = project.properties["version"].toString()
@@ -52,12 +53,24 @@ graal {
 }
 
 val os = System.getProperty("os.name")
-val systemGraalHome = System.getenv("GRAAL_HOME")
-val needsExtract = systemGraalHome == null
-val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").getOutputDirectory().get().getAsFile().toString()
-var graalHome = if (needsExtract)
-  (if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir)
-  else systemGraalHome
+var graalHome = System.getenv("GRAAL_HOME")
+
+if (graalHome == null) {
+  val javaHome = System.getenv("JAVA_HOME")
+  val releaseFile = file("${javaHome}/release")
+  if (releaseFile.exists()) {
+    val releaseProps = Properties()
+    releaseProps.load(releaseFile.inputStream())
+    if (releaseProps.getProperty("GRAALVM_VERSION") != null) graalHome = javaHome
+  }
+}
+
+val needsExtract = graalHome == null
+if (needsExtract) {
+  val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").getOutputDirectory().get().getAsFile().toString()
+  graalHome = if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
+}
+
 val graalBinDir = if (os == "Linux") graalHome else "$graalHome/bin"
 
 subprojects {
@@ -95,12 +108,7 @@ application {
   )
 }
 
-tasks.getByName<Jar>("jar") {
-  manifest {
-    attributes["Main-Class"] = "cadenza.launcher.Launcher"
-    attributes["Class-Path"] =  configurations.runtimeClasspath.get().files.map { it.getAbsolutePath() } .joinToString(separator = " ")
-  }
-}
+tasks.replace("jar").run { } // no top level jar ?
 
 // assumes we are building on graal
 tasks.register("runRegistered", Exec::class) {
@@ -110,7 +118,6 @@ tasks.register("runRegistered", Exec::class) {
 }
 
 tasks.replace("run", JavaExec::class.java).run {
-//tasks.register("runLocal", JavaExec::class) {
   if (needsExtract) dependsOn(":extractGraalTooling")
   dependsOn(":launcher:jar")
   executable = "$graalBinDir/java"

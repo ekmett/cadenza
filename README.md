@@ -11,9 +11,11 @@ Nothing seems to say ~~Java~~ Kotlin moreso than considerable length, so here we
 
 ## running
 
-* `gradle run --args="<args>"` should just download GraalVM CE automatically and use it to run the launcher for testing.
+* `gradle run --args="<args>"` should just download GraalVM CE automatically and use it to run the launcher out of the local directory
 
-* `gradle nativeImage` should eventually produce a native executable for the compiler. (Once I figure out how to include everything.)
+* `gradle runRegistered` should register the language with Graal and use graal to run the launcher out of the graal language directory
+
+* `gradle nativeImage` should eventually produce a native executable for the compiler.
 
 * `gradle register` will install the language into GraalVM making it available to other truffle languages once you rebuild their images with `gu`.
 
@@ -38,7 +40,7 @@ additional terms or conditions.
 
 Contact Information
 ===================
-
+ us
 Contributions and bug reports are welcome!
 
 Please feel free to contact me through github or on the ##coda or #haskell IRC channels on irc.freenode.net.
