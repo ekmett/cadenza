@@ -48,9 +48,9 @@ fun Type.after(n: Int): Type {
   return current
 }
 
-internal fun unsupported(msg: String, vararg objects: Any?): Nothing {
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun unsupported(msg: String, vararg objects: Any?): Nothing =
   throw UnsupportedTypeException.create(objects, msg)
-}
 
 @CompilerDirectives.ValueType
 data class Arr(val argument: Type, val result: Type) : Type(FrameSlotKind.Object) {

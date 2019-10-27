@@ -14,7 +14,6 @@ import com.oracle.truffle.api.interop.UnsupportedMessageException
 import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.profiles.ConditionProfile
 import com.oracle.truffle.api.source.SourceSection
-import java.util.Arrays
 
 @Suppress("NOTHING_TO_INLINE","unused")
 @GenerateWrapper
@@ -81,23 +80,21 @@ class App(
 
   @Throws(NeutralException::class)
   override fun execute(frame: VirtualFrame): Any? {
-    val fn: Closure
-    try {
-      fn = rator.executeClosure(frame)
+    val fn = try {
+      rator.executeClosure(frame)
     } catch (e: UnexpectedResultException) {
       panic("closure expected", e)
     } catch (e: NeutralException) {
       e.apply(executeRands(frame))
     }
-
-    when {
-      fn.arity == rands.size -> return indirectCallNode.call(fn.callTarget, *executeRands(frame))
-      fn.arity > rands.size -> return fn.pap(executeRands(frame)) // not enough arguments, pap node
+    return when {
+      fn.arity == rands.size -> indirectCallNode.call(fn.callTarget, *executeRands(frame))
+      fn.arity > rands.size -> fn.pap(executeRands(frame)) // not enough arguments, pap node
       else -> {
         CompilerDirectives.transferToInterpreterAndInvalidate()
-        this.replace(App(App(rator, Arrays.copyOf<Code>(rands, fn.arity)),
-          Arrays.copyOfRange(rands, fn.arity, rands.size)))
-        return fn.call(executeRands(frame)) // on slow path handling over-application
+        @Suppress("UNCHECKED_CAST")
+        this.replace(App(App(rator, rands.copyOf<Code>(fn.arity) as Array<Code>), rands.copyOfRange(fn.arity, rands.size)))
+        fn.call(executeRands(frame)) // on slow path handling over-application
       }
     }
   }

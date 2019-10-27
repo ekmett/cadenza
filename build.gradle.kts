@@ -178,7 +178,7 @@ project(":launcher") {
   }
 }
 
-val languageRuntime by configurations.creating {
+val languageRuntime: Configuration by configurations.creating {
   val languageConfigurations = project(":language").configurations
   extendsFrom(
     languageConfigurations.getByName("kotlinRuntime"),
@@ -271,36 +271,35 @@ tasks.register("pages") {
   dependsOn(":gitPublishPush")
 }
 
-val os = System.getProperty("os.name")
+val os : String? = System.getProperty("os.name")
 logger.info("os = {}",os)
 
-var graalHome = System.getenv("GRAAL_HOME")
+var graalHome0 : String? = System.getenv("GRAAL_HOME")
 
-if (graalHome == null) {
+if (graalHome0 == null) {
   val javaHome = System.getenv("JAVA_HOME")
-  logger.info("checking JAVA_HOME {} for Graal install",javaHome)
-  val releaseFile = file("${javaHome}/release")
-  if (releaseFile.exists()) {
-    val releaseProps = Properties()
-    releaseProps.load(releaseFile.inputStream())
-    val ver = releaseProps.getProperty("GRAALVM_VERSION")
-    if (ver != null) {
-      logger.info("graal version {} detected in JAVA_HOME",ver)
-      graalHome = javaHome
+  if (javaHome != null) {
+    logger.info("checking JAVA_HOME {} for Graal install", javaHome)
+    val releaseFile = file("${javaHome}/release")
+    if (releaseFile.exists()) {
+      val releaseProps = Properties()
+      releaseProps.load(releaseFile.inputStream())
+      val ver = releaseProps.getProperty("GRAALVM_VERSION")
+      if (ver != null) {
+        logger.info("graal version {} detected in JAVA_HOME", ver)
+        graalHome0 = javaHome
+      }
     }
   }
 }
 
-val needsExtract = graalHome == null
-if (needsExtract) {
-  val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").outputDirectory.get().asFile.toString()
-  graalHome = if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
-}
+val needsExtract = graalHome0 == null
+val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").outputDirectory.get().asFile.toString()!!
+val graalHome : String = graalHome0 ?: if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
+val graalBinDir : String = if (os == "Linux") graalHome else "$graalHome/bin"
 
-val graalBinDir = if (os == "Linux") graalHome else "$graalHome/bin"
-
-logger.info("graalHome = {}",graalHome)
-logger.info("graalBinDir = {}",graalBinDir)
+logger.info("graalHome = {}", graalHome)
+logger.info("graalBinDir = {}", graalBinDir)
 
 tasks.replace("run", JavaExec::class.java).run {
   if (needsExtract) dependsOn(":extractGraalTooling")
