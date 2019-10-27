@@ -30,7 +30,7 @@ fun tvar(name: String): Term = object : Term() {
 fun tif(body: Term, thenTerm: Term, elseTerm: Term): Term = object : Term() {
   @Throws(TypeError::class)
   override fun infer(ctx: Ctx): Witness {
-    val bodyWitness = body.check(ctx, Type.Bool)
+    val bodyWitness = body.check(ctx, Bool)
     val thenWitness = thenTerm.infer(ctx)
     val actualType = thenWitness.type
     val elseWitness = elseTerm.check(ctx, actualType)
@@ -48,7 +48,7 @@ fun tapp(trator: Term, vararg trands: Term): Term = object : Term() {
     val wrator = trator.infer(ctx)
     var currentType = wrator.type
     val wrands = trands.map {
-      val arr = currentType as Type.Arr? ?: throw TypeError("not a fun type")
+      val arr = currentType as Arr? ?: throw TypeError("not a fun type")
       val out = it.check(ctx, arr.argument)
       currentType = arr.result
       return out

@@ -1,13 +1,9 @@
 package cadenza.values
 
-import cadenza.types.Neutral
-import cadenza.types.Type
+import cadenza.types.*
 import com.oracle.truffle.api.CompilerDirectives
-import com.oracle.truffle.api.interop.ArityException
-import com.oracle.truffle.api.interop.InteropLibrary
-import com.oracle.truffle.api.interop.TruffleObject
-import com.oracle.truffle.api.library.ExportLibrary
-import com.oracle.truffle.api.library.ExportMessage
+import com.oracle.truffle.api.interop.*
+import com.oracle.truffle.api.library.*
 
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
@@ -20,18 +16,17 @@ class NeutralValue(val type: Type, val term: Neutral) : TruffleObject {
   fun execute(vararg arguments: Any?): NeutralValue {
     var resultType = type
     for (i in arguments.indices) {
-      if (resultType !is Type.Arr) throw ArityException.create(i, arguments.size)
+      if (resultType !is Arr) throw ArityException.create(i, arguments.size)
       resultType = resultType.result
     }
-    @Suppress("UNCHECKED_CAST")
-    return NeutralValue(resultType, term.apply(arguments as Array<Any?>))
+    return NeutralValue(resultType, term.apply(arguments))
   }
 
   // assumes this has been built legally. fails via unchecked null pointer exception
   fun apply(arguments: Array<out Any?>): NeutralValue {
     var resultType = type
     for (i in arguments.indices)
-      resultType = (resultType as Type.Arr).result
+      resultType = (resultType as Arr).result
     return NeutralValue(resultType, term.apply(arguments))
   }
 }

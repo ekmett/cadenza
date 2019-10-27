@@ -1,15 +1,10 @@
 package cadenza.nodes
 
-import cadenza.types.NeutralException
-import cadenza.types.Type
-import cadenza.types.Types
-import cadenza.types.TypesGen
+import cadenza.types.*
 import cadenza.values.Closure
 import com.oracle.truffle.api.dsl.TypeSystemReference
 import com.oracle.truffle.api.frame.VirtualFrame
-import com.oracle.truffle.api.nodes.Node
-import com.oracle.truffle.api.nodes.NodeInfo
-import com.oracle.truffle.api.nodes.UnexpectedResultException
+import com.oracle.truffle.api.nodes.*
 
 import java.io.Serializable
 
@@ -38,7 +33,7 @@ abstract class Builtin(val resultType: Type) : Node(), Serializable {
 }
 
 @NodeInfo(shortName = "print$")
-object Print : Builtin(Type.Action) {
+object Print : Builtin(Action) {
   @Throws(NeutralException::class)
   override fun execute(frame: VirtualFrame, arg: Code) = executeUnit(frame, arg)
 

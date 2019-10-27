@@ -43,7 +43,7 @@ class NeutralException(val type: Type, val term: Neutral) : SlowPathException() 
   fun apply(rands: Array<out Any?>): Nothing {
     val len = rands.size
     var currentType = type
-    for (i in 0 until len) currentType = (currentType as Type.Arr).result
+    for (i in 0 until len) currentType = (currentType as Arr).result
     neutral(currentType, term.apply(rands))
   }
 

@@ -3,8 +3,7 @@ package cadenza
 import cadenza.nodes.*
 import cadenza.types.Term
 import cadenza.types.Type
-import cadenza.types.Type.*
-import cadenza.types.Type.Companion.Nat
+import cadenza.types.*
 import cadenza.values.Closure
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy

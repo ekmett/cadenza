@@ -8,6 +8,19 @@ import com.oracle.truffle.api.frame.FrameSlotKind
 import com.oracle.truffle.api.interop.UnsupportedTypeException
 import com.oracle.truffle.api.nodes.ExplodeLoop
 
+class TypeError(
+  message: String,
+  val actual: Type? = null,
+  val expected: Type? = null
+) : Exception(message) {
+  constructor(message: String, cause: Exception?, actual: Type? = null, expected: Type? = null) : this(message, actual, expected) {
+    initCause(cause)
+  }
+  companion object {
+    const val serialVersionUID: Long = 212674730538525189L
+  }
+}
+
 // eventually move to a more hindley-milner style model with quantifiers, but then we need subsumption, unification, etc.
 // also this doesn't presuppose if we're heading towards dependently typed languages or towards haskell right now
 abstract class Type internal constructor(val rep: FrameSlotKind // used to set the starting frameslotkind
@@ -58,6 +71,7 @@ object Bool : Type(FrameSlotKind.Boolean) {
   @Throws(UnsupportedTypeException::class)
   override fun validate(t: Any?) { if (t !is Boolean) unsupported("expected boolean", t) }
 }
+
 object Obj : Type(FrameSlotKind.Object) {
   override fun validate(@Suppress("UNUSED_PARAMETER") t: Any?) {}
 }
@@ -76,15 +90,3 @@ object Nat : Type(FrameSlotKind.Int) {
 
 val Action = IO(UnitTy)
 
-class TypeError(
-  message: String,
-  val actual: Type? = null,
-  val expected: Type? = null
-) : Exception(message) {
-  constructor(message: String, cause: Exception?, actual: Type? = null, expected: Type? = null) : this(message, actual, expected) {
-    initCause(cause)
-  }
-  companion object {
-    const val serialVersionUID: Long = 212674730538525189L
-  }
-}
