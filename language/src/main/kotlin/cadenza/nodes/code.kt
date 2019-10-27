@@ -46,34 +46,21 @@ abstract class Code : Node(), InstrumentableNode {
   open fun executeBoolean(frame: VirtualFrame): Boolean = TypesGen.expectBoolean(execute(frame))
 
   @Throws(NeutralException::class)
-  open fun executeUnit(frame: VirtualFrame): Unit {
-    execute(frame); return
-  }
+  open fun executeUnit(frame: VirtualFrame): Unit { execute(frame) }
 
   // invoked by the parser to set the source
   fun setSourceSection(charIndex: Int, length: Int) {
-    assert(sourceCharIndex == NO_SOURCE) { "source must only be set once" }
-    if (charIndex < 0) throw IllegalArgumentException("charIndex < 0")
-    if (length < 0) throw IllegalArgumentException("length < 0")
     sourceCharIndex = charIndex
     sourceLength = length
   }
 
-  fun setUnavailableSourceSection() {
-    assert(sourceCharIndex == NO_SOURCE) { "source must only be set once" }
-    sourceCharIndex = UNAVAILABLE_SOURCE
-  }
+  fun setUnavailableSourceSection() { sourceCharIndex = UNAVAILABLE_SOURCE }
 
-  override fun getSourceSection(): SourceSection? {
-    if (sourceCharIndex == NO_SOURCE) return null
-    val rootNode = rootNode ?: return null
-    val rootSourceSection = rootNode.sourceSection ?: return null
-    val source = rootSourceSection.source
-    return if (sourceCharIndex == UNAVAILABLE_SOURCE)
-      source.createUnavailableSection()
-    else
-      source.createSection(sourceCharIndex, sourceLength)
-  }
+  override fun getSourceSection(): SourceSection? =
+    rootNode.takeIf { sourceCharIndex != NO_SOURCE } ?.sourceSection?.source?.run {
+      if (sourceCharIndex == UNAVAILABLE_SOURCE) this.createUnavailableSection()
+      else this.createSection(sourceCharIndex, sourceLength)
+    }
 
   override fun isInstrumentable() = sourceCharIndex != NO_SOURCE
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.ExpressionTag::class.java
@@ -323,7 +310,7 @@ inline fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<Fra
 }
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
+public inline fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
 
 
 @Suppress("NOTHING_TO_INLINE")

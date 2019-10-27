@@ -95,9 +95,15 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
 
 }
 
-class TypeError
-constructor(val msg: String? = null, val actual: Type? = null, val expected: Type? = null) : Exception() {
+class TypeError(
+  message: String,
+  val actual: Type? = null,
+  val expected: Type? = null
+) : Exception(message) {
+  constructor(message: String, cause: Exception?, actual: Type? = null, expected: Type? = null) : this(message, actual, expected) {
+    initCause(cause)
+  }
   companion object {
-    private const val serialVersionUID: Long = 212674730538525189L
+    const val serialVersionUID: Long = 212674730538525189L
   }
 }

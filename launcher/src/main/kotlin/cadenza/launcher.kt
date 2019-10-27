@@ -18,33 +18,27 @@ class Launcher : AbstractLanguageLauncher() {
   private var versionAction: VersionAction = VersionAction.None
   internal var file: File? = null
 
-  override fun getLanguageId(): String {
-    return LANGUAGE_ID
-  }
+  override fun getLanguageId() = LANGUAGE_ID
 
-  override fun launch(contextBuilder: Context.Builder) {
+  override fun launch(contextBuilder: Context.Builder) =
     exitProcess(execute(contextBuilder))
-  }
 
   protected fun execute(contextBuilder: Context.Builder): Int {
     contextBuilder.arguments(languageId, programArgs)
     try {
       contextBuilder.build().use {
-        // context ->
         runVersionAction(versionAction, it.getEngine())
         val library = it.eval(Source.newBuilder(languageId, file).build())
         if (!library.canExecute()) return library.asInt(); // throw abort("no main function found")
         return library.execute().asInt()
       }
     } catch (e: PolyglotException) {
-      if (e.isExit) throw e
-      if (e.isInternalError) throw e
+      if (e.isExit || e.isInternalError) throw e
       printStackTraceSkipTrailingHost(e)
       return -1
     } catch (e: IOException) {
       throw abort(String.format("Error loading file '%s' (%s)", file, e.message))
     }
-
   }
 
   override fun preprocessArguments(arguments: MutableList<String>, polyglotOptions: MutableMap<String, String>): List<String> {
@@ -102,10 +96,10 @@ class Launcher : AbstractLanguageLauncher() {
         }
       }
     }
-    if (!path.isEmpty())
+    if (path.isNotEmpty())
       polyglotOptions["cadenza.libraryPath"] = path.joinToString(":")
 
-    if (!path.isEmpty())
+    if (path.isNotEmpty())
       polyglotOptions["cadenza.libraries"] = libs.joinToString(":")
 
     if (file == null && iterator.hasNext())
@@ -164,8 +158,7 @@ internal fun printStackTraceSkipTrailingHost(e: PolyglotException) {
     stackTrace.add(s)
   val iterator = stackTrace.listIterator(stackTrace.size)
   while (iterator.hasPrevious()) {
-    val s = iterator.previous()
-    if (s.isHostFrame)
+    if (iterator.previous().isHostFrame)
       iterator.remove()
     else
       break
