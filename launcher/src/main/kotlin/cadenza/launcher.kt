@@ -127,8 +127,9 @@ class Launcher : AbstractLanguageLauncher() {
     printOption("--show-version", "print the version and continue")
   }
 
-  override fun collectArguments(args: MutableSet<String>) =
+  override fun collectArguments(args: MutableSet<String>) {
     args.addAll(listOf("-L", "--lib", "--version", "--show-version"))
+  }
 
   override fun getDefaultLanguages(): Array<String> = arrayOf(LANGUAGE_ID) // "js","llvm",getLanguageId()};
 
