@@ -153,7 +153,7 @@ project(":language") {
   tasks.getByName<Jar>("jar") {
     archiveBaseName.set("cadenza-language")
     manifest {
-      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.map { it.getAbsolutePath() } .joinToString(separator = " ")
+      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
     }
   }
 
@@ -173,7 +173,7 @@ project(":launcher") {
     archiveBaseName.set("cadenza-launcher")
     manifest {
       attributes["Main-Class"] = "cadenza.Launcher"
-      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.map { it.getAbsolutePath() } .joinToString(separator = " ")
+      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
     }
   }
 }
@@ -293,7 +293,7 @@ if (graalHome == null) {
 
 val needsExtract = graalHome == null
 if (needsExtract) {
-  val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").getOutputDirectory().get().getAsFile().toString()
+  val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").outputDirectory.get().asFile.toString()
   graalHome = if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
 }
 
@@ -337,7 +337,7 @@ tasks.register("register", Exec::class) {
     "install",
     "-f",
     "-L",
-    jar.archiveFile.get().getAsFile().getPath()
+    jar.archiveFile.get().asFile.path
   )
 }
 

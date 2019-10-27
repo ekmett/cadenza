@@ -20,6 +20,7 @@ abstract class Term {
   @Throws(TypeError::class) abstract fun infer(ctx: Ctx): Witness
 }
 
+@Suppress("unused")
 fun tvar(name: String): Term = object : Term() {
   @Throws(TypeError::class)
   override fun infer(ctx: Ctx): Witness = object : Witness(ctx.lookup(name)) {
@@ -27,6 +28,7 @@ fun tvar(name: String): Term = object : Term() {
   }
 }
 
+@Suppress("unused")
 fun tif(body: Term, thenTerm: Term, elseTerm: Term): Term = object : Term() {
   @Throws(TypeError::class)
   override fun infer(ctx: Ctx): Witness {
@@ -42,6 +44,7 @@ fun tif(body: Term, thenTerm: Term, elseTerm: Term): Term = object : Term() {
   }
 }
 
+@Suppress("unused")
 fun tapp(trator: Term, vararg trands: Term): Term = object : Term() {
   @Throws(TypeError::class)
   override fun infer(ctx: Ctx): Witness {
@@ -64,7 +67,7 @@ fun tapp(trator: Term, vararg trands: Term): Term = object : Term() {
   }
 }
 
-@Suppress("UNUSED_PARAMETER")
+@Suppress("UNUSED_PARAMETER","unused")
 fun tlam(names: Array<Name>, body: Term): Term? {
   return null
 }

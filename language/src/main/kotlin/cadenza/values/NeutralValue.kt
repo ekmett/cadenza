@@ -7,7 +7,7 @@ import com.oracle.truffle.api.library.*
 
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
-class NeutralValue(val type: Type, val term: Neutral) : TruffleObject {
+class NeutralValue(val type: Type, val term : Neutral) : TruffleObject {
   @ExportMessage
   fun isExecutable(): Boolean = true
 
@@ -23,6 +23,7 @@ class NeutralValue(val type: Type, val term: Neutral) : TruffleObject {
   }
 
   // assumes this has been built legally. fails via unchecked null pointer exception
+  @Suppress("unused")
   fun apply(arguments: Array<out Any?>): NeutralValue {
     var resultType = type
     for (i in arguments.indices)

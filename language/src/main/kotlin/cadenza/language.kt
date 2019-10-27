@@ -29,9 +29,11 @@ const val LANGUAGE_VERSION = "0"
 const val LANGUAGE_MIME_TYPE = "application/x-cadenza"
 const val LANGUAGE_EXTENSION = "za"
 
+@Suppress("unused")
 val LANGUAGE_BUILTIN_SOURCE by lazy { Source.newBuilder(LANGUAGE_ID, "", "[cadenza builtin]").buildLiteral()!! }
 val LANGUAGE_SHEBANG_REGEXP by lazy { Pattern.compile("^#! ?/usr/bin/(env +cadenza|cadenza).*")!! }
 
+@Suppress("unused")
 fun lookupNodeInfo(clazz: Class<*>?): NodeInfo? =
   if (clazz == null) null
   else clazz.getAnnotation<NodeInfo>(NodeInfo::class.java) ?: lookupNodeInfo(clazz.superclass)
@@ -61,7 +63,7 @@ fun toString(value: Any?): String =
       val interop = InteropLibrary.getFactory().getUncached(value)
       try {
         when {
-          interop.fitsInLong(value) -> java.lang.Long.toString(interop.asLong(value))
+          interop.fitsInLong(value) -> interop.asLong(value).toString()
           interop.isBoolean(value) -> java.lang.Boolean.toString(interop.asBoolean(value))
           interop.isString(value) -> interop.asString(value)
           interop.isNull(value) -> "NULL"
@@ -94,7 +96,7 @@ class Detector : TruffleFile.FileTypeDetector {
 }
 
 class Context(
-  val language: Language,
+  @Suppress("unused") val language: Language,
   var env: TruffleLanguage.Env
 ) {
   val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")!!
@@ -150,6 +152,7 @@ class Language : TruffleLanguage<Context>() {
     return Truffle.getRuntime().createCallTarget(rootNode)
   }
 
+  @Suppress("unused")
   fun findExportedSymbol(
     @Suppress("UNUSED_PARAMETER") context: org.graalvm.polyglot.Context,
     globalName: String,

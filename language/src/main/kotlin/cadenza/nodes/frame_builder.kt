@@ -16,7 +16,7 @@ val noFrameBuilders = arrayOf<FrameBuilder>() // can't make const because kotlin
 @TypeSystemReference(Types::class)
 @NodeInfo(shortName = "FrameBuilder")
 abstract class FrameBuilder(
-  protected val slot: FrameSlot,
+  private val slot: FrameSlot,
   @field:Child protected var rhs: Code
 ) : Node() {
 
@@ -43,6 +43,7 @@ abstract class FrameBuilder(
   // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
   @Specialization(guards = ["allowsBooleanSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
   @Throws(UnexpectedResultException::class)
+  @Suppress("unused")
   internal fun buildBoolean(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Boolean {
     val result: Boolean
     try {
@@ -61,6 +62,7 @@ abstract class FrameBuilder(
 
   @Specialization(guards = ["allowsIntegerSlot(frame)"], rewriteOn = [UnexpectedResultException::class])
   @Throws(UnexpectedResultException::class)
+  @Suppress("unused")
   internal fun buildInteger(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Int {
     val result: Int
     try {
@@ -78,6 +80,7 @@ abstract class FrameBuilder(
   }
 
   @Fallback
+  @Suppress("unused")
   internal fun buildObject(frame: VirtualFrame, @Suppress("UNUSED_PARAMETER") _hack: Int, oldFrame: VirtualFrame): Any? {
     val result = rhs.executeAny(oldFrame)
     frame.setObject(slot, result)
@@ -87,5 +90,5 @@ abstract class FrameBuilder(
   override fun isAdoptable() = false
 }
 
-@Suppress("NOTHING_TO_INLINE")
+@Suppress("NOTHING_TO_INLINE","unused")
 inline fun put(slot: FrameSlot, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)

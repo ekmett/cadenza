@@ -14,20 +14,20 @@ import kotlin.io.*
 import kotlin.system.exitProcess
 
 class Launcher : AbstractLanguageLauncher() {
-  internal var programArgs: Array<String> = emptyArray()
+  private var programArgs: Array<String> = emptyArray()
   private var versionAction: VersionAction = VersionAction.None
-  internal var file: File? = null
+  private var file: File? = null
 
   override fun getLanguageId() = LANGUAGE_ID
 
   override fun launch(contextBuilder: Context.Builder) =
     exitProcess(execute(contextBuilder))
 
-  protected fun execute(contextBuilder: Context.Builder): Int {
+  private fun execute(contextBuilder: Context.Builder): Int {
     contextBuilder.arguments(languageId, programArgs)
     try {
       contextBuilder.build().use { ctx ->
-        runVersionAction(versionAction, ctx.getEngine())
+        runVersionAction(versionAction, ctx.engine)
         val v = ctx.eval(Source.newBuilder(languageId, file).build())
         return if (v.canExecute()) v.execute().asInt() else v.asInt()
       }
@@ -61,13 +61,14 @@ class Launcher : AbstractLanguageLauncher() {
           var optionName = option
           val argument: String?
           val equalsIndex = option.indexOf('=')
-          if (equalsIndex > 0) {
-            argument = option.substring(equalsIndex + 1)
-            optionName = option.substring(0, equalsIndex)
-          } else if (iterator.hasNext())
-            argument = iterator.next()
-          else
-            argument = null
+          when {
+            equalsIndex > 0 -> {
+              argument = option.substring(equalsIndex + 1)
+              optionName = option.substring(0, equalsIndex)
+            }
+            iterator.hasNext() -> argument = iterator.next()
+            else -> argument = null
+          }
           when (optionName) {
             "-L" -> {
               if (argument == null) throw abort("missing argument for $optionName")
@@ -127,7 +128,7 @@ class Launcher : AbstractLanguageLauncher() {
   }
 
   override fun collectArguments(args: MutableSet<String>) {
-    args.addAll(Arrays.asList("-L", "--lib", "--version", "--show-version"))
+    args.addAll(listOf("-L", "--lib", "--version", "--show-version"))
   }
 
   override fun getDefaultLanguages(): Array<String> {

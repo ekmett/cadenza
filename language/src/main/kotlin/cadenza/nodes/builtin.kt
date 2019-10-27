@@ -9,8 +9,7 @@ import com.oracle.truffle.api.nodes.*
 import java.io.Serializable
 
 @TypeSystemReference(Types::class)
-abstract class Builtin(val resultType: Type) : Node(), Serializable {
-
+abstract class Builtin(@Suppress("unused") val resultType: Type) : Node(), Serializable {
   @Throws(NeutralException::class)
   abstract fun execute(frame: VirtualFrame, arg: Code): Any?
 
@@ -20,15 +19,16 @@ abstract class Builtin(val resultType: Type) : Node(), Serializable {
   }
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  fun executeClosure(frame: VirtualFrame, arg: Code): Closure =
+  @Suppress("unused")
+  open fun executeClosure(frame: VirtualFrame, arg: Code): Closure =
     TypesGen.expectClosure(execute(frame, arg))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  fun executeBoolean(frame: VirtualFrame, arg: Code): Boolean =
+  open fun executeBoolean(frame: VirtualFrame, arg: Code): Boolean =
     TypesGen.expectBoolean(execute(frame, arg))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  fun executeInteger(frame: VirtualFrame, arg: Code): Int =
+  open fun executeInteger(frame: VirtualFrame, arg: Code): Int =
     TypesGen.expectInteger(execute(frame, arg))
 }
 

@@ -16,7 +16,7 @@ import com.oracle.truffle.api.profiles.ConditionProfile
 import com.oracle.truffle.api.source.SourceSection
 import java.util.Arrays
 
-@Suppress("NOTHING_TO_INLINE")
+@Suppress("NOTHING_TO_INLINE","unused")
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(Types::class)
@@ -28,10 +28,10 @@ abstract class Code : Node(), InstrumentableNode {
   abstract fun execute(frame: VirtualFrame): Any?
 
   open fun executeAny(frame: VirtualFrame): Any? {
-    try {
-      return execute(frame)
+    return try {
+      execute(frame)
     } catch (e: NeutralException) {
-      return e.get()
+      e.get()
     }
   }
 
@@ -72,12 +72,7 @@ class App(
   @field:Child var rator: Code,
   @field:Children val rands: Array<Code>
 ) : Code() {
-  @Child
-  protected var indirectCallNode: IndirectCallNode
-
-  init {
-    this.indirectCallNode = Truffle.getRuntime().createIndirectCallNode()
-  }
+  @Child private var indirectCallNode: IndirectCallNode = Truffle.getRuntime().createIndirectCallNode()
 
   @ExplodeLoop
   private fun executeRands(frame: VirtualFrame): Array<Any?> {
@@ -95,15 +90,15 @@ class App(
       e.apply(executeRands(frame))
     }
 
-    if (fn.arity == rands.size) {
-      return indirectCallNode.call(fn.callTarget, *executeRands(frame))
-    } else if (fn.arity > rands.size) {
-      return fn.pap(executeRands(frame)) // not enough arguments, pap node
-    } else {
-      CompilerDirectives.transferToInterpreterAndInvalidate()
-      this.replace(App(App(rator, Arrays.copyOf<Code>(rands, fn.arity)),
-        Arrays.copyOfRange(rands, fn.arity, rands.size)))
-      return fn.call(executeRands(frame)) // on slow path handling over-application
+    when {
+      fn.arity == rands.size -> return indirectCallNode.call(fn.callTarget, *executeRands(frame))
+      fn.arity > rands.size -> return fn.pap(executeRands(frame)) // not enough arguments, pap node
+      else -> {
+        CompilerDirectives.transferToInterpreterAndInvalidate()
+        this.replace(App(App(rator, Arrays.copyOf<Code>(rands, fn.arity)),
+          Arrays.copyOfRange(rands, fn.arity, rands.size)))
+        return fn.call(executeRands(frame)) // on slow path handling over-application
+      }
     }
   }
 
@@ -170,7 +165,7 @@ class Lam(
 ) : Code() {
 
   // do we need to capture an environment?
-  inline fun isSuperCombinator() = closureFrameDescriptor != null
+  private inline fun isSuperCombinator() = closureFrameDescriptor != null
 
   override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), arity, type, callTarget)
   override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), arity, type, callTarget)
@@ -195,7 +190,7 @@ inline fun isSuperCombinator(callTarget: RootCallTarget): Boolean {
 }
 
 @NodeInfo(shortName = "Read")
-abstract class Var protected constructor(protected val slot: FrameSlot) : Code() {
+abstract class Var protected constructor(private val slot: FrameSlot) : Code() {
   @Specialization(rewriteOn = [FrameSlotTypeException::class])
   @Throws(FrameSlotTypeException::class)
   protected fun readInt(frame: VirtualFrame): Int = frame.getInt(slot)
@@ -207,7 +202,8 @@ abstract class Var protected constructor(protected val slot: FrameSlot) : Code()
   override fun isAdoptable() = false
 }
 
-class Ann(@field:Child protected var body: Code, val type: Type) : Code() {
+@Suppress("unused")
+class Ann(@field:Child private var body: Code, val type: Type) : Code() {
   @Throws(NeutralException::class)
   override fun execute(frame: VirtualFrame): Any? = body.execute(frame)
   override fun executeAny(frame: VirtualFrame): Any? = body.executeAny(frame)
@@ -221,7 +217,8 @@ class Ann(@field:Child protected var body: Code, val type: Type) : Code() {
 
 // a fully saturated call to a builtin
 // invariant: builtins themselves do not return neutral values, other than through evaluating their argument
-abstract class CallBuiltin(val type: Type, val builtin: Builtin, @field:Child
+@Suppress("unused")
+abstract class CallBuiltin(val type: Type, private val builtin: Builtin, @field:Child
 internal var arg: Code) : Code() {
   override fun executeAny(frame: VirtualFrame): Any? =
     try {
@@ -269,7 +266,7 @@ const val NO_SOURCE = -1
 const val UNAVAILABLE_SOURCE = -2
 
 // invariant callTarget points to a native function body with known arity
-@Suppress("NOTHING_TO_INLINE")
+@Suppress("NOTHING_TO_INLINE","UNUSED")
 inline fun lam(callTarget: RootCallTarget, type: Type): Lam {
   val root = callTarget.rootNode
   assert(root is ClosureRootNode)
@@ -282,7 +279,7 @@ inline fun lam(arity: Int, callTarget: RootCallTarget, type: Type): Lam {
   return lam(null, noFrameBuilders, arity, callTarget, type)
 }
 
-@Suppress("NOTHING_TO_INLINE")
+@Suppress("NOTHING_TO_INLINE","unused")
 inline fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type): Lam {
   val root = callTarget.rootNode
   assert(root is ClosureRootNode)
@@ -293,7 +290,7 @@ inline fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<Fram
 @Suppress("NOTHING_TO_INLINE")
 inline fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type): Lam {
   assert(arity > 0)
-  val hasCaptureSteps = captureSteps.size != 0
+  val hasCaptureSteps = captureSteps.isNotEmpty()
   assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }
   return Lam(
     if (hasCaptureSteps) null else closureFrameDescriptor ?: FrameDescriptor(),
@@ -308,7 +305,7 @@ inline fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<Fra
 inline fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
 
 
-@Suppress("NOTHING_TO_INLINE")
+@Suppress("NOTHING_TO_INLINE","unused")
 inline fun booleanLiteral(b: Boolean): Code = object : Code() {
   @Suppress("UNUSED_PARAMETER")
   override fun execute(frame: VirtualFrame) = b
@@ -324,7 +321,7 @@ inline fun intLiteral(i: Int): Code = object : Code() {
   override fun executeInteger(frame: VirtualFrame) = i
 }
 
-@Suppress("NOTHING_TO_INLINE")
+@Suppress("NOTHING_TO_INLINE","unused")
 inline fun bigLiteral(i: BigInt): Code = object : Code() {
   @Suppress("UNUSED_PARAMETER")
   override fun execute(frame: VirtualFrame) = i

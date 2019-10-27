@@ -9,8 +9,8 @@ import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 import java.math.BigInteger
 
-private val LONG_MAX_SAFE_DOUBLE = 9007199254740991L // 2 ** 53 - 1
-private val INT_MAX_SAFE_FLOAT = 16777215 // 2 ** 24 - 1
+private const val LONG_MAX_SAFE_DOUBLE = 9007199254740991L // 2 ** 53 - 1
+private const val INT_MAX_SAFE_FLOAT = 16777215 // 2 ** 24 - 1
 
 private fun inSafeDoubleRange(l: Long): Boolean {
   return l >= -LONG_MAX_SAFE_DOUBLE && l <= LONG_MAX_SAFE_DOUBLE
@@ -29,7 +29,7 @@ class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
   @TruffleBoundary
   fun isNumber(): Boolean = fitsInLong()
 
-  fun isNatural(): Boolean = value.compareTo(BigInteger.ZERO) >= 0
+  fun isNatural(): Boolean = value >= BigInteger.ZERO
 
   @TruffleBoundary
   override fun compareTo(other: BigInt): Int {

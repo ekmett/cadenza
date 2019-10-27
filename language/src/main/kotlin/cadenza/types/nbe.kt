@@ -7,7 +7,7 @@ import com.oracle.truffle.api.nodes.SlowPathException
 
 @Throws(NeutralException::class)
 @Suppress("NOTHING_TO_INLINE")
-public inline fun neutral(type: Type, term: Neutral) : Nothing {
+inline fun neutral(type: Type, term: Neutral) : Nothing {
   throw NeutralException(type, term)
 }
 

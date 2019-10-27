@@ -8,6 +8,7 @@ import com.oracle.truffle.api.frame.FrameSlotKind
 import com.oracle.truffle.api.interop.UnsupportedTypeException
 import com.oracle.truffle.api.nodes.ExplodeLoop
 
+@Suppress("unused")
 class TypeError(
   message: String,
   val actual: Type? = null,
@@ -23,8 +24,7 @@ class TypeError(
 
 // eventually move to a more hindley-milner style model with quantifiers, but then we need subsumption, unification, etc.
 // also this doesn't presuppose if we're heading towards dependently typed languages or towards haskell right now
-abstract class Type internal constructor(val rep: FrameSlotKind // used to set the starting frameslotkind
-) {
+abstract class Type protected constructor(@Suppress("unused") val rep: FrameSlotKind) {
   open val arity: Int
     get() = 0
 
@@ -32,6 +32,7 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
   abstract fun validate(t: Any?)  // checks the contract for a given type holds, for runtime argument passing, etc.
 
   @Throws(TypeError::class)
+  @Suppress("unused")
   fun match(expected: Type) {
     if (!equals(expected)) throw TypeError("type mismatch", this, expected)
   }
@@ -39,6 +40,7 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
 
 // assumes validity
 @ExplodeLoop
+@Suppress("unused")
 fun Type.after(n: Int): Type {
   var current = this
   for (i in 0 until n)
@@ -72,13 +74,14 @@ object Bool : Type(FrameSlotKind.Boolean) {
   override fun validate(t: Any?) { if (t !is Boolean) unsupported("expected boolean", t) }
 }
 
+@Suppress("unused")
 object Obj : Type(FrameSlotKind.Object) {
   override fun validate(@Suppress("UNUSED_PARAMETER") t: Any?) {}
 }
 
 object UnitTy : Type(FrameSlotKind.Object) {
   @Throws(UnsupportedTypeException::class)
-  override fun validate(t: Any?) { if (kotlin.Unit != t) unsupported("expected unit", t) }
+  override fun validate(t: Any?) { if (Unit != t) unsupported("expected unit", t) }
 }
 
 object Nat : Type(FrameSlotKind.Int) {

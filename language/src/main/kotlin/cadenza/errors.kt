@@ -9,11 +9,13 @@ fun panic(msg: String, base: Exception?): Nothing {
   throw RuntimeException(msg, base).also { it.stackTrace = it.stackTrace.trim() }
 }
 
+@Suppress("unused")
 fun panic(msg: String): Nothing {
   CompilerDirectives.transferToInterpreter()
   throw RuntimeException(msg).also { it.stackTrace = it.stackTrace.trim() }
 }
 
+@Suppress("unused")
 fun todo(msg: String, base: Exception?): Nothing {
   CompilerDirectives.transferToInterpreter()
   throw RuntimeException(msg, base).also { it.stackTrace = it.stackTrace.trim() }

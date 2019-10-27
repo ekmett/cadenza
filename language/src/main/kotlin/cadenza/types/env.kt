@@ -4,7 +4,7 @@ package cadenza.types
 typealias Name = String
 typealias Env<T> = ConsEnv<T>?
 data class ConsEnv<out T>(val name: Name, val value: T, val next: Env<T>)
-val NilEnv: Env<Nothing> = null
+@Suppress("unused") val NilEnv: Env<Nothing> = null
 
 @Throws(TypeError::class)
 fun <T> Env<T>.lookup(name: String): T {

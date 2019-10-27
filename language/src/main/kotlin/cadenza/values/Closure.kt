@@ -16,7 +16,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class Closure (
-  val env: MaterializedFrame? = null,
+  private val env: MaterializedFrame? = null,
   val arity: Int,
   val type: Type,
   val callTarget: RootCallTarget
