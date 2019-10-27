@@ -8,8 +8,6 @@ import com.oracle.truffle.api.frame.FrameSlotKind
 import com.oracle.truffle.api.interop.UnsupportedTypeException
 import com.oracle.truffle.api.nodes.ExplodeLoop
 
-import java.util.Objects
-
 // eventually move to a more hindley-milner style model with quantifiers, but then we need subsumption, unification, etc.
 // also this doesn't presuppose if we're heading towards dependently typed languages or towards haskell right now
 abstract class Type internal constructor(val rep: FrameSlotKind // used to set the starting frameslotkind
@@ -48,7 +46,7 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
   @CompilerDirectives.ValueType
   data class IO(val result: Type) : Type(FrameSlotKind.Object) {
     @Throws(UnsupportedTypeException::class)
-    override fun validate(t: Any?) = cadenza.todo("io")
+    override fun validate(t: Any?) = todo("io")
   }
 
   companion object {
@@ -81,7 +79,7 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
     fun after(t: Type, n: Int): Type {
       var current = t
       for (i in 0 until n)
-        current = (current as Type.Arr).result
+        current = (current as Arr).result
       return current
     }
   }

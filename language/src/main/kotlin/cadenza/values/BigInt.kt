@@ -23,14 +23,13 @@ private fun inSafeFloatRange(i: Int): Boolean {
 @ValueType
 @ExportLibrary(InteropLibrary::class)
 class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
+  constructor(value: Long) : this(BigInteger.valueOf(value))
 
   @ExportMessage
   @TruffleBoundary
   fun isNumber(): Boolean = fitsInLong()
 
   fun isNatural(): Boolean = value.compareTo(BigInteger.ZERO) >= 0
-
-  constructor(value: Long) : this(BigInteger.valueOf(value)) {}
 
   @TruffleBoundary
   override fun compareTo(other: BigInt): Int {

@@ -118,8 +118,8 @@ class Context(
   DebuggerTags.AlwaysHalt::class
 )
 class Language : TruffleLanguage<Context>() {
-  val singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active")
-  override fun createContext(env: TruffleLanguage.Env) = Context(this, env)
+  val singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active")!!
+  override fun createContext(env: Env) = Context(this, env)
   override fun initializeContext(ctx: Context?) {}
   override fun finalizeContext(ctx: Context) = ctx.shutdown()
   override fun isObjectOfLanguage(obj: Any) = obj is TruffleObject
@@ -134,19 +134,19 @@ class Language : TruffleLanguage<Context>() {
   override fun findSourceLocation(ctx: Context, value: Any?): SourceSection? = null
   override fun isVisible(ctx: Context, value: Any?) = true
   override fun toString(ctx: Context, value: Any?): String = toString(value)
-  override fun patchContext(ctx: Context, env: TruffleLanguage.Env): Boolean {
+  override fun patchContext(ctx: Context, env: Env): Boolean {
     ctx.env = env
     return true
   }
 
   // stubbed: for now inline parsing requests just return 'const'
-  override fun parse(request: TruffleLanguage.InlineParsingRequest?): InlineCode {
-    val body = K(Nat, Nat)
+  override fun parse(request: InlineParsingRequest?): InlineCode {
+    val body = k(Nat, Nat)
     return InlineCode(this, body)
   }
 
   // stubbed: returns a calculation that adds two numbers
-  override fun parse(request: TruffleLanguage.ParsingRequest): CallTarget {
+  override fun parse(request: ParsingRequest): CallTarget {
     val rootNode = ProgramRootNode(this, intLiteral(0), FrameDescriptor())
     return Truffle.getRuntime().createCallTarget(rootNode)
   }
@@ -157,20 +157,17 @@ class Language : TruffleLanguage<Context>() {
     @Suppress("UNUSED_PARAMETER") onlyExplicit: Boolean
   ): Any? =
     when (globalName) {
-      "S" -> S(Arr(Type.Nat, Arr(Type.Nat, Type.Nat)), Arr(Type.Nat, Type.Nat), Type.Nat)
-      "K" -> K(Type.Nat, Type.Nat)
-      "I" -> I(Type.Nat)
+      "S" -> s(Arr(Nat, Arr(Nat, Nat)), Arr(Nat, Nat), Nat)
+      "K" -> k(Nat, Nat)
+      "I" -> i(Nat)
       "main" -> 42
       else -> null
     }
 
-  // for testing
-
-  fun I(tx: Type) = unary({ x -> x }, tx)
-  fun K(tx: Type, ty: Type) = binary({ x, _ -> x }, tx, ty)
-
   @Suppress("UNUSED_PARAMETER")
-  fun S(tx: Type, ty: Type, tz: Type): Code = todo("S")
+  fun s(tx: Type, ty: Type, tz: Type): Code = todo("S")
+  fun k(tx: Type, ty: Type) = binary({ x, _ -> x }, tx, ty)
+  fun i(tx: Type) = unary({ x -> x }, tx)
 
   @Suppress("UNUSED_PARAMETER")
   inline fun unary(f: (x: Term) -> Term, argument: Type): Code = todo("unary")

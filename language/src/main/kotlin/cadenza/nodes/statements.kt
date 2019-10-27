@@ -17,7 +17,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException
 abstract class Stmt : CadenzaNode() {
   @GenerateWrapper.OutgoingConverter
   internal fun convertOutgoing(@Suppress("UNUSED_PARAMETER") obj: Any): Any? = null
-  abstract fun execute(frame: VirtualFrame): Unit
+  abstract fun execute(frame: VirtualFrame)
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = StmtWrapper(this, probe)
   override fun isInstrumentable() = true
   override fun isAdoptable() = true
@@ -35,9 +35,7 @@ class Do internal constructor(@field:Children internal var body: Array<Stmt>) : 
 @NodeInfo(shortName = "Def")
 abstract class Def(protected val slot: FrameSlot, @field:Child var arg: Code) : Stmt() {
 
-  public override fun execute(frame: VirtualFrame): Unit {
-    executeDef(frame)
-  }
+  override fun execute(frame: VirtualFrame) { executeDef(frame) }
 
   protected abstract fun executeDef(frame: VirtualFrame): Any?
 

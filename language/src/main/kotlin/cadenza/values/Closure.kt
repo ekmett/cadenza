@@ -38,7 +38,7 @@ class Closure (
   @ExplodeLoop
   @Throws(ArityException::class, UnsupportedTypeException::class)
   fun execute(vararg arguments: Any?): Any? {
-    val maxArity = type.arity.toInt()
+    val maxArity = type.arity
     val len = arguments.size
     if (len > maxArity) throw ArityException.create(maxArity, len)
     var currentType = type
@@ -93,5 +93,5 @@ private inline fun <reified T> consTake(x: T, n: Int, xs: Array<T>): Array<T> {
 @ExplodeLoop
 @Suppress("NOTHING_TO_INLINE")
 private inline fun <T> drop(k: Int, xs: Array<T>): Array<T> {
-  return xs.copyOfRange<T>(k, xs.size)
+  return xs.copyOfRange(k, xs.size)
 }

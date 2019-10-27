@@ -22,7 +22,7 @@ abstract class Builtin(val resultType: Type) : Node(), Serializable {
   abstract fun execute(frame: VirtualFrame, arg: Code): Any?
 
   @Throws(NeutralException::class)
-  open fun executeUnit(frame: VirtualFrame, arg: Code): Unit {
+  open fun executeUnit(frame: VirtualFrame, arg: Code) {
     execute(frame, arg)
   }
 

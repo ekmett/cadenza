@@ -15,7 +15,7 @@ import com.oracle.truffle.api.source.SourceSection
 internal val noArguments = arrayOf<Any>()
 
 @TypeSystemReference(Types::class)
-abstract class CadenzaNode : Node(), InstrumentableNode;// root nodes are needed by Truffle.getRuntime().createCallTarget(someRoot), which is the way to manufacture callable
+abstract class CadenzaNode : Node(), InstrumentableNode
 
 @NodeInfo(language = "core", description = "A root of a core tree.")
 @TypeSystemReference(Types::class)
@@ -37,12 +37,12 @@ class InlineCode(
 
 @GenerateWrapper
 open class ClosureBody constructor(@field:Child protected var content: Code) : Node(), InstrumentableNode {
-  constructor(that: ClosureBody) : this(that.content) {}
+  constructor(that: ClosureBody) : this(that.content)
   open fun execute(frame: VirtualFrame): Any? = content.executeAny(frame)
   override fun isInstrumentable() = true
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = ClosureBodyWrapper(this, this, probe)
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootBodyTag::class.java
-  override fun getSourceSection() = parent.sourceSection
+  override fun getSourceSection(): SourceSection? = parent.sourceSection
 }
 
 @GenerateWrapper
@@ -55,7 +55,7 @@ open class ClosureRootNode : RootNode, InstrumentableNode {
   protected val language: TruffleLanguage<*>
 
   @Suppress("NOTHING_TO_INLINE")
-  inline fun isSuperCombinator() = envPreamble.size != 0
+  inline fun isSuperCombinator() = envPreamble.isNotEmpty()
 
   constructor(
     language: TruffleLanguage<*>,

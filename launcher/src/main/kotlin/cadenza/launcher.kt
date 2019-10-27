@@ -26,11 +26,10 @@ class Launcher : AbstractLanguageLauncher() {
   protected fun execute(contextBuilder: Context.Builder): Int {
     contextBuilder.arguments(languageId, programArgs)
     try {
-      contextBuilder.build().use {
-        runVersionAction(versionAction, it.getEngine())
-        val library = it.eval(Source.newBuilder(languageId, file).build())
-        if (!library.canExecute()) return library.asInt(); // throw abort("no main function found")
-        return library.execute().asInt()
+      contextBuilder.build().use { ctx ->
+        runVersionAction(versionAction, ctx.getEngine())
+        val v = ctx.eval(Source.newBuilder(languageId, file).build())
+        return if (v.canExecute()) v.execute().asInt() else v.asInt()
       }
     } catch (e: PolyglotException) {
       if (e.isExit || e.isInternalError) throw e
@@ -106,7 +105,7 @@ class Launcher : AbstractLanguageLauncher() {
       file = Paths.get(iterator.next()).toFile()
 
     val programArgumentsList = arguments.subList(iterator.nextIndex(), arguments.size)
-    programArgs = programArgumentsList.toTypedArray<String>()
+    programArgs = programArgumentsList.toTypedArray()
     return unrecognizedOptions
   }
 

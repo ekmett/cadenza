@@ -1,7 +1,6 @@
 package cadenza.nodes
 
 import cadenza.*
-import cadenza.types.Neutral.*
 import cadenza.types.*
 import cadenza.values.*
 import com.oracle.truffle.api.CompilerDirectives
@@ -46,7 +45,7 @@ abstract class Code : Node(), InstrumentableNode {
   open fun executeBoolean(frame: VirtualFrame): Boolean = TypesGen.expectBoolean(execute(frame))
 
   @Throws(NeutralException::class)
-  open fun executeUnit(frame: VirtualFrame): Unit { execute(frame) }
+  open fun executeUnit(frame: VirtualFrame) { execute(frame) }
 
   // invoked by the parser to set the source
   fun setSourceSection(charIndex: Int, length: Int) {
@@ -306,7 +305,7 @@ inline fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<Fra
 }
 
 @Suppress("NOTHING_TO_INLINE")
-public inline fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
+inline fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
 
 
 @Suppress("NOTHING_TO_INLINE")
@@ -333,7 +332,7 @@ inline fun bigLiteral(i: BigInt): Code = object : Code() {
   @Suppress("UNUSED_PARAMETER")
   override fun executeInteger(frame: VirtualFrame): Int =
     try {
-      if (i.fitsInInt()) i.asInt().toInt()
+      if (i.fitsInInt()) i.asInt()
       else throw UnexpectedResultException(i)
     } catch (e: UnsupportedMessageException) {
       panic("fitsInInt lied", e)

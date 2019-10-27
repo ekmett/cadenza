@@ -2,7 +2,6 @@ package cadenza.types
 
 import cadenza.nodes.*
 import com.oracle.truffle.api.frame.FrameDescriptor
-import java.util.Arrays
 
 typealias Name = String
 typealias Ctx = Env<Type>

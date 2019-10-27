@@ -21,7 +21,7 @@ abstract class FrameBuilder(
 ) : Node() {
 
   @Suppress("NOTHING_TO_INLINE")
-  inline fun build(frame: VirtualFrame, oldFrame: VirtualFrame): Unit {
+  inline fun build(frame: VirtualFrame, oldFrame: VirtualFrame) {
     execute(frame, 0, oldFrame)
   }
 
