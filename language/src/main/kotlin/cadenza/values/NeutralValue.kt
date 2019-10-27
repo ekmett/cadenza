@@ -8,7 +8,7 @@ import com.oracle.truffle.api.library.*
 // should only be seen under executeAny. execute should _never_ see one of these.
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
-class NeutralValue(val type: Type, val term : Neutral) : TruffleObject {
+class NeutralValue(val type: Type, private val term : Neutral) : TruffleObject {
   @ExportMessage
   fun isExecutable(): Boolean = true
 

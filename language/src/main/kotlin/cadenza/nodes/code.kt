@@ -91,7 +91,7 @@ class App(
       else -> {
         CompilerDirectives.transferToInterpreterAndInvalidate()
         @Suppress("UNCHECKED_CAST")
-        this.replace(App(App(rator, rands.copyOf<Code>(fn.arity) as Array<Code>), rands.copyOfRange(fn.arity, rands.size)))
+        this.replace(App(App(rator, rands.copyOf(fn.arity) as Array<Code>), rands.copyOfRange(fn.arity, rands.size)))
         fn.call(executeRands(frame)) // on slow path handling over-application
       }
     }
@@ -155,7 +155,7 @@ class If(
 @TypeSystemReference(Types::class)
 @NodeInfo(shortName = "Lambda")
 class Lam(
-  val closureFrameDescriptor: FrameDescriptor?,
+  private val closureFrameDescriptor: FrameDescriptor?,
   @field:Children internal val captureSteps: Array<FrameBuilder>,
   private val arity: Int,
   @field:Child internal var callTarget: RootCallTarget,

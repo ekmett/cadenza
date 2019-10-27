@@ -27,110 +27,72 @@ class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
 
   @ExportMessage
   @TruffleBoundary
-  fun isNumber(): Boolean = fitsInLong()
+  fun isNumber() = fitsInLong()
 
-  fun isNatural(): Boolean = value >= BigInteger.ZERO
-
-  @TruffleBoundary
-  override fun compareTo(other: BigInt): Int {
-    return value.compareTo(other.value)
-  }
+  fun isNatural() = value >= BigInteger.ZERO
 
   @TruffleBoundary
-  override fun toString(): String {
-    return value.toString()
-  }
-
-  override fun hashCode(): Int {
-    return value.hashCode()
-  }
+  override fun compareTo(other: BigInt) = value.compareTo(other.value)
 
   @TruffleBoundary
-  override fun equals(other: Any?): Boolean {
-    return other is BigInt && value == other.value
-  }
+  override fun toString() = value.toString()
+
+  override fun hashCode() = value.hashCode()
+
+  @TruffleBoundary
+  override fun equals(other: Any?) = other is BigInt && value == other.value
 
   @ExportMessage
   @TruffleBoundary
-  fun fitsInByte(): Boolean {
-    return value.bitLength() < 8
-  }
+  fun fitsInByte() = value.bitLength() < 8
 
   @ExportMessage
   @TruffleBoundary
-  fun fitsInShort(): Boolean {
-    return value.bitLength() < 16
-  }
+  fun fitsInShort() = value.bitLength() < 16
 
   @ExportMessage
   @TruffleBoundary
-  fun fitsInInt(): Boolean {
-    return value.bitLength() < 32
-  }
+  fun fitsInInt() = value.bitLength() < 32
 
   @ExportMessage
   @TruffleBoundary
-  fun fitsInLong(): Boolean {
-    return value.bitLength() < 64
-  }
+  fun fitsInLong() = value.bitLength() < 64
 
   @ExportMessage
   @TruffleBoundary
-  fun fitsInFloat(): Boolean {
-    return fitsInInt() && inSafeFloatRange(value.toInt())
-  }
+  fun fitsInFloat() = fitsInInt() && inSafeFloatRange(value.toInt())
 
   @ExportMessage
   @TruffleBoundary
-  fun fitsInDouble(): Boolean {
-    return fitsInLong() && inSafeDoubleRange(value.toLong())
-  }
+  fun fitsInDouble() = fitsInLong() && inSafeDoubleRange(value.toLong())
 
   @ExportMessage
   @TruffleBoundary
   @Throws(UnsupportedMessageException::class)
-  fun asByte(): Byte {
-    if (fitsInByte()) return value.toByte()
-    throw UnsupportedMessageException.create()
-  }
+  fun asByte() = if (fitsInByte()) value.toByte() else throw UnsupportedMessageException.create()
 
   @ExportMessage
   @TruffleBoundary
   @Throws(UnsupportedMessageException::class)
-  fun asShort(): Short {
-    if (fitsInShort()) return value.toShort()
-    throw UnsupportedMessageException.create()
-  }
+  fun asShort() = if (fitsInShort()) value.toShort() else throw UnsupportedMessageException.create()
 
   @ExportMessage
   @TruffleBoundary
   @Throws(UnsupportedMessageException::class)
-  fun asInt(): Int {
-    if (fitsInInt()) return value.toInt()
-    throw UnsupportedMessageException.create()
-  }
+  fun asInt() = if (fitsInInt()) value.toInt() else throw UnsupportedMessageException.create()
 
   @ExportMessage
   @TruffleBoundary
   @Throws(UnsupportedMessageException::class)
-  fun asLong(): Long {
-    if (fitsInLong()) return value.toLong()
-    throw UnsupportedMessageException.create()
-  }
+  fun asLong() = if (fitsInLong()) value.toLong() else throw UnsupportedMessageException.create()
 
   @ExportMessage
   @TruffleBoundary
   @Throws(UnsupportedMessageException::class)
-  fun asFloat(): Float {
-    if (fitsInFloat()) return value.toFloat()
-    throw UnsupportedMessageException.create()
-  }
+  fun asFloat() = if (fitsInFloat()) value.toFloat() else throw UnsupportedMessageException.create()
 
   @ExportMessage
   @TruffleBoundary
   @Throws(UnsupportedMessageException::class)
-  fun asDouble(): Double {
-    if (fitsInDouble()) return value.toDouble()
-    throw UnsupportedMessageException.create()
-  }
+  fun asDouble() = if (fitsInDouble()) value.toDouble() else throw UnsupportedMessageException.create()
 }

@@ -47,7 +47,7 @@ open class ClosureBody constructor(@field:Child protected var content: Code) : N
 @GenerateWrapper
 @TypeSystemReference(Types::class)
 open class ClosureRootNode(
-  protected val language: TruffleLanguage<*>,
+  private val language: TruffleLanguage<*>,
   frameDescriptor: FrameDescriptor = FrameDescriptor(),
   val arity: Int,
   @Children val envPreamble: Array<FrameBuilder> = noFrameBuilders,

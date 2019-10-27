@@ -103,7 +103,6 @@ class Context(
   fun shutdown() {}
 }
 
-
 @Option.Group("cadenza")
 @TruffleLanguage.Registration(
   id = LANGUAGE_ID,
@@ -119,7 +118,7 @@ class Context(
   DebuggerTags.AlwaysHalt::class
 )
 class Language : TruffleLanguage<Context>() {
-  val singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active")!!
+  private val singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active")!!
   override fun createContext(env: Env) = Context(this, env)
   override fun initializeContext(ctx: Context?) {}
   override fun finalizeContext(ctx: Context) = ctx.shutdown()
@@ -167,9 +166,9 @@ class Language : TruffleLanguage<Context>() {
     }
 
   @Suppress("UNUSED_PARAMETER")
-  fun s(tx: Type, ty: Type, tz: Type): Code = todo("S")
-  fun k(tx: Type, ty: Type) = binary({ x, _ -> x }, tx, ty)
-  fun i(tx: Type) = unary({ x -> x }, tx)
+  private fun s(tx: Type, ty: Type, tz: Type): Code = todo("S")
+  private fun k(tx: Type, ty: Type) = binary({ x, _ -> x }, tx, ty)
+  private fun i(tx: Type) = unary({ x -> x }, tx)
 
   @Suppress("UNUSED_PARAMETER")
   inline fun unary(f: (x: Term) -> Term, argument: Type): Code = todo("unary")
