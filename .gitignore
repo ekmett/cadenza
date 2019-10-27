@@ -1,10 +1,5 @@
 **/*.iml
-**/.idea/gradle.xml
-**/.idea/modules.xml
-**/.idea/shelf/*
-**/.idea/tasks.xml
-**/.idea/usage.statistics.xml
-**/.idea/workspace.xml
+**/.idea
 **/build/*
 **/dist-newstyle/**
 **/dist/**

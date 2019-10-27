@@ -13,8 +13,6 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException
 
 import java.io.Serializable
 
-val print: Builtin = Print()
-
 @TypeSystemReference(Types::class)
 abstract class Builtin(val resultType: Type) : Node(), Serializable {
 
@@ -40,7 +38,7 @@ abstract class Builtin(val resultType: Type) : Node(), Serializable {
 }
 
 @NodeInfo(shortName = "print$")
-internal class Print : Builtin(Type.Action) {
+object Print : Builtin(Type.Action) {
   @Throws(NeutralException::class)
   override fun execute(frame: VirtualFrame, arg: Code) = executeUnit(frame, arg)
 

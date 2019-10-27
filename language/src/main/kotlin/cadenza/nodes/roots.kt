@@ -46,47 +46,24 @@ open class ClosureBody constructor(@field:Child protected var content: Code) : N
 
 @GenerateWrapper
 @TypeSystemReference(Types::class)
-open class ClosureRootNode : RootNode, InstrumentableNode {
-  @Children
-  val envPreamble: Array<FrameBuilder>
-  @Children
-  val argPreamble: Array<FrameBuilder>
-  val arity: Int
-  @Child
-  var body: ClosureBody
-  protected val language: TruffleLanguage<*>
+open class ClosureRootNode(
+  protected val language: TruffleLanguage<*>,
+  frameDescriptor: FrameDescriptor = FrameDescriptor(),
+  val arity: Int,
+  @Children val envPreamble: Array<FrameBuilder> = noFrameBuilders,
+  @Children val argPreamble: Array<FrameBuilder>,
+  @Child var body: ClosureBody
+) : RootNode(language, frameDescriptor), InstrumentableNode {
+  constructor(other: ClosureRootNode) : this(other.language,FrameDescriptor(),other.arity,other.envPreamble,other.argPreamble,other.body)
 
   @Suppress("NOTHING_TO_INLINE")
   inline fun isSuperCombinator() = envPreamble.isNotEmpty()
-
-  constructor(
-    language: TruffleLanguage<*>,
-    frameDescriptor: FrameDescriptor = FrameDescriptor(),
-    arity: Int, envPreamble: Array<FrameBuilder> = noFrameBuilders,
-    argPreamble: Array<FrameBuilder>,
-    body: ClosureBody
-  ) : super(language, frameDescriptor) {
-    this.language = language
-    this.arity = arity
-    this.envPreamble = envPreamble
-    this.argPreamble = argPreamble
-    this.body = body
-  }
-
-  // need a copy constructor for instrumentation
-  constructor(other: ClosureRootNode) : super(other.language, other.frameDescriptor) {
-    this.language = other.language
-    this.arity = other.arity
-    this.envPreamble = other.envPreamble
-    this.argPreamble = other.argPreamble
-    this.body = other.body
-  }
 
   @ExplodeLoop
   private fun preamble(frame: VirtualFrame): VirtualFrame {
     val local = Truffle.getRuntime().createVirtualFrame(noArguments, frameDescriptor)
     for (builder in argPreamble) builder.build(local, frame)
-    if (isSuperCombinator()) { // supercombinator, needs environment
+    if (isSuperCombinator()) { // supercombinator, given environment
       val env = frame.arguments[0] as MaterializedFrame
       for (builder in envPreamble) builder.build(local, env)
     }
