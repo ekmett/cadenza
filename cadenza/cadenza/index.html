@@ -33,6 +33,13 @@
 <td>
 <code><span class="keyword">class </span><span class="identifier">Language</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleLanguage</span><span class="symbol">&lt;</span><a href="-context/index.html"><span class="identifier">Context</span></a><span class="symbol">&gt;</span></code></td>
 </tr>
+<tr>
+<td>
+<h4><a href="-launcher/index.html">Launcher</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Launcher</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">AbstractLanguageLauncher</span></code></td>
+</tr>
 </tbody>
 </table>
 <h3>Properties</h3>
@@ -43,7 +50,7 @@
 <h4><a href="-l-a-n-g-u-a-g-e_-b-u-i-l-t-i-n_-s-o-u-r-c-e.html">LANGUAGE_BUILTIN_SOURCE</a></h4>
 </td>
 <td>
-<code><span class="keyword">val </span><span class="identifier">LANGUAGE_BUILTIN_SOURCE</span><span class="symbol">: </span><span class="identifier">Source</span><span class="symbol">!</span></code></td>
+<code><span class="keyword">val </span><span class="identifier">LANGUAGE_BUILTIN_SOURCE</span><span class="symbol">: </span><span class="identifier">Source</span></code></td>
 </tr>
 <tr>
 <td>
@@ -75,6 +82,13 @@
 </tr>
 <tr>
 <td>
+<h4><a href="-l-a-n-g-u-a-g-e_-s-h-e-b-a-n-g_-r-e-g-e-x-p.html">LANGUAGE_SHEBANG_REGEXP</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">LANGUAGE_SHEBANG_REGEXP</span><span class="symbol">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"><span class="identifier">Pattern</span></a></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="-l-a-n-g-u-a-g-e_-v-e-r-s-i-o-n.html">LANGUAGE_VERSION</a></h4>
 </td>
 <td>
@@ -101,18 +115,19 @@
 </tr>
 <tr>
 <td>
-<h4><a href="main.html">main</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">main</span><span class="symbol">(</span><span class="identifier" id="cadenza$main(kotlin.Array((kotlin.String)))/_args">_args</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
-</tr>
-<tr>
-<td>
 <h4><a href="panic.html">panic</a></h4>
 </td>
 <td>
 <code><span class="keyword">fun </span><span class="identifier">panic</span><span class="symbol">(</span><span class="identifier" id="cadenza$panic(kotlin.String, java.lang.Exception)/msg">msg</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza$panic(kotlin.String, java.lang.Exception)/base">base</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code><br/>
 <code><span class="keyword">fun </span><span class="identifier">panic</span><span class="symbol">(</span><span class="identifier" id="cadenza$panic(kotlin.String)/msg">msg</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="todo.html">todo</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">todo</span><span class="symbol">(</span><span class="identifier" id="cadenza$todo(kotlin.String, java.lang.Exception)/msg">msg</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza$todo(kotlin.String, java.lang.Exception)/base">base</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code><br/>
+<code><span class="keyword">fun </span><span class="identifier">todo</span><span class="symbol">(</span><span class="identifier" id="cadenza$todo(kotlin.String)/msg">msg</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code></td>
 </tr>
 <tr>
 <td>

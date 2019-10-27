@@ -8,7 +8,7 @@
 <a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">Language</a><br/>
 <br/>
 <h1>Language</h1>
-<code><span class="keyword">class </span><span class="identifier">Language</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleLanguage</span><span class="symbol">&lt;</span><a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">&gt;</span></code> <a href="https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/cadenza/Language.kt#L88">(source)</a>
+<code><span class="keyword">class </span><span class="identifier">Language</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleLanguage</span><span class="symbol">&lt;</span><a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">&gt;</span></code>
 <h3>Constructors</h3>
 <table>
 <tbody>
@@ -18,18 +18,6 @@
 </td>
 <td>
 <code><span class="identifier">Language</span><span class="symbol">(</span><span class="symbol">)</span></code></td>
-</tr>
-</tbody>
-</table>
-<h3>Properties</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="single-context-assumption.html">singleContextAssumption</a></h4>
-</td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">singleContextAssumption</span><span class="symbol">: </span><span class="identifier">Assumption</span><span class="symbol">!</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -101,13 +89,6 @@
 </tr>
 <tr>
 <td>
-<h4><a href="-i.html">I</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">I</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$I(cadenza.types.Type)/tx">tx</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../cadenza.nodes/-code/index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
 <h4><a href="initialize-context.html">initializeContext</a></h4>
 </td>
 <td>
@@ -157,13 +138,6 @@
 </tr>
 <tr>
 <td>
-<h4><a href="-k.html">K</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">K</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$K(cadenza.types.Type, cadenza.types.Type)/tx">tx</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$K(cadenza.types.Type, cadenza.types.Type)/ty">ty</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../cadenza.nodes/-code/index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
 <h4><a href="parse.html">parse</a></h4>
 </td>
 <td>
@@ -176,13 +150,6 @@
 </td>
 <td>
 <code><span class="keyword">fun </span><span class="identifier">patchContext</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$patchContext(cadenza.Context, com.oracle.truffle.api.TruffleLanguage.Env)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-context/index.html"><span class="identifier">Context</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$patchContext(cadenza.Context, com.oracle.truffle.api.TruffleLanguage.Env)/env">env</span><span class="symbol">:</span>&nbsp;<span class="identifier">Env</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-s.html">S</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">S</span><span class="symbol">(</span><span class="identifier" id="cadenza.Language$S(cadenza.types.Type, cadenza.types.Type, cadenza.types.Type)/tx">tx</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$S(cadenza.types.Type, cadenza.types.Type, cadenza.types.Type)/ty">ty</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Language$S(cadenza.types.Type, cadenza.types.Type, cadenza.types.Type)/tz">tz</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../../cadenza.nodes/-code/index.html"><span class="identifier">Code</span></a></code></td>
 </tr>
 <tr>
 <td>

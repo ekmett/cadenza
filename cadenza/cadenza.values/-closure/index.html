@@ -8,7 +8,7 @@
 <a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza.values</a>&nbsp;/&nbsp;<a href="./index.html">Closure</a><br/>
 <br/>
 <h1>Closure</h1>
-<code><span class="keyword">class </span><span class="identifier">Closure</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span></code> <a href="https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/cadenza/values/Closure.kt#L22">(source)</a>
+<code><span class="keyword">class </span><span class="identifier">Closure</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span></code>
 <h3>Constructors</h3>
 <table>
 <tbody>
@@ -17,8 +17,7 @@
 <h4><a href="-init-.html">&lt;init&gt;</a></h4>
 </td>
 <td>
-<code><span class="identifier">Closure</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.Closure$<init>(kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.values.Closure$<init>(kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.values.Closure$<init>(kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">)</span></code><br/>
-<code><span class="identifier">Closure</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.Closure$<init>(com.oracle.truffle.api.frame.MaterializedFrame, kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/env">env</span><span class="symbol">:</span>&nbsp;<span class="identifier">MaterializedFrame</span><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="cadenza.values.Closure$<init>(com.oracle.truffle.api.frame.MaterializedFrame, kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.values.Closure$<init>(com.oracle.truffle.api.frame.MaterializedFrame, kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.values.Closure$<init>(com.oracle.truffle.api.frame.MaterializedFrame, kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">)</span></code></td>
+<code><span class="identifier">Closure</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.Closure$<init>(com.oracle.truffle.api.frame.MaterializedFrame, kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/env">env</span><span class="symbol">:</span>&nbsp;<span class="identifier">MaterializedFrame</span><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="cadenza.values.Closure$<init>(com.oracle.truffle.api.frame.MaterializedFrame, kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.values.Closure$<init>(com.oracle.truffle.api.frame.MaterializedFrame, kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.values.Closure$<init>(com.oracle.truffle.api.frame.MaterializedFrame, kotlin.Int, cadenza.types.Type, com.oracle.truffle.api.RootCallTarget)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">)</span></code></td>
 </tr>
 </tbody>
 </table>
@@ -41,27 +40,6 @@
 </tr>
 <tr>
 <td>
-<h4><a href="env.html">env</a></h4>
-</td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">env</span><span class="symbol">: </span><span class="identifier">MaterializedFrame</span><span class="symbol">?</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="is-executable.html">isExecutable</a></h4>
-</td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">isExecutable</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="is-super-combinator.html">isSuperCombinator</a></h4>
-</td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">isSuperCombinator</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
-</tr>
-<tr>
-<td>
 <h4><a href="type.html">type</a></h4>
 </td>
 <td>
@@ -77,7 +55,7 @@
 <h4><a href="call.html">call</a></h4>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">call</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.Closure$call(kotlin.Array((kotlin.Any)))/arguments">arguments</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span></code></td>
+<code><span class="keyword">fun </span><span class="identifier">call</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.Closure$call(kotlin.Array((kotlin.Any)))/arguments">arguments</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span></code></td>
 </tr>
 <tr>
 <td>
@@ -88,10 +66,17 @@
 </tr>
 <tr>
 <td>
+<h4><a href="is-executable.html">isExecutable</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">isExecutable</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="pap.html">pap</a></h4>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">pap</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.Closure$pap(kotlin.Array((kotlin.Any)))/arguments">arguments</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Closure</span></a><span class="symbol">?</span></code></td>
+<code><span class="keyword">fun </span><span class="identifier">pap</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.Closure$pap(kotlin.Array((kotlin.Any)))/arguments">arguments</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">Closure</span></a><span class="symbol">?</span></code></td>
 </tr>
 </tbody>
 </table>

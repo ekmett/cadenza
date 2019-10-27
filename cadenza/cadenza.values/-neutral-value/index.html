@@ -8,7 +8,7 @@
 <a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza.values</a>&nbsp;/&nbsp;<a href="./index.html">NeutralValue</a><br/>
 <br/>
 <h1>NeutralValue</h1>
-<code><span class="keyword">class </span><span class="identifier">NeutralValue</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span></code> <a href="https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/cadenza/values/NeutralValue.kt#L14">(source)</a>
+<code><span class="keyword">class </span><span class="identifier">NeutralValue</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span></code>
 <h3>Constructors</h3>
 <table>
 <tbody>
@@ -17,20 +17,13 @@
 <h4><a href="-init-.html">&lt;init&gt;</a></h4>
 </td>
 <td>
-<code><span class="identifier">NeutralValue</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.NeutralValue$<init>(cadenza.types.Type, cadenza.nbe.Neutral)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.values.NeutralValue$<init>(cadenza.types.Type, cadenza.nbe.Neutral)/term">term</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.nbe/-neutral/index.html"><span class="identifier">Neutral</span></a><span class="symbol">)</span></code></td>
+<code><span class="identifier">NeutralValue</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.NeutralValue$<init>(cadenza.types.Type, cadenza.types.Neutral)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.values.NeutralValue$<init>(cadenza.types.Type, cadenza.types.Neutral)/term">term</span><span class="symbol">:</span>&nbsp;<a href="../../cadenza.types/-neutral/index.html"><span class="identifier">Neutral</span></a><span class="symbol">)</span></code></td>
 </tr>
 </tbody>
 </table>
 <h3>Properties</h3>
 <table>
 <tbody>
-<tr>
-<td>
-<h4><a href="term.html">term</a></h4>
-</td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">term</span><span class="symbol">: </span><a href="../../cadenza.nbe/-neutral/index.html"><span class="identifier">Neutral</span></a></code></td>
-</tr>
 <tr>
 <td>
 <h4><a href="type.html">type</a></h4>
@@ -48,7 +41,7 @@
 <h4><a href="apply.html">apply</a></h4>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">apply</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.NeutralValue$apply(kotlin.Array((kotlin.Any)))/arguments">arguments</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">NeutralValue</span></a></code></td>
+<code><span class="keyword">fun </span><span class="identifier">apply</span><span class="symbol">(</span><span class="identifier" id="cadenza.values.NeutralValue$apply(kotlin.Array((kotlin.Any)))/arguments">arguments</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">NeutralValue</span></a></code></td>
 </tr>
 <tr>
 <td>
@@ -63,6 +56,13 @@
 </td>
 <td>
 <code><span class="keyword">fun </span><span class="identifier">isExecutable</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="raise.html">raise</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">raise</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code></td>
 </tr>
 </tbody>
 </table>

@@ -8,7 +8,7 @@
 <a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza.types</a>&nbsp;/&nbsp;<a href="./index.html">Term</a><br/>
 <br/>
 <h1>Term</h1>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Term</span></code> <a href="https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/cadenza/types/Term.kt#L11">(source)</a>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Term</span></code>
 <h3>Constructors</h3>
 <table>
 <tbody>
@@ -29,14 +29,14 @@
 <h4><a href="check.html">check</a></h4>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">check</span><span class="symbol">(</span><span class="identifier" id="cadenza.types.Term$check(cadenza.types.Ctx, cadenza.types.Type)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-ctx/index.html"><span class="identifier">Ctx</span></a><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="cadenza.types.Term$check(cadenza.types.Ctx, cadenza.types.Type)/expectedType">expectedType</span><span class="symbol">:</span>&nbsp;<a href="../-type/index.html"><span class="identifier">Type</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-witness/index.html"><span class="identifier">Witness</span></a></code></td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">check</span><span class="symbol">(</span><span class="identifier" id="cadenza.types.Term$check(cadenza.types.ConsEnv((cadenza.types.Type)), cadenza.types.Type)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-ctx.html"><span class="identifier">Ctx</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.types.Term$check(cadenza.types.ConsEnv((cadenza.types.Type)), cadenza.types.Type)/expectedType">expectedType</span><span class="symbol">:</span>&nbsp;<a href="../-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../-witness/index.html"><span class="identifier">Witness</span></a></code></td>
 </tr>
 <tr>
 <td>
 <h4><a href="infer.html">infer</a></h4>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">infer</span><span class="symbol">(</span><span class="identifier" id="cadenza.types.Term$infer(cadenza.types.Ctx)/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-ctx/index.html"><span class="identifier">Ctx</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="../-witness/index.html"><span class="identifier">Witness</span></a></code></td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">infer</span><span class="symbol">(</span><span class="identifier" id="cadenza.types.Term$infer(cadenza.types.ConsEnv((cadenza.types.Type)))/ctx">ctx</span><span class="symbol">:</span>&nbsp;<a href="../-ctx.html"><span class="identifier">Ctx</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="../-witness/index.html"><span class="identifier">Witness</span></a></code></td>
 </tr>
 </tbody>
 </table>

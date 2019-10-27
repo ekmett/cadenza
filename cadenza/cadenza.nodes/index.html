@@ -84,7 +84,7 @@
 </tr>
 <tr>
 <td>
-<h4><a href="-do.html">Do</a></h4>
+<h4><a href="-do/index.html">Do</a></h4>
 </td>
 <td>
 <code><span class="keyword">class </span><span class="identifier">Do</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-stmt/index.html"><span class="identifier">Stmt</span></a></code></td>
@@ -119,6 +119,13 @@
 </tr>
 <tr>
 <td>
+<h4><a href="-print/index.html">Print</a></h4>
+</td>
+<td>
+<code><span class="keyword">object </span><span class="identifier">Print</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-builtin/index.html"><span class="identifier">Builtin</span></a></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="-program-root-node/index.html">ProgramRootNode</a></h4>
 </td>
 <td>
@@ -149,6 +156,13 @@
 </td>
 <td>
 <code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">NO_SOURCE</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="no-frame-builders.html">noFrameBuilders</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">noFrameBuilders</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span></code></td>
 </tr>
 <tr>
 <td>
@@ -192,13 +206,20 @@
 </tr>
 <tr>
 <td>
+<h4><a href="is-super-combinator.html">isSuperCombinator</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">isSuperCombinator</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes$isSuperCombinator(com.oracle.truffle.api.RootCallTarget)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="lam.html">lam</a></h4>
 </td>
 <td>
 <code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-lam/index.html"><span class="identifier">Lam</span></a></code><br/>
 <code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes$lam(kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-lam/index.html"><span class="identifier">Lam</span></a></code><br/>
 <code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/closureFrameDescriptor">closureFrameDescriptor</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameDescriptor</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/captureSteps">captureSteps</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-lam/index.html"><span class="identifier">Lam</span></a></code><br/>
-<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/closureFrameDescriptor">closureFrameDescriptor</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameDescriptor</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/captureSteps">captureSteps</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-lam/index.html"><span class="identifier">Lam</span></a></code></td>
+<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/closureFrameDescriptor">closureFrameDescriptor</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameDescriptor</span><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/captureSteps">captureSteps</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.nodes$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.nodes.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.types.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../cadenza.types/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-lam/index.html"><span class="identifier">Lam</span></a></code></td>
 </tr>
 <tr>
 <td>
