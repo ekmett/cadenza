@@ -74,9 +74,7 @@ class App(
   @Child private var indirectCallNode: IndirectCallNode = Truffle.getRuntime().createIndirectCallNode()
 
   @ExplodeLoop
-  private fun executeRands(frame: VirtualFrame): Array<Any?> {
-    return rands.map { it.executeAny(frame) }.toTypedArray()
-  }
+  private fun executeRands(frame: VirtualFrame): Array<out Any?> = rands.map { it.executeAny(frame) }.toTypedArray()
 
   @Throws(NeutralException::class)
   override fun execute(frame: VirtualFrame): Any? {
@@ -99,8 +97,7 @@ class App(
     }
   }
 
-  override fun hasTag(tag: Class<out Tag>?) =
-    (tag == StandardTags.CallTag::class.java) || super.hasTag(tag)
+  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.CallTag::class.java || super.hasTag(tag)
 }
 
 @TypeSystemReference(Types::class)

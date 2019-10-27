@@ -51,7 +51,7 @@ class Closure (
     return call(arguments as Array<Any?>)
   }
 
-  fun call(arguments: Array<Any?>): Any? {
+  fun call(arguments: Array<out Any?>): Any? {
     val len = arguments.size
     return when {
       len < arity -> pap(arguments)
@@ -64,7 +64,7 @@ class Closure (
 
   // construct a partial application node, which should check that it is a PAP itself
   @ExplodeLoop
-  fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<Any?>): Closure? {
+  fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<out Any?>): Closure? {
     return null // TODO
   }
 }
@@ -72,7 +72,7 @@ class Closure (
 // TODO: incompatible, pick one
 @ExplodeLoop
 @Suppress("NOTHING_TO_INLINE")
-private inline fun <reified T> cons(x: T, xs: Array<T>): Array<T> {
+private inline fun <reified T> cons(x: T, xs: Array<out T>): Array<T> {
   val ys = arrayOfNulls<T>(xs.size + 1)
   ys[0] = x
   System.arraycopy(xs, 0, ys, 1, xs.size)
@@ -82,7 +82,7 @@ private inline fun <reified T> cons(x: T, xs: Array<T>): Array<T> {
 
 @ExplodeLoop
 @Suppress("NOTHING_TO_INLINE")
-private inline fun <reified T> consTake(x: T, n: Int, xs: Array<T>): Array<T> {
+private inline fun <reified T> consTake(x: T, n: Int, xs: Array<out T>): Array<T> {
   val ys = arrayOfNulls<T>(n + 1)
   ys[0] = x
   System.arraycopy(xs, 0, ys, 1, n)
@@ -92,6 +92,7 @@ private inline fun <reified T> consTake(x: T, n: Int, xs: Array<T>): Array<T> {
 
 @ExplodeLoop
 @Suppress("NOTHING_TO_INLINE")
-private inline fun <T> drop(k: Int, xs: Array<T>): Array<T> {
-  return xs.copyOfRange(k, xs.size)
+private inline fun <T> drop(k: Int, xs: Array<out T>): Array<T> {
+  @Suppress("UNCHECKED_CAST")
+  return (xs as Array<T>).copyOfRange(k, xs.size) // kotlin operator requires an Array<T> not an Array<out T>, grr.
 }
