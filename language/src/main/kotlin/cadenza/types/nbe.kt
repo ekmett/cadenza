@@ -13,15 +13,15 @@ public inline fun neutral(type: Type, term: Neutral) : Nothing {
 
 @CompilerDirectives.ValueType
 abstract class Neutral {
-  open fun apply(args: Array<Any?>) = NApp(this, args)
+  open fun apply(args: Array<out Any?>) = NApp(this, args)
 }
 
 data class NIf(val body: Neutral, val thenValue: Any?, val elseValue: Any?) : Neutral()
 
 data class NCallBuiltin(val builtin: Builtin, val arg: Neutral) : Neutral()
 
-data class NApp(val rator: Neutral, val rands: Array<Any?>) : Neutral() {
-  override fun apply(args: Array<Any?>) = NApp(rator, arrayOf(*rands, *args))
+data class NApp(val rator: Neutral, val rands: Array<out Any?>) : Neutral() {
+  override fun apply(args: Array<out Any?>) = NApp(rator, arrayOf(*rands, *args))
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (javaClass != other?.javaClass) return false
@@ -40,7 +40,7 @@ class NeutralException(val type: Type, val term: Neutral) : SlowPathException() 
   @Suppress("NOTHING_TO_INLINE")
   inline fun get() = NeutralValue(type, term)
 
-  fun apply(rands: Array<Any?>): Nothing {
+  fun apply(rands: Array<out Any?>): Nothing {
     val len = rands.size
     var currentType = type
     for (i in 0 until len) currentType = (currentType as Type.Arr).result

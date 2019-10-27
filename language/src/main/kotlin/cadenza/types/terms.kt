@@ -3,7 +3,6 @@ package cadenza.types
 import cadenza.nodes.*
 import com.oracle.truffle.api.frame.FrameDescriptor
 
-typealias Name = String
 typealias Ctx = Env<Type>
 
 // provides an expression with a given type in a given frame

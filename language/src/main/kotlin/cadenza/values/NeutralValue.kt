@@ -12,8 +12,6 @@ import com.oracle.truffle.api.library.ExportMessage
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class NeutralValue(val type: Type, val term: Neutral) : TruffleObject {
-
-  // other languages can execute this, but it just builds a bigger and bigger NApp
   @ExportMessage
   fun isExecutable(): Boolean = true
 
@@ -30,7 +28,7 @@ class NeutralValue(val type: Type, val term: Neutral) : TruffleObject {
   }
 
   // assumes this has been built legally. fails via unchecked null pointer exception
-  fun apply(arguments: Array<Any?>): NeutralValue {
+  fun apply(arguments: Array<out Any?>): NeutralValue {
     var resultType = type
     for (i in arguments.indices)
       resultType = (resultType as Type.Arr).result

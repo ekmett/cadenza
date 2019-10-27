@@ -5,9 +5,7 @@ import cadenza.types.Types
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.TruffleLanguage
 import com.oracle.truffle.api.dsl.TypeSystemReference
-import com.oracle.truffle.api.frame.FrameDescriptor
-import com.oracle.truffle.api.frame.MaterializedFrame
-import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.frame.*
 import com.oracle.truffle.api.instrumentation.*
 import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.source.SourceSection
@@ -38,6 +36,7 @@ class InlineCode(
 @GenerateWrapper
 open class ClosureBody constructor(@field:Child protected var content: Code) : Node(), InstrumentableNode {
   constructor(that: ClosureBody) : this(that.content)
+
   open fun execute(frame: VirtualFrame): Any? = content.executeAny(frame)
   override fun isInstrumentable() = true
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = ClosureBodyWrapper(this, this, probe)
@@ -48,10 +47,13 @@ open class ClosureBody constructor(@field:Child protected var content: Code) : N
 @GenerateWrapper
 @TypeSystemReference(Types::class)
 open class ClosureRootNode : RootNode, InstrumentableNode {
-  @Children val envPreamble: Array<FrameBuilder>
-  @Children val argPreamble: Array<FrameBuilder>
+  @Children
+  val envPreamble: Array<FrameBuilder>
+  @Children
+  val argPreamble: Array<FrameBuilder>
   val arity: Int
-  @Child var body: ClosureBody
+  @Child
+  var body: ClosureBody
   protected val language: TruffleLanguage<*>
 
   @Suppress("NOTHING_TO_INLINE")
@@ -94,6 +96,5 @@ open class ClosureRootNode : RootNode, InstrumentableNode {
   override fun execute(frame: VirtualFrame) = body.execute(preamble(frame))
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java
   override fun isInstrumentable() = super.isInstrumentable()
-  override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode
-    = ClosureRootNodeWrapper(this, this, probeNode)
+  override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode = ClosureRootNodeWrapper(this, this, probeNode)
 }

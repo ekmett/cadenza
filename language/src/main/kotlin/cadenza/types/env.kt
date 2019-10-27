@@ -1,8 +1,9 @@
 package cadenza.types
 
 // traditional functional programmer environment: the singly linked list map
+typealias Name = String
 typealias Env<T> = ConsEnv<T>?
-data class ConsEnv<T>(val name: Name, val value: T, val next: Env<T>)
+data class ConsEnv<out T>(val name: Name, val value: T, val next: Env<T>)
 inline val NilEnv: Env<*> get() = null
 
 @Throws(TypeError::class)
