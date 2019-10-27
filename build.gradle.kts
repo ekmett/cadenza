@@ -148,6 +148,9 @@ project(":language") {
     kotlinRuntime(kotlin("stdlib"))
     kotlinRuntime(kotlin("stdlib-jdk8"))
     testImplementation("org.testng:testng:6.14.3")
+    implementation("org.ow2.asm:asm:7.1")
+    implementation("org.ow2.asm:asm-tree:7.1")
+    implementation("org.ow2.asm:asm-commons:7.1")
   }
 
   tasks.getByName<Jar>("jar") {
