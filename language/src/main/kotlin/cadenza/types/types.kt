@@ -30,11 +30,7 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
 
   @CompilerDirectives.ValueType
   data class Arr(val argument: Type, val result: Type) : Type(FrameSlotKind.Object) {
-    override val arity: Int
-
-    init {
-      this.arity = result.arity + 1
-    }
+    override val arity: Int = result.arity + 1
 
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) {
