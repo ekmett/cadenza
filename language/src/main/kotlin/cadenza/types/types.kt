@@ -1,5 +1,6 @@
 package cadenza.types
 
+import cadenza.*
 import cadenza.values.Closure
 import cadenza.values.BigInt
 import com.oracle.truffle.api.CompilerDirectives
@@ -45,13 +46,9 @@ abstract class Type internal constructor(val rep: FrameSlotKind // used to set t
 
   // IO actions represented ML-style as nullary functions
   @CompilerDirectives.ValueType
-  data class IO(val result: Type)// closure
-    : Type(FrameSlotKind.Object) {
-
+  data class IO(val result: Type) : Type(FrameSlotKind.Object) {
     @Throws(UnsupportedTypeException::class)
-    override fun validate(t: Any?) {
-      unsupported("expected io", t)
-    }
+    override fun validate(t: Any?) = cadenza.todo("io")
   }
 
   companion object {
