@@ -103,15 +103,19 @@ class App(
     (tag == StandardTags.CallTag::class.java) || super.hasTag(tag)
 }
 
-// once a variable binding has been inferred to refer to the local arguments of the current frame and mapped to an actual arg index
-// this node replaces the original node.
-// used during frame materialization to access numbered arguments. otherwise not available
 @TypeSystemReference(Types::class)
 @NodeInfo(shortName = "Arg")
 class Arg(private val index: Int) : Code() {
   init { assert(0 <= index) { "negative index" } }
 
-  override fun execute(frame: VirtualFrame): Any {
+  @Throws(NeutralException::class)
+  override fun execute(frame: VirtualFrame): Any? {
+    val arguments = frame.arguments
+    assert(index < arguments.size) { "insufficient arguments" }
+    return throwIfNeutralValue(arguments[index])
+  }
+
+  override fun executeAny(frame: VirtualFrame): Any? {
     val arguments = frame.arguments
     assert(index < arguments.size) { "insufficient arguments" }
     return arguments[index]

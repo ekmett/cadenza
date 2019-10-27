@@ -5,6 +5,7 @@ import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.interop.*
 import com.oracle.truffle.api.library.*
 
+// should only be seen under executeAny. execute should _never_ see one of these.
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class NeutralValue(val type: Type, val term : Neutral) : TruffleObject {
@@ -30,4 +31,8 @@ class NeutralValue(val type: Type, val term : Neutral) : TruffleObject {
       resultType = (resultType as Arr).result
     return NeutralValue(resultType, term.apply(arguments))
   }
+
+  fun raise() : Nothing = throw NeutralException(type, term)
 }
+
+fun <T> throwIfNeutralValue(x: T): T = if (x !is NeutralValue) x else x.raise()
