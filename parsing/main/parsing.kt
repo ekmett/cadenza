@@ -205,7 +205,7 @@ fun <A,B> ParseState.manyTillPair(p: Parser<A>, q: Parser<B>): Pair<List<A>,B> {
 }
 
 @Throws(ParseError::class)
-fun <A,B> ParseState.manyTill(p: Parser<A>, q: Parser<B>): List<A> {
+fun <A> ParseState.manyTill(p: Parser<A>, q: Parser<*>): List<A> {
   val result = mutableListOf<A>()
   while (true) {
     val last = optional(q)
@@ -213,7 +213,6 @@ fun <A,B> ParseState.manyTill(p: Parser<A>, q: Parser<B>): List<A> {
     result.add(p(this))
   }
 }
-
 
 sealed class ParseResult<out T>
 data class Success<T>(val value: T): ParseResult<T>()
@@ -242,7 +241,7 @@ data class Failure(val pos: Int, val source: Source, val message: String? = null
       append("\n\n")
       val lineStart = source.getLineStartOffset(l)
       val lineLength = source.getLineLength(l);
-      append(subSequence(lineStart, lineStart + lineLength))
+      append(source.characters.subSequence(lineStart, lineStart + lineLength))
       append('\n')
       for(i in 0 until c) append(' ')
       append("^\n\n")
