@@ -5,9 +5,9 @@
 
 This package will eventually provide a normalized-by-evaluation lambda calculus implementation in ~~Java~~ Kotlin using truffle with an eye towards efficient evaluation.
 
-cadenza | \ kə-ˈden-zə \ (noun) 1. an virtuosic solo section before the final coda used to display a performer's technique, which is often considerably long
+cadenza | \ kə-ˈden-zə \ (noun) 1. a considerably long virtuosic solo section before the final [coda](https://github.com/ekmett/coda) used to display a performer's technique
 
-Kotlin code tends to be considerably long, if not so long as the Java code I started this project with, and this is a stepping stone on the way to my [coda](https://github.com/ekmett/coda.git), so here we are.
+Kotlin code tends to be considerably long, if not so long as the Java code I started this project with.
 
 ## Running
 
@@ -21,7 +21,7 @@ If `GRAAL_HOME` or `JAVA_HOME` point to a GraalVM installation, we'll use that. 
 
 ## Installing
 
-* `gradle nativeImage` should eventually produce a native executable for the compiler. If I carry on with some of my intended dynamic classloader tricks to construct environments it may be a big less efficient than the jvm version, or become unsupported, however.
+* `gradle nativeImage` should eventually produce a native executable for the compiler. If I carry on with some of my intended dynamic classloader tricks to construct environments it may be a bit less efficient than the jvm version, or become unsupported, however.
 
 * `gradle distZip` or `gradle distTar` will create an archive containing the required runtime jars. However, you'll need to have `JAVA_HOME` set to point to your Graal installation, if you want to use the `cadenza` script from the installation folder.
 
@@ -35,8 +35,7 @@ This code is very much a work-in-progress.
 
 * I'm hopeful that I can use truffle rewrites to dynamically trampoline tail-calls, degrading tail positions from a set of recursive calls, to something that handles self-tailcalls, to something that handles self-tailcalls with differing environments to something that does an arbitrary trampoline for the worst case. This would enable us to trust the space usage.
 
-* Currently, Normalization-by-evaluation proceeds through an exceptional control flow path. Is this the right direction going forward if I move to dependent types?
-
+* Currently, Normalization-by-evaluation proceeds through an exceptional control flow path. Is this the right direction going forward if I move to dependent types and this becomes more important?
 
 ## Contribution
 

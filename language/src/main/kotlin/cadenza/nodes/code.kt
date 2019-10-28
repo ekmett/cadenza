@@ -189,14 +189,18 @@ inline fun isSuperCombinator(callTarget: RootCallTarget): Boolean {
 
 @NodeInfo(shortName = "Read")
 abstract class Var protected constructor(private val slot: FrameSlot) : Code() {
+
   @Specialization(rewriteOn = [FrameSlotTypeException::class])
   @Throws(FrameSlotTypeException::class)
   protected fun readInt(frame: VirtualFrame): Int = frame.getInt(slot)
+
   @Specialization(rewriteOn = [FrameSlotTypeException::class])
   @Throws(FrameSlotTypeException::class)
   protected fun readBoolean(frame: VirtualFrame): Boolean = frame.getBoolean(slot)
+
   @Specialization(replaces = ["readInt", "readBoolean"])
-  protected fun read(frame: VirtualFrame): Any = frame.getValue(slot)
+  protected fun read(frame: VirtualFrame): Any? = frame.getValue(slot)
+
   override fun isAdoptable() = false
 }
 
