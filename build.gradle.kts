@@ -5,6 +5,8 @@ import java.util.Properties
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
+import org.gradle.api.internal.HasConvention
 
 group = project.properties["group"].toString()
 // version = project.properties["version"].toString()
@@ -19,6 +21,9 @@ buildscript {
     classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
   }
 }
+
+val SourceSet.kotlin: SourceDirectorySet
+  get() = (this as HasConvention).convention.getPlugin(KotlinSourceSet::class.java).kotlin
 
 repositories {
   mavenCentral()
@@ -51,6 +56,21 @@ allprojects {
 
 subprojects {
   // version = project.properties["version"]
+  sourceSets {
+    main {
+      java.srcDir("main")
+      //withConvention(KotlinSourceSet::class) {
+        kotlin.srcDirs("main") 
+     // }
+      // antlr.srcDirs = listOf(file("$projectDir/main"))
+    }
+    test {
+      java.srcDir("test")
+      //withConvention(KotlinSourceSet::class) {
+        kotlin.srcDirs("test") 
+      //}
+    }
+  }
 }
 
 plugins {
@@ -131,6 +151,8 @@ distributions {
   }
 }
 
+var rootBuildDir = project.buildDir
+
 project(":assembly") {
   apply(plugin = "antlr")
   apply(plugin = "kotlin")
@@ -156,7 +178,6 @@ project(":assembly") {
 
 project(":language") {
   apply(plugin = "antlr")
-  apply(plugin = "kotlin")
   apply(plugin = "kotlin-kapt")
 
   val antlrRuntime by configurations.creating
