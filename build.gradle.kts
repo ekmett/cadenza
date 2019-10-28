@@ -106,6 +106,7 @@ tasks.getByName("gitPublishCommit").dependsOn(":dokka")
 
 dependencies {
   implementation(project(":assembly"))
+  implementation(project(":parsing"))
   implementation(project(":language"))
   implementation(project(":launcher"))
 }
@@ -149,8 +150,27 @@ distributions {
 
 var rootBuildDir = project.buildDir
 
+project(":parsing") {
+  apply(plugin = "kotlin")
+
+  dependencies {
+    compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
+  }
+
+  tasks.getByName<Jar>("jar") {
+    archiveBaseName.set("cadenza-parsing")
+    manifest {
+      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
+    }
+  }
+
+  tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
+    // kotlinOptions.freeCompilerArgs += listOf("-XXLanguage:+InlineClasses")
+  }
+}
+
 project(":assembly") {
-  apply(plugin = "antlr")
   apply(plugin = "kotlin")
   dependencies {
     arrayOf("asm","asm-tree","asm-commons").forEach {
@@ -167,7 +187,6 @@ project(":assembly") {
 
   tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
-    kotlinOptions.freeCompilerArgs += listOf("-Xuse-experimental=kotlin.Experimental")
     // kotlinOptions.freeCompilerArgs += listOf("-XXLanguage:+InlineClasses")
   }
 }
@@ -191,6 +210,7 @@ project(":language") {
     kotlinRuntime(kotlin("stdlib-jdk8"))
     testImplementation("org.testng:testng:6.14.3")
     implementation(project(":assembly"))
+    implementation(project(":parsing"))
   }
 
   tasks.getByName<Jar>("jar") {
@@ -251,6 +271,7 @@ val jar = tasks.getByName<Jar>("jar") {
 
   from(files(
     tasks.getByPath(":assembly:jar"),
+    tasks.getByPath(":parsing:jar"),
     tasks.getByPath(":language:jar"),
     tasks.getByPath(":launcher:jar"),
     languageRuntime

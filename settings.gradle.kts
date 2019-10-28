@@ -1,2 +1,2 @@
 rootProject.name = "cadenza"
-include(":assembly",":language",":launcher")
+include(":assembly",":parsing",":language",":launcher")

@@ -49,7 +49,8 @@ fun Expected?.toList() : List<Any> {
   return out
 }
 
-open class ParseState(val characters: CharSequence) {
+class ParseState(val source: Source) {
+  val characters: CharSequence = source.characters
   var expected: Expected? = null // var is intended, we swap it out regularly
   var pos: Int = 0
     set(value) {
@@ -59,6 +60,11 @@ open class ParseState(val characters: CharSequence) {
       }
     }
 }
+
+val ParseState.name: String get() = source.name
+val ParseState.path: String get() = source.path
+val ParseState.line: Int get() = source.getLineNumber(pos)
+val ParseState.col: Int get() = source.getColumnNumber(pos)
 
 // parsers consume parsestate as this and throw ParseErrors on failure
 typealias Parser<T> = ParseState.() -> T
@@ -133,7 +139,6 @@ fun<T> ParseState.match(pattern: Pattern) : Matcher =
     pos = it.end()
   }
 
-  // choices can accumulate expectations
 @Suppress("NOTHING_TO_INLINE") // really?
 inline fun <T> ParseState.choice(vararg alts: Parser<T>): T {
   alts.forEach {
@@ -146,14 +151,73 @@ inline fun <T> ParseState.choice(vararg alts: Parser<T>): T {
   throw ParseError(pos)
 }
 
-typealias SourceParser<T> = SourceParseState.() -> T
-open class SourceParseState(val source: Source) : ParseState(source.characters)
-val SourceParseState.name: String get() = source.name
-val SourceParseState.path: String get() = source.path
+@Throws(ParseError::class)
+fun <T> ParseState.many(item: Parser<T>): List<T> {
+  val result = mutableListOf<T>()
+  while (true) {
+    val old = pos
+    try {
+      result.add(item(this))
+    } catch (e: ParseError) {
+      if (e.pos == old) return result
+      throw e
+    }
+  }
+}
 
-sealed class SourceParseResult<out T>
-data class Success<T>(val value: T): SourceParseResult<T>()
-data class Failure(val pos: Int, val source: Source, val message: String? = null, val expected: Expected? = null): SourceParseResult<Nothing>() {
+@Throws(ParseError::class)
+fun <T> ParseState.some(item: Parser<T>): List<T> {
+  val result = mutableListOf<T>()
+  result.add(item(this))
+  while (true) {
+    val old = pos
+    try {
+      result.add(item(this))
+    } catch (e: ParseError) {
+      if (e.pos == old) return result
+      throw e
+    }
+  }
+}
+
+@Throws(ParseError::class)
+fun <T> ParseState.optional(item: Parser<T>): T? {
+  val old = pos
+  return try {
+    item(this)
+  } catch (e: ParseError) {
+    if (pos == old) null
+    else throw e
+  }
+}
+
+@Throws(ParseError::class)
+fun <T> ParseState.parse(p: Parser<T>): T = p(this)
+
+@Throws(ParseError::class)
+fun <A,B> ParseState.manyTillPair(p: Parser<A>, q: Parser<B>): Pair<List<A>,B> {
+  val result = mutableListOf<A>()
+  while (true) {
+    val last = optional(q)
+    if (last != null) return Pair(result,last)
+    result.add(p(this))
+  }
+}
+
+@Throws(ParseError::class)
+fun <A,B> ParseState.manyTill(p: Parser<A>, q: Parser<B>): List<A> {
+  val result = mutableListOf<A>()
+  while (true) {
+    val last = optional(q)
+    if (last != null) return result
+    result.add(p(this))
+  }
+}
+
+
+sealed class ParseResult<out T>
+data class Success<T>(val value: T): ParseResult<T>()
+data class Failure(val pos: Int, val source: Source, val message: String? = null, val expected: Expected? = null): ParseResult<Nothing>() {
   val col: Int get() = source.getColumnNumber(pos)
   val line: Int get() = source.getLineNumber(pos)
   fun emit(builder: StringBuilder) {
@@ -188,12 +252,11 @@ data class Failure(val pos: Int, val source: Source, val message: String? = null
   override fun toString(): String = StringBuilder(120).also { emit(it) }.toString()
 }
 
-fun <T> Source.parse(parser: SourceParser<T>) : SourceParseResult<T> =
-  SourceParseState(this).let {
+fun <T> Source.parse(parser: Parser<T>) : ParseResult<T> =
+  ParseState(this).let {
     try {
       Success(parser(it))
     } catch (e: ParseError) {
       Failure(it.pos, this, e.message, it.expected)
     }
   }
-
