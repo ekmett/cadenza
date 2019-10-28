@@ -59,21 +59,17 @@ subprojects {
   sourceSets {
     main {
       java.srcDir("main")
-      //withConvention(KotlinSourceSet::class) {
-        kotlin.srcDirs("main") 
-     // }
-      // antlr.srcDirs = listOf(file("$projectDir/main"))
+      kotlin.srcDirs("main")
     }
     test {
       java.srcDir("test")
-      //withConvention(KotlinSourceSet::class) {
-        kotlin.srcDirs("test") 
-      //}
+      kotlin.srcDirs("test")
     }
   }
 }
 
 plugins {
+  antlr // apply false
   application
   `build-scan`
   idea
@@ -205,7 +201,7 @@ project(":language") {
   }
 
   tasks.withType<AntlrTask> {
-    arguments.addAll(listOf("-package", "cadenza.syntax", "-no-listener", "-no-visitor"))
+    arguments.addAll(listOf("-package", "cadenza", "-no-listener", "-no-visitor"))
   }
 }
 

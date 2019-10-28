@@ -1,4 +1,4 @@
-package cadenza.types
+package cadenza
 
 // traditional functional programmer environment: the singly linked list map
 typealias Name = String

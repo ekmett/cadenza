@@ -1,8 +1,7 @@
 package cadenza.types;
 
+import cadenza.Type;
 import org.testng.annotations.Test;
-
-import static org.testng.Assert.*;
 
 public class TypeTest {
   @Test public void equalityWorks() {

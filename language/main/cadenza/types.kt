@@ -1,8 +1,5 @@
-package cadenza.types
+package cadenza
 
-import cadenza.*
-import cadenza.values.Closure
-import cadenza.values.BigInt
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.frame.FrameSlotKind
 import com.oracle.truffle.api.interop.UnsupportedTypeException
@@ -71,7 +68,8 @@ data class IO(val result: Type) : Type(FrameSlotKind.Object) {
 
 object Bool : Type(FrameSlotKind.Boolean) {
   @Throws(UnsupportedTypeException::class)
-  override fun validate(t: Any?) { if (t !is Boolean) unsupported("expected boolean", t) }
+  override fun validate(t: Any?) { if (t !is Boolean) unsupported("expected boolean", t)
+  }
 }
 
 @Suppress("unused")
@@ -81,7 +79,8 @@ object Obj : Type(FrameSlotKind.Object) {
 
 object UnitTy : Type(FrameSlotKind.Object) {
   @Throws(UnsupportedTypeException::class)
-  override fun validate(t: Any?) { if (Unit != t) unsupported("expected unit", t) }
+  override fun validate(t: Any?) { if (Unit != t) unsupported("expected unit", t)
+  }
 }
 
 object Nat : Type(FrameSlotKind.Int) {

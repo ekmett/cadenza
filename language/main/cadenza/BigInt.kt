@@ -1,4 +1,4 @@
-package cadenza.values
+package cadenza
 
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary
 import com.oracle.truffle.api.CompilerDirectives.ValueType

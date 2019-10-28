@@ -1,6 +1,5 @@
-package cadenza.values
+package cadenza
 
-import cadenza.types.*
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.interop.*
 import com.oracle.truffle.api.library.*

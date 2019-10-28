@@ -1,7 +1,9 @@
-package cadenza.types
+package cadenza
 
-import cadenza.nodes.Builtin
-import cadenza.values.NeutralValue
+import cadenza.Arr
+import cadenza.Builtin
+import cadenza.NeutralValue
+import cadenza.Type
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.nodes.SlowPathException
 

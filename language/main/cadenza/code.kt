@@ -1,8 +1,5 @@
-package cadenza.nodes
+package cadenza
 
-import cadenza.*
-import cadenza.types.*
-import cadenza.values.*
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
@@ -52,7 +49,8 @@ abstract class Code : Node(), InstrumentableNode {
     sourceLength = length
   }
 
-  fun setUnavailableSourceSection() { sourceCharIndex = UNAVAILABLE_SOURCE }
+  fun setUnavailableSourceSection() { sourceCharIndex = UNAVAILABLE_SOURCE
+  }
 
   override fun getSourceSection(): SourceSection? =
     rootNode.takeIf { sourceCharIndex != NO_SOURCE } ?.sourceSection?.source?.run {
