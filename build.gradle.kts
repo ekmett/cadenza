@@ -7,7 +7,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 group = project.properties["group"].toString()
-version = project.properties["version"].toString()
+// version = project.properties["version"].toString()
 
 buildscript {
   repositories {
@@ -50,7 +50,7 @@ allprojects {
 }
 
 subprojects {
-  version = project.properties["version"]
+  // version = project.properties["version"]
 }
 
 plugins {
@@ -89,6 +89,7 @@ gitPublish {
 tasks.getByName("gitPublishCommit").dependsOn(":dokka")
 
 dependencies {
+  implementation(project(":assembly"))
   implementation(project(":language"))
   implementation(project(":launcher"))
 }
@@ -105,7 +106,8 @@ application {
   applicationDefaultJvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
-    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-language-${project.version}.jar" // hacks expand CADENZA_APP_HOME
+    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-language.jar" // hacks expand CADENZA_APP_HOME
+    // "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-language-${project.version}.jar" // hacks expand CADENZA_APP_HOME
   )
 }
 
@@ -129,6 +131,29 @@ distributions {
   }
 }
 
+project(":assembly") {
+  apply(plugin = "antlr")
+  apply(plugin = "kotlin")
+  dependencies {
+    arrayOf("asm","asm-tree","asm-commons").forEach {
+      implementation("org.ow2.asm:$it:7.1")
+    }
+  }
+
+  tasks.getByName<Jar>("jar") {
+    archiveBaseName.set("cadenza-assembly")
+    manifest {
+      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
+    }
+  }
+
+  tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
+    kotlinOptions.freeCompilerArgs += listOf("-Xuse-experimental=kotlin.Experimental")
+    // kotlinOptions.freeCompilerArgs += listOf("-XXLanguage:+InlineClasses")
+  }
+}
+
 project(":language") {
   apply(plugin = "antlr")
   apply(plugin = "kotlin")
@@ -148,9 +173,7 @@ project(":language") {
     kotlinRuntime(kotlin("stdlib"))
     kotlinRuntime(kotlin("stdlib-jdk8"))
     testImplementation("org.testng:testng:6.14.3")
-    implementation("org.ow2.asm:asm:7.1")
-    implementation("org.ow2.asm:asm-tree:7.1")
-    implementation("org.ow2.asm:asm-commons:7.1")
+    implementation(project(":assembly"))
   }
 
   tasks.getByName<Jar>("jar") {
@@ -181,6 +204,7 @@ project(":launcher") {
   }
 }
 
+// needed to avoid non-thread-safe access to configuration data
 val languageRuntime: Configuration by configurations.creating {
   val languageConfigurations = project(":language").configurations
   extendsFrom(
@@ -209,6 +233,7 @@ val jar = tasks.getByName<Jar>("jar") {
   }
 
   from(files(
+    tasks.getByPath(":assembly:jar"),
     tasks.getByPath(":language:jar"),
     tasks.getByPath(":launcher:jar"),
     languageRuntime
@@ -251,15 +276,12 @@ tasks.withType<DokkaTask> {
   configuration {
     jdkVersion = 8
     includes = listOf("etc/module.md")
-    sourceLink {
-      path = "language/src/main/kotlin"
-      url = "https://github.com/ekmett/cadenza/blob/master/language/src/main/kotlin/"
-      lineSuffix = "#L"
-    }
-    sourceLink {
-      path = "launcher/src/main/kotlin"
-      url = "https://github.com/ekmett/cadenza/blob/master/launcher/src/main/kotlin/"
-      lineSuffix = "#L"
+    arrayOf("assembly","language","launcher").forEach {
+      sourceLink {
+        path = "$it/src/main/kotlin"
+        url = "https://github.com/ekmett/cadenza/blob/master/$it/src/main/kotlin/"
+        lineSuffix = "#L"
+      }
     }
     externalDocumentationLink {
       url = URL("https://www.antlr.org/api/Java/")
@@ -313,7 +335,8 @@ tasks.replace("run", JavaExec::class.java).run {
   jvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
-    "-Dtruffle.class.path.append=language/build/libs/cadenza-language-${project.version}.jar"
+    "-Dtruffle.class.path.append=language/build/libs/cadenza-language.jar"
+    // "-Dtruffle.class.path.append=language/build/libs/cadenza-language-${project.version}.jar"
   )
   main = "cadenza.Launcher"
 }
@@ -369,4 +392,3 @@ tasks.register("unregister", Exec::class) {
     "cadenza"
   )
 }
-

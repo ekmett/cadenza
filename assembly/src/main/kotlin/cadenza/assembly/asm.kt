@@ -1,16 +1,14 @@
-package cadenza.asm
+package cadenza.assembly
 
 // dsl-based java assembler
 
-import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 import org.objectweb.asm.Type.*
 import org.objectweb.asm.tree.*
 import kotlin.reflect.KClass
 
-// access modifiers
-
+// access modifiers, if inline classes breakor get removed, make this a data class
 inline class Modifier(val access: Int) {
   infix fun or(other: Modifier) = Modifier(this.access or other.access)
 }
@@ -73,15 +71,15 @@ class LabelRegistry(private val instructions: InsnList) {
   //operator fun get(name: String) = AssemblyLabel(instructions, labels.getOrPut(name, LabelNode))
 }
 
-interface LabelScope { val L: LabelRegistry } // HasLabelRegistry?
+interface LabelScope { val labelRegistry: LabelRegistry } // HasLabelRegistry?
 interface LabelledAssembly : Instructions, LabelScope
 
 interface Assembly : LabelledAssembly, TryCatchBlocksWrapper
 
 fun Assembly.scope(routine: LabelScope.() -> Unit) {
-  val self = this;
+  val self = this
   routine(object : LabelScope {
-    override val L = self.L.scope(instructions);
+    override val labelRegistry = self.labelRegistry.scope(instructions)
   })
 }
 
@@ -98,7 +96,7 @@ fun assembleBlock(
   routine(object : Assembly {
     override val tryCatchBlocks = tryCatchBlocks
     override val instructions = instructions
-    override val L = LabelRegistry(instructions)
+    override val labelRegistry = LabelRegistry(instructions)
   })
 
   return Pair(instructions, tryCatchBlocks)
@@ -110,7 +108,7 @@ abstract class AbstractAssembly(
 ) : Assembly
 
 class MethodAssemblyContext(node: MethodNode) : AbstractAssembly(node.instructions, node.tryCatchBlocks) {
-  override val L = LabelRegistry(instructions)
+  override val labelRegistry = LabelRegistry(instructions)
 }
 
 fun assembleMethod(
@@ -122,10 +120,10 @@ fun assembleMethod(
   exceptions: Array<Type>? = null,
   routine: MethodAssemblyContext.() -> Unit
 ) = MethodNode(
-  Opcodes.ASM7,
+  ASM7,
   access.access,
   name,
-  Type.getMethodDescriptor(returnType, *parameterTypes),
+  getMethodDescriptor(returnType, *parameterTypes),
   signature,
   exceptions?.map { it.internalName }?.toTypedArray()
 ).also {
@@ -135,7 +133,7 @@ fun assembleMethod(
 // class assembly
 
 class ClassAssemblyContext {
-  val node: ClassNode = ClassNode(ASM7).also {
+  private val node: ClassNode = ClassNode(ASM7).also {
     it.version = 49
     it.superName = "java/lang/Object"
   }
@@ -144,7 +142,7 @@ class ClassAssemblyContext {
     get() = Modifier(node.access)
     set(value) { node.access = value.access }
 
-  var name: String
+  private var name: String
     get() = node.name
     set(value) { node.name = value }
 
@@ -176,7 +174,7 @@ class ClassAssemblyContext {
     ASM7,
     access.access,
     name,
-    Type.getMethodDescriptor(returnType, *argumentTypes),
+    getMethodDescriptor(returnType, *argumentTypes),
     signature,
     exceptions?.map { it.internalName }?.toTypedArray()
   ).also {
@@ -302,11 +300,10 @@ val Instructions.dup2_x1: Unit get() = add(InsnNode(DUP2_X1))
 val Instructions.dup2_x2: Unit get() = add(InsnNode(DUP2_X2))
 val Instructions.swap: Unit get() = add(InsnNode(SWAP))
 
-
 fun Instructions.tableswitch(min: Int, max: Int, defaultLabel: LabelNodeWrapper, vararg labels: LabelNodeWrapper) =
   add(TableSwitchInsnNode(min, max, defaultLabel.labelNode, *Array(labels.size) { labels[it].labelNode }))
 
 fun Instructions.lookupswitch(defaultLabel: LabelNodeWrapper, vararg branches: Pair<Int, LabelNodeWrapper>) =
   add(LookupSwitchInsnNode(defaultLabel.labelNode,
-    IntArray(branches.size, { branches[it].first }),
-    Array(branches.size, { branches[it].second.labelNode })))
+    IntArray(branches.size) { branches[it].first },
+    Array(branches.size) { branches[it].second.labelNode }))
