@@ -1,14 +1,20 @@
 package cadenza.parsing
 
+import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.source.Source
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.lang.StringBuilder
 
+
 // generate an oxford comma separated list, TODO: de-dupe by sending it to a set first?
 fun List<Any>.oxford(): String = StringBuilder().also { this.oxford(it) }.toString()
 fun List<Any>.oxford(it: StringBuilder) {
   val n = this.size
+  it.append(n)
+  it.append(" item")
+  if (n != 1) it.append('s')
+  it.append(": ")
   when (n) {
     0 -> {}
     1 -> it.append(this[0])
@@ -52,10 +58,15 @@ fun Expected?.toList() : List<Any> {
 class ParseState(val source: Source) {
   val characters: CharSequence = source.characters
   var expected: Expected? = null // var is intended, we swap it out regularly
+    set(value) {
+      println("set expected: ${value.toList().oxford()}")
+      field = value
+    }
   var pos: Int = 0
     set(value) {
       if (field != value) {
         field = value
+        //println("advancing to ${field} old expected: ${expected.toList().oxford()}")
         expected = null
       }
     }
@@ -98,6 +109,16 @@ fun ParseState.char(c: Char): Char {
   return c
 }
 
+@Throws(ParseError::class)
+fun ParseState.satisfy(predicate : (Char) -> Boolean): Char {
+  if (pos >= characters.length) fail()
+  val c = characters[pos]
+  if (!predicate(c)) fail()
+  ++pos
+  return c
+}
+
+
 // use exceptions for control flow?
 val ParseState.next: Char
   @Throws(ParseError::class)
@@ -106,19 +127,21 @@ val ParseState.next: Char
     return characters[pos++]
   }
 
+
 // trying("foo") { ... } // executes the body and reports any failures inside as "expected foo", parsec-style `try`
 inline fun <T> ParseState.trying(what: Any, action: Parser<T>): T = pos.let {
   val oldExpected = expected
   expected = null
   try { action(this) }
   catch (e: ParseError) {
+    pos = it
     expected = Expected(what, oldExpected)
     throw ParseError(it) // with no expectations or message
   }
 }
 
 // <?> replaces any expected exceptions at the current location with the new name
-inline fun <T> ParseState.named(what: Any, action: Parser<T>): T = pos.let {
+fun <T> ParseState.named(what: Any, action: Parser<T>): T = pos.let {
   val oldExpected = expected
   expected = null
   try { return action(this)
@@ -131,7 +154,7 @@ inline fun <T> ParseState.named(what: Any, action: Parser<T>): T = pos.let {
 // apply a regular expression to the current input, succeeding if we're looking at a hit for the regex
 // positions reported by the matcher are global positions, not local ones.
 @Throws(ParseError::class)
-fun<T> ParseState.match(pattern: Pattern) : Matcher =
+fun ParseState.match(pattern: Pattern) : Matcher =
   pattern.matcher(characters).also {
     it.useTransparentBounds(true)
     it.region(pos,characters.length)
@@ -140,15 +163,17 @@ fun<T> ParseState.match(pattern: Pattern) : Matcher =
   }
 
 @Suppress("NOTHING_TO_INLINE") // really?
-inline fun <T> ParseState.choice(vararg alts: Parser<T>): T {
+fun <T> ParseState.choice(vararg alts: Parser<T>): T {
+  val old = pos
   alts.forEach {
+    println("alt!!!")
     try {
       return it(this)
     } catch (e: ParseError) {
-      if (e.pos != pos) throw e; //  position didn't change, try next alternative
+      if (e.pos != old) throw e; //  position didn't change, try next alternative
     }
   }
-  throw ParseError(pos)
+  throw ParseError(old)
 }
 
 @Throws(ParseError::class)
@@ -159,14 +184,14 @@ fun <T> ParseState.many(item: Parser<T>): List<T> {
     try {
       result.add(item(this))
     } catch (e: ParseError) {
-      if (e.pos == old) return result
+      if (e.pos == old) return result // failed without consuming, success
       throw e
     }
   }
 }
 
 @Throws(ParseError::class)
-fun <T> ParseState.some(item: Parser<T>): List<T> {
+inline fun <T> ParseState.some(item: Parser<T>): List<T> {
   val result = mutableListOf<T>()
   result.add(item(this))
   while (true) {
@@ -181,7 +206,7 @@ fun <T> ParseState.some(item: Parser<T>): List<T> {
 }
 
 @Throws(ParseError::class)
-fun <T> ParseState.optional(item: Parser<T>): T? {
+inline fun <T> ParseState.optional(item: Parser<T>): T? {
   val old = pos
   return try {
     item(this)
@@ -195,7 +220,7 @@ fun <T> ParseState.optional(item: Parser<T>): T? {
 fun <T> ParseState.parse(p: Parser<T>): T = p(this)
 
 @Throws(ParseError::class)
-fun <A,B> ParseState.manyTillPair(p: Parser<A>, q: Parser<B>): Pair<List<A>,B> {
+inline fun <A,B> ParseState.manyTillPair(p: Parser<A>, q: Parser<B>): Pair<List<A>,B> {
   val result = mutableListOf<A>()
   while (true) {
     val last = optional(q)
@@ -205,7 +230,7 @@ fun <A,B> ParseState.manyTillPair(p: Parser<A>, q: Parser<B>): Pair<List<A>,B> {
 }
 
 @Throws(ParseError::class)
-fun <A> ParseState.manyTill(p: Parser<A>, q: Parser<*>): List<A> {
+inline fun <A> ParseState.manyTill(p: Parser<A>, q: Parser<*>): List<A> {
   val result = mutableListOf<A>()
   while (true) {
     val last = optional(q)
@@ -230,8 +255,11 @@ data class Failure(val pos: Int, val source: Source, val message: String? = null
       append(c)
       append(" error: ")
       when {
-        expected == null -> append(message ?: "expected nothing")
-        message == null -> expected.toList().oxford()
+        expected === null -> append(message ?: "expected nothing")
+        message === null -> {
+          append("expected ")
+          append(expected.toList().oxford())
+        }
         else -> {
           append(message)
           append(", expected ")
@@ -243,7 +271,7 @@ data class Failure(val pos: Int, val source: Source, val message: String? = null
       val lineLength = source.getLineLength(l);
       append(source.characters.subSequence(lineStart, lineStart + lineLength))
       append('\n')
-      for(i in 0 until c) append(' ')
+      for(i in 0 until c - 1) append(' ')
       append("^\n\n")
     }
   }
