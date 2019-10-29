@@ -1,38 +1,10 @@
-package cadenza.parsing
+package org.intelligence.parser
 
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.source.Source
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import java.lang.StringBuilder
-
-
-// generate an oxford comma separated list, TODO: de-dupe by sending it to a set first?
-fun List<Any>.oxford(): String = StringBuilder().also { this.oxford(it) }.toString()
-fun List<Any>.oxford(it: StringBuilder) {
-  val n = this.size
-  it.append(n)
-  it.append(" item")
-  if (n != 1) it.append('s')
-  it.append(": ")
-  when (n) {
-    0 -> {}
-    1 -> it.append(this[0])
-    2 -> {
-      it.append(this[0])
-      it.append(" or ")
-      it.append(this[1])
-    }
-    else -> {
-      for (i in 0 until n - 1) {
-        it.append(this[i])
-        it.append(", ")
-      }
-      it.append("or ")
-      it.append(this[n - 1])
-    }
-  }
-}
 
 open class ParseError(var pos: Int, message: String? = null) : Exception(message) {
   constructor(pos: Int, message: String? = null, cause: Throwable): this(pos,message) {
@@ -287,3 +259,32 @@ fun <T> Source.parse(parser: Parser<T>) : ParseResult<T> =
       Failure(it.pos, this, e.message, it.expected)
     }
   }
+
+
+// generate an oxford comma separated list, TODO: de-dupe by sending it to a set first?
+fun List<Any>.oxford(): String = StringBuilder().also { this.oxford(it) }.toString()
+fun List<Any>.oxford(it: StringBuilder) {
+  val n = this.size
+  it.append(n)
+  it.append(" item")
+  if (n != 1) it.append('s')
+  it.append(": ")
+  when (n) {
+    0 -> {}
+    1 -> it.append(this[0])
+    2 -> {
+      it.append(this[0])
+      it.append(" or ")
+      it.append(this[1])
+    }
+    else -> {
+      for (i in 0 until n - 1) {
+        it.append(this[i])
+        it.append(", ")
+      }
+      it.append("or ")
+      it.append(this[n - 1])
+    }
+  }
+}
+

@@ -105,8 +105,9 @@ gitPublish {
 tasks.getByName("gitPublishCommit").dependsOn(":dokka")
 
 dependencies {
-  implementation(project(":assembly"))
-  implementation(project(":parsing"))
+  implementation(project(":asm"))
+  implementation(project(":parser"))
+  implementation(project(":pretty"))
   implementation(project(":language"))
   implementation(project(":launcher"))
 }
@@ -150,27 +151,28 @@ distributions {
 
 var rootBuildDir = project.buildDir
 
-project(":parsing") {
+project(":pretty") {
   apply(plugin = "kotlin")
-
-  dependencies {
-    compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
-  }
-
   tasks.getByName<Jar>("jar") {
-    archiveBaseName.set("cadenza-parsing")
+    archiveBaseName.set("cadenza-pretty")
     manifest {
       attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
     }
   }
+}
 
-  tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
-    // kotlinOptions.freeCompilerArgs += listOf("-XXLanguage:+InlineClasses")
+project(":parser") {
+  apply(plugin = "kotlin")
+  dependencies.compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
+  tasks.getByName<Jar>("jar") {
+    archiveBaseName.set("cadenza-parser")
+    manifest {
+      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
+    }
   }
 }
 
-project(":assembly") {
+project(":asm") {
   apply(plugin = "kotlin")
   dependencies {
     arrayOf("asm","asm-tree","asm-commons").forEach {
@@ -179,15 +181,10 @@ project(":assembly") {
   }
 
   tasks.getByName<Jar>("jar") {
-    archiveBaseName.set("cadenza-assembly")
+    archiveBaseName.set("cadenza-asm")
     manifest {
       attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
     }
-  }
-
-  tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
-    // kotlinOptions.freeCompilerArgs += listOf("-XXLanguage:+InlineClasses")
   }
 }
 
@@ -209,8 +206,9 @@ project(":language") {
     kotlinRuntime(kotlin("stdlib"))
     kotlinRuntime(kotlin("stdlib-jdk8"))
     testImplementation("org.testng:testng:6.14.3")
-    implementation(project(":assembly"))
-    implementation(project(":parsing"))
+    implementation(project(":asm"))
+    implementation(project(":parser"))
+    implementation(project(":pretty"))
   }
 
   tasks.getByName<Jar>("jar") {
@@ -270,8 +268,9 @@ val jar = tasks.getByName<Jar>("jar") {
   }
 
   from(files(
-    tasks.getByPath(":assembly:jar"),
-    tasks.getByPath(":parsing:jar"),
+    tasks.getByPath(":asm:jar"),
+    tasks.getByPath(":parser:jar"),
+    tasks.getByPath(":pretty:jar"),
     tasks.getByPath(":language:jar"),
     tasks.getByPath(":launcher:jar"),
     languageRuntime
@@ -314,7 +313,7 @@ tasks.withType<DokkaTask> {
   configuration {
     jdkVersion = 8
     includes = listOf("etc/module.md")
-    arrayOf("assembly","language","launcher").forEach {
+    arrayOf("asm","language","launcher").forEach {
       sourceLink {
         path = "$it/src/main/kotlin"
         url = "https://github.com/ekmett/cadenza/blob/master/$it/src/main/kotlin/"

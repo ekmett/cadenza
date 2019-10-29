@@ -1,4 +1,4 @@
-package cadenza.assembly
+package org.intelligence.asm
 
 // dsl-based java assembler
 
