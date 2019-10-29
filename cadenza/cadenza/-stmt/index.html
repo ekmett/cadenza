@@ -1,0 +1,84 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Stmt - cadenza</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">Stmt</a><br/>
+<br/>
+<h1>Stmt</h1>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Stmt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../-cadenza-node/index.html"><span class="identifier">CadenzaNode</span></a></code>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<code><span class="identifier">Stmt</span><span class="symbol">(</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="create-wrapper.html">createWrapper</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">createWrapper</span><span class="symbol">(</span><span class="identifier" id="cadenza.Stmt$createWrapper(com.oracle.truffle.api.instrumentation.ProbeNode)/probe">probe</span><span class="symbol">:</span>&nbsp;<span class="identifier">ProbeNode</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">WrapperNode</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="execute.html">execute</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">execute</span><span class="symbol">(</span><span class="identifier" id="cadenza.Stmt$execute(com.oracle.truffle.api.frame.VirtualFrame)/frame">frame</span><span class="symbol">:</span>&nbsp;<span class="identifier">VirtualFrame</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="has-tag.html">hasTag</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">hasTag</span><span class="symbol">(</span><span class="identifier" id="cadenza.Stmt$hasTag(java.lang.Class((com.oracle.truffle.api.instrumentation.Tag)))/tag">tag</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html"><span class="identifier">Class</span></a><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<span class="identifier">Tag</span><span class="symbol">&gt;</span><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="is-adoptable.html">isAdoptable</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">isAdoptable</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="is-instrumentable.html">isInstrumentable</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">isInstrumentable</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="../-def/index.html">Def</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Def</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Stmt</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../-do/index.html">Do</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Do</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Stmt</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

@@ -1,0 +1,99 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>ClosureRootNode - cadenza</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">ClosureRootNode</a><br/>
+<br/>
+<h1>ClosureRootNode</h1>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ClosureRootNode</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">RootNode</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<code><span class="identifier">ClosureRootNode</span><span class="symbol">(</span><span class="identifier" id="cadenza.ClosureRootNode$<init>(cadenza.ClosureRootNode)/other">other</span><span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">ClosureRootNode</span></a><span class="symbol">)</span></code><br/>
+<code><span class="identifier">ClosureRootNode</span><span class="symbol">(</span><span class="identifier" id="cadenza.ClosureRootNode$<init>(com.oracle.truffle.api.TruffleLanguage((kotlin.Any)), com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Int, kotlin.Array((cadenza.FrameBuilder)), kotlin.Array((cadenza.FrameBuilder)), cadenza.ClosureBody)/language">language</span><span class="symbol">:</span>&nbsp;<span class="identifier">TruffleLanguage</span><span class="symbol">&lt;</span><span class="identifier">*</span><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.ClosureRootNode$<init>(com.oracle.truffle.api.TruffleLanguage((kotlin.Any)), com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Int, kotlin.Array((cadenza.FrameBuilder)), kotlin.Array((cadenza.FrameBuilder)), cadenza.ClosureBody)/frameDescriptor">frameDescriptor</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameDescriptor</span>&nbsp;<span class="symbol">=</span>&nbsp;FrameDescriptor()<span class="symbol">, </span><span class="identifier" id="cadenza.ClosureRootNode$<init>(com.oracle.truffle.api.TruffleLanguage((kotlin.Any)), com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Int, kotlin.Array((cadenza.FrameBuilder)), kotlin.Array((cadenza.FrameBuilder)), cadenza.ClosureBody)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.ClosureRootNode$<init>(com.oracle.truffle.api.TruffleLanguage((kotlin.Any)), com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Int, kotlin.Array((cadenza.FrameBuilder)), kotlin.Array((cadenza.FrameBuilder)), cadenza.ClosureBody)/envPreamble">envPreamble</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span>&nbsp;<span class="symbol">=</span>&nbsp;noFrameBuilders<span class="symbol">, </span><span class="identifier" id="cadenza.ClosureRootNode$<init>(com.oracle.truffle.api.TruffleLanguage((kotlin.Any)), com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Int, kotlin.Array((cadenza.FrameBuilder)), kotlin.Array((cadenza.FrameBuilder)), cadenza.ClosureBody)/argPreamble">argPreamble</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.ClosureRootNode$<init>(com.oracle.truffle.api.TruffleLanguage((kotlin.Any)), com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Int, kotlin.Array((cadenza.FrameBuilder)), kotlin.Array((cadenza.FrameBuilder)), cadenza.ClosureBody)/body">body</span><span class="symbol">:</span>&nbsp;<a href="../-closure-body/index.html"><span class="identifier">ClosureBody</span></a><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="arg-preamble.html">argPreamble</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">argPreamble</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="arity.html">arity</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">arity</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="body.html">body</a></h4>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">body</span><span class="symbol">: </span><a href="../-closure-body/index.html"><span class="identifier">ClosureBody</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="env-preamble.html">envPreamble</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">envPreamble</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="create-wrapper.html">createWrapper</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">createWrapper</span><span class="symbol">(</span><span class="identifier" id="cadenza.ClosureRootNode$createWrapper(com.oracle.truffle.api.instrumentation.ProbeNode)/probeNode">probeNode</span><span class="symbol">:</span>&nbsp;<span class="identifier">ProbeNode</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">WrapperNode</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="execute.html">execute</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">execute</span><span class="symbol">(</span><span class="identifier" id="cadenza.ClosureRootNode$execute(com.oracle.truffle.api.frame.VirtualFrame)/frame">frame</span><span class="symbol">:</span>&nbsp;<span class="identifier">VirtualFrame</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="has-tag.html">hasTag</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">hasTag</span><span class="symbol">(</span><span class="identifier" id="cadenza.ClosureRootNode$hasTag(java.lang.Class((com.oracle.truffle.api.instrumentation.Tag)))/tag">tag</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html"><span class="identifier">Class</span></a><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<span class="identifier">Tag</span><span class="symbol">&gt;</span><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="is-instrumentable.html">isInstrumentable</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">fun </span><span class="identifier">isInstrumentable</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="is-super-combinator.html">isSuperCombinator</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">isSuperCombinator</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

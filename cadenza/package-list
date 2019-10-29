@@ -2,7 +2,3 @@ $dokka.format:html
 $dokka.linkExtension:html
 
 cadenza
-cadenza.nodes
-cadenza.syntax
-cadenza.types
-cadenza.values
