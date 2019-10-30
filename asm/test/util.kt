@@ -1,5 +1,3 @@
-import org.intelligence.asm.*
-import jdk.internal.org.objectweb.asm.tree.ClassNode
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 
