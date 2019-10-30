@@ -14,4 +14,5 @@ val boolean: Type get() = Type.BOOLEAN_TYPE
 fun type(k : KClass<*>): Type = Type.getType(k.java)
 fun type(t : String): Type = Type.getObjectType(t)
 
- operator fun KClass<*>.unaryPlus(): Type = Type.getType(this.java)
+// this lets you use +String::class as a Type for convenience.
+operator fun KClass<*>.unaryPlus(): Type = type(this)
