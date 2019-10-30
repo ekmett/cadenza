@@ -121,7 +121,7 @@ class Arg(private val index: Int) : Code() {
 
 class If(
   val type: Type,
-  @field:Child private var bodyNode: Code,
+  @field:Child private var condNode: Code,
   @field:Child private var thenNode: Code,
   @field:Child private var elseNode: Code
 ) : Code() {
@@ -130,7 +130,7 @@ class If(
   @Throws(NeutralException::class)
   private fun branch(frame: VirtualFrame): Boolean =
     try {
-      conditionProfile.profile(bodyNode.executeBoolean(frame))
+      conditionProfile.profile(condNode.executeBoolean(frame))
     } catch (e: UnexpectedResultException) {
       panic("non-boolean branch", e)
     } catch (e: NeutralException) {

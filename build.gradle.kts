@@ -69,12 +69,11 @@ subprojects {
 }
 
 plugins {
-  antlr // apply false
   application
   `build-scan`
   idea
   id("com.palantir.graal") version "0.6.0"
-  id("org.jetbrains.dokka") version "0.9.17" // apply false
+  id("org.jetbrains.dokka") version "0.9.17"
   id("org.ajoberstar.git-publish") version "2.1.1"
 }
 
@@ -124,8 +123,7 @@ application {
   applicationDefaultJvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
-    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-language.jar" // hacks expand CADENZA_APP_HOME
-    // "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-language-${project.version}.jar" // hacks expand CADENZA_APP_HOME
+    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-language.jar"
   )
 }
 
@@ -189,17 +187,13 @@ project(":asm") {
 }
 
 project(":language") {
-  apply(plugin = "antlr")
   apply(plugin = "kotlin-kapt")
 
-  val antlrRuntime by configurations.creating
   val kotlinRuntime by configurations.creating
 
   dependencies {
     "kapt"("org.graalvm.truffle:truffle-api:19.2.0.1")
     "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
-    "antlr"("org.antlr:antlr4:4.7.2")
-    antlrRuntime("org.antlr:antlr4-runtime:4.7.2")
     compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
     compileOnly("org.graalvm.sdk:graal-sdk:19.2.0.1")
     implementation("org.antlr:antlr4-runtime:4.7.2")
@@ -216,10 +210,6 @@ project(":language") {
     manifest {
       attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
     }
-  }
-
-  tasks.withType<AntlrTask> {
-    arguments.addAll(listOf("-package", "cadenza", "-no-listener", "-no-visitor"))
   }
 }
 
@@ -251,7 +241,7 @@ val languageRuntime: Configuration by configurations.creating {
 // calculate local platform values
 
 val jar = tasks.getByName<Jar>("jar") {
-  baseName = "cadenza"
+  archiveBaseName.set("cadenza")
   description = "Build the cadenza component for graal"
 
   from("LICENSE.txt") { rename("LICENSE.txt","LICENSE_cadenza.txt") }
@@ -276,11 +266,7 @@ val jar = tasks.getByName<Jar>("jar") {
     languageRuntime
   )) {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
-    exclude(
-      "graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar", // graal/truffle parts that ship with graalvm and shouldn't be shadowed
-      "antlr4-4*.jar", "javax.json*.jar", "org.abego.*.jar", "ST4*.jar", // unused runtime bits of antlr
-      "annotations*.jar"
-    )
+    exclude("graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar", "annotations*.jar")
   }
 
   manifest {
@@ -288,7 +274,7 @@ val jar = tasks.getByName<Jar>("jar") {
     attributes["Bundle-Description"] = "The cadenza language"
     attributes["Bundle-DocURL"] = "https://github.com/ekmett/cadenza"
     attributes["Bundle-Symbolic-Name"] = "cadenza"
-    attributes["Bundle-Version"] = project.version.toString()
+    attributes["Bundle-Version"] = "0.0-SNAPSHOT"
     attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=19.2.0)(os_arch=amd64))\""
     attributes["x-GraalVM-Polyglot-Part"] = "True"
   }
@@ -298,7 +284,7 @@ val jar = tasks.getByName<Jar>("jar") {
 tasks.withType<ProcessResources> {
   from("etc/native-image.properties") {
     expand(project.properties)
-    rename("etc/native-image.properties","jre/languages/cadenza/native-image.properties")
+    rename("/etc/native-image.properties","jre/languages/cadenza/native-image.properties")
   }
   from(files("etc/symlinks","etc/permissions")) {
     rename("(.*)","META-INF/$1")
@@ -319,10 +305,6 @@ tasks.withType<DokkaTask> {
         url = "https://github.com/ekmett/cadenza/blob/master/$it/src/main/kotlin/"
         lineSuffix = "#L"
       }
-    }
-    externalDocumentationLink {
-      url = URL("https://www.antlr.org/api/Java/")
-      packageListUrl = URL("https://www.antlr.org/api/Java/package-list")
     }
   }
 }

@@ -46,7 +46,7 @@ class Closure (
       currentType = arr.result
     }
     @Suppress("UNCHECKED_CAST")
-    return call(arguments as Array<Any?>)
+    return call(arguments)
   }
 
   fun call(arguments: Array<out Any?>): Any? {

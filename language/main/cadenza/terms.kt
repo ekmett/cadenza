@@ -28,16 +28,16 @@ fun tvar(name: String): Term = object : Term() {
 }
 
 @Suppress("unused")
-fun tif(body: Term, thenTerm: Term, elseTerm: Term): Term = object : Term() {
+fun tif(cond: Term, thenTerm: Term, elseTerm: Term): Term = object : Term() {
   @Throws(TypeError::class)
   override fun infer(ctx: Ctx): Witness {
-    val bodyWitness = body.check(ctx, Bool)
+    val condWitness = cond.check(ctx, Bool)
     val thenWitness = thenTerm.infer(ctx)
     val actualType = thenWitness.type
     val elseWitness = elseTerm.check(ctx, actualType)
     return object : Witness(actualType) {
       override fun compile(fd: FrameDescriptor): Code {
-        return If(actualType, bodyWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd))
+        return If(actualType, condWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd))
       }
     }
   }

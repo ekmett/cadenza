@@ -30,15 +30,10 @@ fun Expected?.toList() : List<Any> {
 class ParseState(val source: Source) {
   val characters: CharSequence = source.characters
   var expected: Expected? = null // var is intended, we swap it out regularly
-    set(value) {
-      println("set expected: ${value.toList().oxford()}")
-      field = value
-    }
   var pos: Int = 0
     set(value) {
       if (field != value) {
         field = value
-        //println("advancing to ${field} old expected: ${expected.toList().oxford()}")
         expected = null
       }
     }
@@ -65,6 +60,15 @@ fun ParseState.expected(what: Any): Nothing {
   expected = Expected(what, expected)
   throw ParseError(pos)
 }
+
+fun <A> parser(p: Parser<A>): Parser<A> = p
+
+@Throws(ParseError::class)
+fun expected2(what: Any): Parser<Nothing> = parser {
+  expected = Expected(what, expected)
+  throw ParseError(pos)
+}
+
 
 val ParseState.eof: Unit
   @Throws(ParseError::class)
@@ -98,7 +102,6 @@ val ParseState.next: Char
     if (pos >= characters.length) expected("any character")
     return characters[pos++]
   }
-
 
 // trying("foo") { ... } // executes the body and reports any failures inside as "expected foo", parsec-style `try`
 inline fun <T> ParseState.trying(what: Any, action: Parser<T>): T = pos.let {
@@ -135,10 +138,9 @@ fun ParseState.match(pattern: Pattern) : Matcher =
   }
 
 @Suppress("NOTHING_TO_INLINE") // really?
-fun <T> ParseState.choice(vararg alts: Parser<T>): T {
+inline fun <T> ParseState.choice(vararg alts: Parser<T>): T {
   val old = pos
   alts.forEach {
-    println("alt!!!")
     try {
       return it(this)
     } catch (e: ParseError) {
@@ -148,8 +150,9 @@ fun <T> ParseState.choice(vararg alts: Parser<T>): T {
   throw ParseError(old)
 }
 
+
 @Throws(ParseError::class)
-fun <T> ParseState.many(item: Parser<T>): List<T> {
+inline fun <T> ParseState.many(item: Parser<T>): List<T> {
   val result = mutableListOf<T>()
   while (true) {
     val old = pos
@@ -259,7 +262,6 @@ fun <T> Source.parse(parser: Parser<T>) : ParseResult<T> =
       Failure(it.pos, this, e.message, it.expected)
     }
   }
-
 
 // generate an oxford comma separated list, TODO: de-dupe by sending it to a set first?
 fun List<Any>.oxford(): String = StringBuilder().also { this.oxford(it) }.toString()
