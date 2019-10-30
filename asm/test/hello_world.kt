@@ -2,10 +2,10 @@ import org.intelligence.asm.*
 import org.junit.jupiter.api.Test
 import java.io.PrintStream
 
-class HelloWorldTests {
+class Hello {
   @Test fun works() {
     val output = without {
-      EphemeralClassLoader(`class`(public, "HelloWorld") {
+      `class`(public, "org/intelligence/HelloWorld") {
         method(public and static, "main", void, +Array<String>::class) {
           asm {
             getstatic(+System::class, "out", +PrintStream::class)
@@ -14,7 +14,11 @@ class HelloWorldTests {
             `return`
           }
         }
-      }).loadClass("HelloWorld").declaredMethods.first().invoke(null, emptyArray<String>())
+      }.let {
+        EphemeralClassLoader(it)
+          .loadClass("org.intelligence.HelloWorld")
+          .declaredMethods.first().invoke(null, emptyArray<String>())
+      }
     }
     assert("Hello, world!\n" == output)
   }
