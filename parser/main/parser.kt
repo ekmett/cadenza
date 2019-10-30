@@ -221,41 +221,14 @@ data class Failure(val pos: Int, val source: Source, val message: String? = null
   val col: Int get() = source.getColumnNumber(pos)
   val line: Int get() = source.getLineNumber(pos)
   fun emit(builder: StringBuilder) {
-    builder.run {
-      val l = line
-      val c = col
-      append(source.name)
-      append(':')
-      append(l)
-      append(':')
-      append(c)
-      append(" error: ")
-      when {
-        expected === null -> append(message ?: "expected nothing")
-        message === null -> {
-          append("expected ")
-          append(expected.toList().oxford())
-        }
-        else -> {
-          append(message)
-          append(", expected ")
-          expected.toList().oxford(this)
-        }
-      }
-      append("\n\n")
-      val lineStart = source.getLineStartOffset(l)
-      val lineLength = source.getLineLength(l);
-      append(source.characters.subSequence(lineStart, lineStart + lineLength))
-      append('\n')
-      for(i in 0 until c - 1) append(' ')
-      append("^\n\n")
-    }
+    val x = this
+    prep { nice(x) } .emit(builder)
   }
   val loc : String get() = "${source.name}:$line:$col"
   override fun toString(): String = StringBuilder(120).also { emit(it) }.toString()
 }
 
-fun Pretty.pretty(it: Failure) {
+fun Pretty.nice(it: Failure) {
   val l = it.line
   val c = it.col
   text(it.source.name)
@@ -263,28 +236,32 @@ fun Pretty.pretty(it: Failure) {
   text(l.toString())
   char(':')
   text(c.toString())
-  text(" error: ")
+  space
+  text("error:")
+  space
   nest(8) {
     when {
       it.expected === null -> text(it.message ?: "expected nothing")
       it.message === null -> {
-        text("expected ")
-        text(it.expected.toList().oxford())
+        text("expected")
+        space
+        oxfordBy(by = Pretty::simple, conjunction = "or", docs = *it.expected.toList().toTypedArray())
       }
       else -> {
         text(it.message)
-        text(", expected ")
-        text(it.expected.toList().oxford())
+        text(",")
+        space
+        text("expected")
+        space
+        oxfordBy(by = Pretty::simple, conjunction = "or", docs = *it.expected.toList().toTypedArray())
       }
     }
   }
   hardLine
-  hardLine
-
-  val lineStart = source.getLineStartOffset(l)
-  val lineLength = source.getLineLength(l);
-  text(source.characters.subSequence(lineStart, lineStart + lineLength))
-  nest(c-1) { newLine; char('^') }
+  val lineStart = it.source.getLineStartOffset(l)
+  val lineLength = it.source.getLineLength(l);
+  text(it.source.characters.subSequence(lineStart, lineStart + lineLength))
+  nest(c-1) { newline; char('^') }
   hardLine
 }
 
@@ -296,46 +273,3 @@ fun <T> Source.parse(parser: Parser<T>) : ParseResult<T> =
       Failure(it.pos, this, e.message, it.expected)
     }
   }
-
-// generate an oxford comma separated list, TODO: de-dupe by sending it to a set first?
-//fun List<Any>.oxford(): String = StringBuilder().also { this.oxford(it) }.toString()
-fun <T> Pretty.oxford(it: List<T>, pre : Pretty.(T) -> Unit} ) {
-  val n = it.size
-  when (n) {
-    0 -> {}
-    1 -> pre(this, it[0])
-    2 -> hsep({ pre(this, it[0]) },{text("or")},{pre(this, it[1])})
-    else ->
-      collection()
-      intersperse({text(",")},it.map { }.toTypedArray<Doc>())
-      hsep(*it.dropLast(1).map { }.toTypedArray(),{ hsep({text("or")},{pre(this, it)})})
-    }
-  }
-}
-
-/*
-  val n = this.size
-  it.append(n)
-  it.append(" item")
-  if (n != 1) it.append('s')
-  it.append(": ")
-  when (n) {
-    0 -> {}
-    1 -> it.append(this[0])
-    2 -> {
-      it.append(this[0])
-      it.append(" or ")
-      it.append(this[1])
-    }
-    else -> {
-      for (i in 0 until n - 1) {
-        it.append(this[i])
-        it.append(", ")
-      }
-      it.append("or ")
-      it.append(this[n - 1])
-    }
-  }
-}
-
-*/

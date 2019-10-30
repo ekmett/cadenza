@@ -1,5 +1,7 @@
 package org.intelligence.pretty
 
+import kotlin.math.max
+
 // assumptions
 typealias W = Int // characters
 typealias Format = Unit
@@ -11,23 +13,29 @@ fun Pretty.measure(l: List<FormattedChunk>): W = l.sumBy { it.len() }
 
 sealed class Out {
   abstract fun emit(s: StringBuilder)
+  //override fun toString() = StringBuilder().also { emit(it); }.toString()
 }
 data class Annotated(val ann: Ann, val body: Out) : Out() {
   override fun emit(s: StringBuilder) = body.emit(s) // and include annotations
+  //override fun toString() = StringBuilder().also { emit(it); }.toString()
 }
 data class Seq(val children: List<Out>) : Out() {
   override fun emit(s: StringBuilder) = children.forEach { it.emit(s) } // and include annotations
+  //override fun toString() = StringBuilder().also { emit(it); }.toString()
 }
 sealed class Atom() : Out()
 object Newline : Atom() {
   override fun emit(s: StringBuilder) { s.append('\n') }
+  //override fun toString() = StringBuilder().also { emit(it); }.toString()
+
 }
 sealed class Chunk() : Atom() {
   abstract fun len(): W
 }
-data class Text(val text: String): Chunk() {
+data class Text(val text: CharSequence): Chunk() {
   override fun len(): W = text.length
   override fun emit(s: StringBuilder) { s.append(text) }
+  //override fun toString() = text
 }
 data class Space(val w: W): Chunk() {
   override fun len(): W = w
@@ -63,20 +71,19 @@ abstract class Pretty(
 typealias D<A> = Pretty.() -> A
 typealias Doc = D<Unit>
 
+fun <A> Pretty.run(d: D<A>): A = d(this)
+
 // Chunk -> Doc
 fun Pretty.chunk(c: Chunk) {
-  //println("chunk: " + c)
-  tell(c)
   curLine.add(FormattedChunk(format, c))
   if (canFail)
-    try {
-      measure(curLine).let {
-        if (nesting + it > maxWidth || it > maxRibbon) fail
+    measure(curLine).let {
+      if (nesting + it > maxWidth || it > maxRibbon) {
+        curLine.removeAt(curLine.size-1)
+        fail
       }
-    } finally {
-      output.removeAt(curLine.size-1)
-      curLine.removeAt(curLine.size-1)
     }
+  tell(c)
 }
 
 // Doc -> Doc
@@ -97,9 +104,10 @@ inline fun <A> Pretty.grouped(body: D<A>): A {
   return body(this)
 }
 
-fun Pretty.text(t: String) = chunk(Text(t))
+fun Pretty.text(t: CharSequence) = chunk(Text(t))
 fun Pretty.char(c: Char) = text(c.toString())
 fun Pretty.space(w: W) = chunk(Space(w))
+val Pretty.space: Unit get() = space(spaceWidth)
 val Pretty.hardLine: Unit get() { output.add(Newline); curLine.clear() }
 val Pretty.newline: Unit get() { hardLine; space(nesting) }
 
@@ -135,15 +143,9 @@ inline fun <A> Pretty.annotate(ann: Ann, body: D<A>): A {
 }
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun Pretty.intersperse(delim: Doc, vararg docs: Doc) {
-  var first = true
-  docs.forEach {
-    if (first) { first = false }
-    else { delim(this) }
-    it(this)
-  }
-}
+inline fun Pretty.intersperse(delim: Doc, vararg docs: Doc) = intersperseBy(Pretty::run, delim, *docs)
 
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T> Pretty.intersperseBy(by: Pretty.(T) -> Unit, delim: Doc, vararg docs: T) {
   var first = true
   docs.forEach {
@@ -168,7 +170,6 @@ inline fun Pretty.vsep(vararg docs: Doc) = intersperse({ newline }, *docs)
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T> Pretty.vsepBy(by: Pretty.(T) -> Unit, vararg docs: T) = intersperseBy(by, { newline }, *docs)
-
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun Pretty.hvsep(vararg docs: Doc) {
@@ -200,52 +201,54 @@ inline fun Pretty.hvsepTight(vararg docs: Doc) = grouped { intersperse({ if (!is
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T> Pretty.hvsepByTight(by: Pretty.(T) -> Unit, vararg docs: T) = grouped { intersperseBy(by, { if (!isFlat) newline }, *docs) }
 
-inline fun doc(x: Doc): Doc = x
-
-// foo:1:2: error: Parse error when parsing whatever,
-//   expected foo, bar, or baz
-//   expected foo,
-//            bar,
-//         or baz
+fun doc(x: Doc): Doc = x
 
 fun Pretty.guttered(t: String) {
   val s = spaceWidth
-  if (isFlat) space(s);
+  if (isFlat) space(s)
   else {
-    hardLine;
-    space(nesting - measureText(t) - s)
+    hardLine
+    val delta = measureText(t) + s
+    space(
+      if (nesting >= delta) nesting - delta
+      else nesting
+    ) // try to push into gutter, otherwise give up and ungutter it completely
   }
   text(t)
   space(s)
 }
 
-fun Pretty.put(t: Any?): Unit = text(t?.toString() ?: "null")
+fun Pretty.simple(t: Any?) { text(t?.toString() ?: "null") }
 
-fun <T> Pretty.oxford(conjunction: String = "or", by: Pretty.(T) -> Unit = Pretty::put, vararg docs: T) =
+fun <T> Pretty.oxfordBy(by: Pretty.(T) -> Unit = Pretty::simple, conjunction: String = "or", vararg docs: T) =
   grouped {
     val s = spaceWidth
-    space(s)
-    when (docs.size) {
-      0 -> text("nothing")
-      1 -> align { by(this,docs[0]) }
-      2 -> align {
-        by(this, docs[0])
-        guttered(conjunction)
-        by(this, docs[1])
-      }
-      else -> align {
-        docs.forEachIndexed { i, t ->
-          by(this, docs[i])
-          text(",")
-          when (i) {
-            docs.size - 1 -> {}
-            docs.size - 2 -> guttered(conjunction)
-            else -> if (isFlat) space(s) else newline
+    val n = docs.size
+    align {
+      when (n) {
+        0 -> text("nothing")
+        1 -> by(this,docs[0])
+        2 -> {
+          by(this,docs[0])
+          guttered(conjunction)
+          by(this,docs[1])
+        }
+        else -> {
+          for (i in docs.indices) {
+            by(this,docs[i])
+            when (i) {
+              n - 1 -> {}
+              n - 2 -> { text(","); guttered(conjunction) }
+              else -> { text(","); if (isFlat) space(s) else newline }
+            }
           }
         }
       }
     }
   }
+
+
+fun Pretty.oxford(conjunction: String = "or", vararg docs: Doc) = oxfordBy(Pretty::run, conjunction, *docs)
 
 fun Pretty.collection(open: Doc, close: Doc, sep: Doc, vararg docs: Doc) {
   if (docs.isEmpty()) { open; close }
@@ -285,8 +288,8 @@ fun prep(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc
 
 fun ppString(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc): String {
   val builder = StringBuilder()
-  val out = prep(maxWidth, maxRibbon, doc).emit(builder)
+  prep(maxWidth, maxRibbon, doc).emit(builder)
   return builder.toString()
 }
 
-fun pp(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc) = println(pretty(maxWidth, maxRibbon, doc))
+fun pp(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc) = println(ppString(maxWidth, maxRibbon, doc))
