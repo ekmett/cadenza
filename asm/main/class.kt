@@ -9,14 +9,14 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.Type.*
 import org.objectweb.asm.tree.*
 
-fun assembleMethod(
-  access: Modifier,
+fun methodNode(
+  access: Mod,
   name: String,
   returnType: Type,
   vararg parameterTypes: Type,
   signature: String? = null,
   exceptions: Array<Type>? = null,
-  routine: MethodNode.() -> Unit
+  f: MethodNode.() -> Unit
 ) = MethodNode(
   ASM7,
   access.access,
@@ -25,31 +25,31 @@ fun assembleMethod(
   signature,
   exceptions?.map { it.internalName }?.toTypedArray()
 ).also {
-  routine(it)
+  f(it)
 }
 
 fun ClassNode.method(
-  access: Modifier,
+  access: Mod,
   name: String,
   returnType: Type,
   vararg parameterTypes: Type,
   signature: String? = null,
   exceptions: Array<Type>? = null,
-  routine: MethodNode.() -> Unit // use -> A and change return type?
-) = assembleMethod(
+  f: MethodNode.() -> Unit // use -> A and change return type?
+) = methodNode(
   access,
   name,
   returnType,
   parameterTypes = *parameterTypes,
   signature = signature,
   exceptions = exceptions,
-  routine = routine
+  f = f
 ).also {
   methods.add(it)
 }
 
 fun ClassNode.field(
-  access: Modifier,
+  access: Mod,
   type: Type,
   name: String,
   signature: String? = null,
@@ -65,26 +65,76 @@ fun ClassNode.field(
   fields.add(it)
 }
 
-fun assembleClass(
-  access: Modifier,
+fun classNode(
+  access: Mod,
   name: String,
   version: Int = 49,
   superName: String = "java/lang/Object",
-  routine: ClassNode.() -> Unit
+  f: ClassNode.() -> Unit
 )= ClassNode(ASM7).also {
   it.name = name
   it.version = version
   it.superName = superName
   it.access = access.access
-  routine(it);
+  f(it);
 }
 
 val ClassNode.assemble: ByteArray get() = ClassWriter(COMPUTE_FRAMES).also { this.accept(it) }.toByteArray()
 
 fun `class`(
-  access: Modifier,
+  access: Mod,
   name: String,
   version: Int = 49,
   superName: String = "java/lang/Object",
-  routine: ClassNode.() -> Unit
-) = assembleClass(access,name,version,superName,routine).assemble
+  f: ClassNode.() -> Unit
+) = classNode(access,name,version,superName,f).assemble
+
+interface Block {
+  val instructions: InsnList
+}
+
+fun Block.add(it: AbstractInsnNode) = instructions.add(it)
+fun Block.add(many: InsnList) = instructions.add(many)
+
+// eventually MethodNode should go to Assembly via asm
+interface Assembly : Block {
+  val tryCatchBlocks: MutableList<TryCatchBlockNode>
+}
+
+class SimpleAssembly(
+  override val instructions: InsnList,
+  override val tryCatchBlocks: MutableList<TryCatchBlockNode>
+) : Assembly
+
+class GuardedAssembly internal constructor(base: Assembly) : Assembly by base {
+  val startNode: LabelNode = LabelNode()
+  val endNode: LabelNode = LabelNode()
+  val exitNode: LabelNode = LabelNode()
+  internal fun create(f: GuardedAssembly.() -> Unit) {
+    instructions.add(startNode)
+    f(this)
+    instructions.add(JumpInsnNode(GOTO, exitNode))
+    instructions.add(endNode)
+    instructions.add(exitNode)
+  }
+
+  fun handle(
+    exceptionType: Type,
+    fallthrough: Boolean = false,
+    f: Assembly.() -> Unit
+  ): GuardedAssembly {
+    val handlerNode = LabelNode()
+    val handlerInstructions = InsnList()
+    handlerInstructions.add(handlerNode)
+    handlerInstructions.add(FrameNode(F_SAME1, 0, null, 1, arrayOf(exceptionType.internalName)))
+    f(SimpleAssembly(handlerInstructions,tryCatchBlocks))
+    if (!fallthrough) handlerInstructions.add(JumpInsnNode(GOTO, exitNode))
+    instructions.insertBefore(exitNode, handlerInstructions)
+    tryCatchBlocks.add(TryCatchBlockNode(startNode, endNode, handlerNode, exceptionType.internalName))
+    return this;
+  }
+}
+
+fun <A> MethodNode.asm(f: Assembly.() -> A) = f(SimpleAssembly(instructions, tryCatchBlocks))
+fun Assembly.guard(f: GuardedAssembly.() -> Unit) = GuardedAssembly(this).also { it.create(f) }
+fun MethodNode.guard(f: GuardedAssembly.() -> Unit) = asm { guard(f) }
