@@ -13,3 +13,5 @@ val double: Type get() = Type.DOUBLE_TYPE
 val boolean: Type get() = Type.BOOLEAN_TYPE
 fun type(k : KClass<*>): Type = Type.getType(k.java)
 fun type(t : String): Type = Type.getObjectType(t)
+
+ operator fun KClass<*>.unaryPlus(): Type = Type.getType(this.java)

@@ -6,11 +6,11 @@ class HelloWorldTests {
   @Test fun works() {
     val output = without {
       EphemeralClassLoader(`class`(public, "HelloWorld") {
-        method(public and static, "main", void, type(Array<String>::class)) {
+        method(public and static, "main", void, +Array<String>::class) {
           asm {
-            getstatic(type(System::class), "out", type(PrintStream::class))
+            getstatic(+System::class, "out", +PrintStream::class)
             ldc("Hello, world!")
-            invokevirtual(type(PrintStream::class), "println", void, type(String::class))
+            invokevirtual(+PrintStream::class, "println", void, +String::class)
             `return`
           }
         }
