@@ -3,5 +3,7 @@
 **/build/*
 **/dist-newstyle/**
 **/dist/**
+*.ipr
+*.iws
 .gradle
 old
