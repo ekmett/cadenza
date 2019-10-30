@@ -3,9 +3,9 @@ import org.junit.jupiter.api.Test
 import java.io.PrintStream
 
 class Hello {
-  @Test fun works() {
+  @Test fun world() {
     val output = without {
-      `class`(public, "org/intelligence/HelloWorld") {
+      `class`(public, "test/HelloWorld") {
         method(public and static, "main", void, +Array<String>::class) {
           asm {
             getstatic(+System::class, "out", +PrintStream::class)
@@ -14,7 +14,7 @@ class Hello {
             `return`
           }
         }
-      }.loadClass("org.intelligence.HelloWorld").declaredMethods.first().invoke(null, emptyArray<String>())
+      }.loadClass("test.HelloWorld").declaredMethods.first().invoke(null, emptyArray<String>())
     }
     assert("Hello, world!\n" == output)
   }
