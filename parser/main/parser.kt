@@ -1,11 +1,9 @@
 package org.intelligence.parser
 
-import com.oracle.truffle.api.CompilerDirectives
 import org.intelligence.pretty.*
 import com.oracle.truffle.api.source.Source
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import java.lang.StringBuilder
 
 open class ParseError(var pos: Int, message: String? = null) : Exception(message) {
   constructor(pos: Int, message: String? = null, cause: Throwable): this(pos,message) {
@@ -70,7 +68,6 @@ fun expected2(what: Any): Parser<Nothing> = parser {
   throw ParseError(pos)
 }
 
-
 val ParseState.eof: Unit
   @Throws(ParseError::class)
   get() {
@@ -95,8 +92,6 @@ fun ParseState.satisfy(predicate : (Char) -> Boolean): Char {
   return c
 }
 
-
-// use exceptions for control flow?
 val ParseState.next: Char
   @Throws(ParseError::class)
   get() {
@@ -104,7 +99,6 @@ val ParseState.next: Char
     return characters[pos++]
   }
 
-// trying("foo") { ... } // executes the body and reports any failures inside as "expected foo", parsec-style `try`
 inline fun <T> ParseState.trying(what: Any, action: Parser<T>): T = pos.let {
   val oldExpected = expected
   expected = null
@@ -116,7 +110,6 @@ inline fun <T> ParseState.trying(what: Any, action: Parser<T>): T = pos.let {
   }
 }
 
-// <?> replaces any expected exceptions at the current location with the new name
 fun <T> ParseState.named(what: Any, action: Parser<T>): T = pos.let {
   val oldExpected = expected
   expected = null
@@ -127,8 +120,6 @@ fun <T> ParseState.named(what: Any, action: Parser<T>): T = pos.let {
   }
 }
 
-// apply a regular expression to the current input, succeeding if we're looking at a hit for the regex
-// positions reported by the matcher are global positions, not local ones.
 @Throws(ParseError::class)
 fun ParseState.match(pattern: Pattern) : Matcher =
   pattern.matcher(characters).also {
@@ -150,7 +141,6 @@ inline fun <T> ParseState.choice(vararg alts: Parser<T>): T {
   }
   throw ParseError(old)
 }
-
 
 @Throws(ParseError::class)
 inline fun <T> ParseState.many(item: Parser<T>): List<T> {
@@ -217,52 +207,16 @@ inline fun <A> ParseState.manyTill(p: Parser<A>, q: Parser<*>): List<A> {
 
 sealed class ParseResult<out T>
 data class Success<T>(val value: T): ParseResult<T>()
-data class Failure(val pos: Int, val source: Source, val message: String? = null, val expected: Expected? = null): ParseResult<Nothing>() {
-  val col: Int get() = source.getColumnNumber(pos)
+data class Failure(
+  val source: Source,
+  val pos: Int,
+  val message: String? = null,
+  val expected: List<Any> = emptyList()
+): ParseResult<Nothing>() {
   val line: Int get() = source.getLineNumber(pos)
-  fun emit(builder: StringBuilder) {
-    val x = this
-    prep { nice(x) } .emit(builder)
-  }
+  val col: Int get() = source.getColumnNumber(pos)
   val loc : String get() = "${source.name}:$line:$col"
-  override fun toString(): String = StringBuilder(120).also { emit(it) }.toString()
-}
-
-fun Pretty.nice(it: Failure) {
-  val l = it.line
-  val c = it.col
-  text(it.source.name)
-  char(':')
-  text(l.toString())
-  char(':')
-  text(c.toString())
-  space
-  text("error:")
-  space
-  nest(8) {
-    when {
-      it.expected === null -> text(it.message ?: "expected nothing")
-      it.message === null -> {
-        text("expected")
-        space
-        oxfordBy(by = Pretty::simple, conjunction = "or", docs = *it.expected.toList().toTypedArray())
-      }
-      else -> {
-        text(it.message)
-        text(",")
-        space
-        text("expected")
-        space
-        oxfordBy(by = Pretty::simple, conjunction = "or", docs = *it.expected.toList().toTypedArray())
-      }
-    }
-  }
-  hardLine
-  val lineStart = it.source.getLineStartOffset(l)
-  val lineLength = it.source.getLineLength(l);
-  text(it.source.characters.subSequence(lineStart, lineStart + lineLength))
-  nest(c-1) { newline; char('^') }
-  hardLine
+  override fun toString(): String = ppString { error(source, pos, message, *expected.toTypedArray()) }
 }
 
 fun <T> Source.parse(parser: Parser<T>) : ParseResult<T> =
@@ -270,6 +224,6 @@ fun <T> Source.parse(parser: Parser<T>) : ParseResult<T> =
     try {
       Success(parser(it))
     } catch (e: ParseError) {
-      Failure(it.pos, this, e.message, it.expected)
+      Failure(this, it.pos, e.message, it.expected.toList())
     }
   }

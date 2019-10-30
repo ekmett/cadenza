@@ -150,6 +150,7 @@ distributions {
 var rootBuildDir = project.buildDir
 
 project(":pretty") {
+  dependencies.compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
   tasks.getByName<Jar>("jar") {
     archiveBaseName.set("cadenza-pretty")
     manifest {

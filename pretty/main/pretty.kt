@@ -1,5 +1,6 @@
 package org.intelligence.pretty
 
+import com.oracle.truffle.api.source.Source
 import kotlin.math.max
 
 // assumptions
@@ -293,3 +294,26 @@ fun ppString(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON,
 }
 
 fun pp(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc) = println(ppString(maxWidth, maxRibbon, doc))
+
+// convenient pretty printer
+fun Pretty.error(source: Source, pos: Int, message: String? = null, vararg expected: Any) {
+  val l = source.getLineNumber(pos)
+  val c = source.getColumnNumber(pos)
+  text(source.name); char(':'); simple(l); char(':'); simple(c); space
+  text("error:"); space
+  nest(2) {
+    if (expected === null) text(message ?: "expected nothing")
+    else {
+      if (message != null) { text(message);text(",");space }
+      text("expected")
+      space
+      oxfordBy(by = Pretty::simple, conjunction = "or", docs = *expected)
+    }
+  }
+  hardLine
+  val ls = source.getLineStartOffset(l)
+  val ll = source.getLineLength(l);
+  text(source.characters.subSequence(ls, ls+ll))
+  nest(c-1) { newline; char('^') }
+  hardLine
+}
