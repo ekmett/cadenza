@@ -150,7 +150,6 @@ distributions {
 var rootBuildDir = project.buildDir
 
 project(":pretty") {
-  apply(plugin = "kotlin")
   tasks.getByName<Jar>("jar") {
     archiveBaseName.set("cadenza-pretty")
     manifest {
@@ -160,8 +159,10 @@ project(":pretty") {
 }
 
 project(":parser") {
-  apply(plugin = "kotlin")
-  dependencies.compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
+  dependencies { 
+    compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
+    implementation(project(":pretty"))
+  }
   tasks.getByName<Jar>("jar") {
     archiveBaseName.set("cadenza-parser")
     manifest {
@@ -171,7 +172,6 @@ project(":parser") {
 }
 
 project(":asm") {
-  apply(plugin = "kotlin")
   dependencies {
     arrayOf("asm","asm-tree","asm-commons").forEach {
       implementation("org.ow2.asm:$it:7.1")
