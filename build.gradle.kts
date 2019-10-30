@@ -177,8 +177,14 @@ project(":asm") {
     arrayOf("asm","asm-tree","asm-commons").forEach {
       implementation("org.ow2.asm:$it:7.1")
     }
+    testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
   }
-
+  tasks.test {
+    useJUnitPlatform()
+    testLogging {
+      events("passed","skipped","failed")
+    }
+  }
   tasks.getByName<Jar>("jar") {
     archiveBaseName.set("cadenza-asm")
     manifest {
