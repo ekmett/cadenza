@@ -14,11 +14,7 @@ class Hello {
             `return`
           }
         }
-      }.let {
-        EphemeralClassLoader(it)
-          .loadClass("org.intelligence.HelloWorld")
-          .declaredMethods.first().invoke(null, emptyArray<String>())
-      }
+      }.loadClass("org.intelligence.HelloWorld").declaredMethods.first().invoke(null, emptyArray<String>())
     }
     assert("Hello, world!\n" == output)
   }
