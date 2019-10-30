@@ -1,23 +1,9 @@
 import org.intelligence.asm.*
 import org.junit.jupiter.api.Test
 import java.io.PrintStream
-import util.EphemeralClassLoader
-import java.io.ByteArrayOutputStream
-
-fun without(body: () -> Unit): String {
-  val old = System.out;
-  val out = ByteArrayOutputStream();
-  System.setOut(PrintStream(out));
-  try {
-    body()
-  } finally {
-    System.setOut(old);
-  }
-  return out.toString().filter { it != '\r' }
-}
 
 class HelloWorldTests {
-  @Test fun helloWorldWorks() {
+  @Test fun works() {
     val output = without {
       EphemeralClassLoader(`class`(public, "HelloWorld") {
         method(public and static, "main", void, type(Array<String>::class)) {
