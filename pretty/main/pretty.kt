@@ -302,7 +302,7 @@ fun Pretty.error(source: Source, pos: Int, message: String? = null, vararg expec
   text(source.name); char(':'); simple(l); char(':'); simple(c); space
   text("error:"); space
   nest(2) {
-    if (expected === null) text(message ?: "expected nothing")
+    if (expected.isEmpty()) text(message ?: "expected nothing")
     else {
       if (message != null) { text(message);text(",");space }
       text("expected")
