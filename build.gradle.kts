@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet
 import org.gradle.api.internal.HasConvention
 
 group = project.properties["group"].toString()
-// version = project.properties["version"].toString()
+version = project.properties["version"].toString()
 
 buildscript {
   repositories {
@@ -46,6 +46,7 @@ dependencies {
   implementation(kotlin("stdlib"))
   implementation(kotlin("stdlib-jdk8"))
   arrayOf("asm","asm-tree","asm-commons").forEach { implementation("org.ow2.asm:$it:7.1") }
+  implementation("org.fusesource.jansi:jansi:1.18")
   implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
   implementation("org.graalvm.sdk:launcher-common:19.2.0.1")
   implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
@@ -68,8 +69,8 @@ val SourceSet.kotlin: SourceDirectorySet
 
 sourceSets {
   main {
-    java.srcDir("src/java")
-    kotlin.srcDirs("src/kotlin")
+    java.srcDir("src")
+    kotlin.srcDirs("src")
   }
   test {
     kotlin.srcDirs("test")
@@ -111,7 +112,7 @@ application {
   applicationDefaultJvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
-    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza.jar"
+    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-${project.version}.jar"
   )
 }
 
@@ -181,7 +182,7 @@ tasks.register("register", Exec::class) {
     "install",
     "-f",
     "-L",
-    "build/libs/cadenza-component.jar"
+    "build/libs/cadenza-component-${project.version}.jar"
   )
 }
 
@@ -203,6 +204,7 @@ distributions.main {
 
 tasks.withType<ProcessResources> {
   from("etc/native-image.properties") {
+    // TODO: expand more properties
     expand(project.properties)
     rename("native-image.properties","jre/languages/cadenza/native-image.properties")
   }
@@ -218,7 +220,7 @@ tasks.withType<DokkaTask> {
   configuration {
     jdkVersion = 8
     includes = listOf("etc/module.md")
-    arrayOf("src","t","java").forEach {
+    arrayOf("src","test").forEach {
       sourceLink {
         path = "$it"
         url = "https://github.com/ekmett/cadenza/blob/master/$it"
@@ -274,7 +276,7 @@ tasks.replace("run", JavaExec::class.java).run {
   jvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
-    "-Dtruffle.class.path.append=build/libs/cadenza.jar"
+    "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar"
   )
   main = "cadenza.Launcher"
 }
