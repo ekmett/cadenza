@@ -58,7 +58,7 @@ subprojects {
   // version = project.properties["version"]
   sourceSets {
     main {
-      java.srcDir("main")
+      java.srcDir("java")
       kotlin.srcDirs("main")
     }
     test {

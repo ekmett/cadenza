@@ -263,10 +263,10 @@ fun Pretty.collection(open: Doc, close: Doc, sep: Doc, vararg docs: Doc) {
 }
 
 fun <T> Pretty.collectionBy(by: Pretty.(T) -> Unit, open: Doc, close: Doc, sep: Doc, vararg docs: T) {
-  if (docs.isEmpty()) { open; close }
+  if (docs.isEmpty()) { open(this); close(this) }
   else grouped {
     hvsepTight(
-      { hsepTight({open},{align{by(this,docs[0])}}) },
+      { hsepTight(open,{align{by(this,docs[0])}}) },
       *docs.drop(1).map {x -> doc {hsep(sep, {align{by(this,x)}})}}.toTypedArray(),
       close
     )
