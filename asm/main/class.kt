@@ -2,10 +2,9 @@ package org.intelligence.asm
 
 // dsl-based java assembler as a simple wrapper around ObjectWeb's assembler
 
-import jdk.internal.org.objectweb.asm.ClassWriter.COMPUTE_FRAMES
-import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.*
+import org.objectweb.asm.ClassWriter.*
 import org.objectweb.asm.Opcodes.*
-import org.objectweb.asm.Type
 import org.objectweb.asm.Type.*
 import org.objectweb.asm.tree.*
 
@@ -111,11 +110,11 @@ class GuardedAssembly internal constructor(base: Assembly) : Assembly by base {
   val endNode: LabelNode = LabelNode()
   val exitNode: LabelNode = LabelNode()
   internal fun create(f: GuardedAssembly.() -> Unit) {
-    instructions.add(startNode)
+    add(startNode)
     f(this)
-    instructions.add(JumpInsnNode(GOTO, exitNode))
-    instructions.add(endNode)
-    instructions.add(exitNode)
+    add(JumpInsnNode(GOTO, exitNode))
+    add(endNode)
+    add(exitNode)
   }
 
   fun handle(
@@ -124,12 +123,13 @@ class GuardedAssembly internal constructor(base: Assembly) : Assembly by base {
     f: Assembly.() -> Unit
   ): GuardedAssembly {
     val handlerNode = LabelNode()
-    val handlerInstructions = InsnList()
-    handlerInstructions.add(handlerNode)
-    handlerInstructions.add(FrameNode(F_SAME1, 0, null, 1, arrayOf(exceptionType.internalName)))
-    f(SimpleAssembly(handlerInstructions,tryCatchBlocks))
-    if (!fallthrough) handlerInstructions.add(JumpInsnNode(GOTO, exitNode))
-    instructions.insertBefore(exitNode, handlerInstructions)
+    val handler = SimpleAssembly(InsnList(),tryCatchBlocks).apply {
+      add(handlerNode)
+      add(FrameNode(F_SAME1, 0, null, 1, arrayOf(exceptionType.internalName)))
+      f(this)
+      if (!fallthrough) add(JumpInsnNode(GOTO, exitNode))
+    }
+    instructions.insertBefore(exitNode, handler.instructions)
     tryCatchBlocks.add(TryCatchBlockNode(startNode, endNode, handlerNode, exceptionType.internalName))
     return this;
   }

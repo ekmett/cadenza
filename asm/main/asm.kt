@@ -6,7 +6,6 @@ import org.objectweb.asm.tree.*
 
 val Block.swap: Unit get() = add(InsnNode(SWAP))
 val Block.nop: Unit get() = add(InsnNode(NOP))
-// math
 val Block.iadd: Unit get() = add(InsnNode(IADD))
 val Block.ladd: Unit get() = add(InsnNode(LADD))
 val Block.fadd: Unit get() = add(InsnNode(FADD))
@@ -92,19 +91,13 @@ fun Block.newarray(type: Type) {
     else -> error("Invalid type for primitive array creation")
   }))
 }
-
-// fields
 fun Block.getstatic(owner: Type, name: String, type: Type) = add(FieldInsnNode(GETSTATIC, owner.internalName, name, type.descriptor))
 fun Block.getfield(owner: Type, name: String, type: Type) = add(FieldInsnNode(GETFIELD, owner.internalName, name, type.descriptor))
 fun Block.putstatic(owner: Type, name: String, type: Type) = add(FieldInsnNode(PUTSTATIC, owner.internalName, name, type.descriptor))
 fun Block.putfield(owner: Type, name: String, type: Type) = add(FieldInsnNode(PUTFIELD, owner.internalName, name, type.descriptor))
-
-// object management
 fun Block.new(type: Type) = add(TypeInsnNode(NEW, type.internalName))
 fun Block.checkcast(type: Type) = add(TypeInsnNode(CHECKCAST, type.internalName))
 fun Block.instanceof(type: Type) = add(TypeInsnNode(INSTANCEOF, type.internalName))
-
-// stack
 val Block.pop: Unit get() = add(InsnNode(POP))
 val Block.pop2: Unit get() = add(InsnNode(POP2))
 val Block.dup: Unit get() = add(InsnNode(DUP))
@@ -113,15 +106,12 @@ val Block.dup_x2: Unit get() = add(InsnNode(DUP_X2))
 val Block.dup2: Unit get() = add(InsnNode(DUP2))
 val Block.dup2_x1: Unit get() = add(InsnNode(DUP2_X1))
 val Block.dup2_x2: Unit get() = add(InsnNode(DUP2_X2))
-
 fun Block.tableSwitch(min: Int, max: Int, defaultLabel: LabelNode, vararg labels: LabelNode) =
   add(TableSwitchInsnNode(min, max, defaultLabel, *labels))
-
 fun Block.lookupSwitch(defaultLabel: LabelNode, vararg branches: Pair<Int, LabelNode>) =
   add(LookupSwitchInsnNode(defaultLabel,
     IntArray(branches.size) { branches[it].first },
     Array(branches.size) { branches[it].second }))
-
 val Block.aconst_null: Unit get() = add(InsnNode(ACONST_NULL))
 val Block.iconst_m1: Unit get() = add(InsnNode(ICONST_M1))
 val Block.iconst_0: Unit get() = add(InsnNode(ICONST_0))
@@ -140,7 +130,6 @@ val Block.dconst_1: Unit get() = add(InsnNode(DCONST_1))
 fun Block.bipush(v: Int) = add(IntInsnNode(BIPUSH, v))
 fun Block.sipush(v: Int) = add(IntInsnNode(SIPUSH, v))
 fun Block.ldc(v: Any) = add(LdcInsnNode(v))
-
 fun Block.invokevirtual(owner: Type, name: String, returnType: Type, vararg parameterTypes: Type) =
   add(MethodInsnNode(INVOKEVIRTUAL, owner.internalName, name, Type.getMethodDescriptor(returnType, *parameterTypes)))
 fun Block.invokespecial(owner: Type, name: String, returnType: Type, vararg parameterTypes: Type) =
@@ -149,7 +138,6 @@ fun Block.invokestatic(owner: Type, name: String, returnType: Type, vararg param
   add(MethodInsnNode(INVOKESTATIC, owner.internalName, name, Type.getMethodDescriptor(returnType, *parameterTypes)))
 fun Block.invokeinterface(owner: Type, name: String, returnType: Type, vararg parameterTypes: Type) =
   add(MethodInsnNode(INVOKEINTERFACE, owner.internalName, name, Type.getMethodDescriptor(returnType, *parameterTypes)))
-
 val Block.ireturn: Unit get() = add(InsnNode(IRETURN))
 val Block.lreturn: Unit get() = add(InsnNode(LRETURN))
 val Block.freturn: Unit get() = add(InsnNode(FRETURN))
