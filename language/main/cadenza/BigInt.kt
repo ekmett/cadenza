@@ -12,13 +12,11 @@ import java.math.BigInteger
 private const val LONG_MAX_SAFE_DOUBLE = 9007199254740991L // 2 ** 53 - 1
 private const val INT_MAX_SAFE_FLOAT = 16777215 // 2 ** 24 - 1
 
-private fun inSafeDoubleRange(l: Long): Boolean {
-  return l >= -LONG_MAX_SAFE_DOUBLE && l <= LONG_MAX_SAFE_DOUBLE
-}
+private fun inSafeDoubleRange(l: Long): Boolean =
+  l >= -LONG_MAX_SAFE_DOUBLE && l <= LONG_MAX_SAFE_DOUBLE
 
-private fun inSafeFloatRange(i: Int): Boolean {
-  return i >= -INT_MAX_SAFE_FLOAT && i <= INT_MAX_SAFE_FLOAT
-}
+private fun inSafeFloatRange(i: Int): Boolean =
+  i >= -INT_MAX_SAFE_FLOAT && i <= INT_MAX_SAFE_FLOAT
 
 @ValueType
 @ExportLibrary(InteropLibrary::class)
