@@ -73,7 +73,7 @@ sourceSets {
     kotlin.srcDirs("src/kotlin")
   }
   test {
-    kotlin.srcDirs("src/test")
+    kotlin.srcDirs("test")
   }
 }
 
