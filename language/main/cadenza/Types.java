@@ -1,8 +1,5 @@
 package cadenza;
 
-import cadenza.Closure;
-import cadenza.BigInt;
-import cadenza.NeutralValue;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.ImplicitCast;
 import com.oracle.truffle.api.dsl.TypeCast;
