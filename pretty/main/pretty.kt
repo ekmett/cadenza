@@ -252,10 +252,10 @@ fun <T> Pretty.oxfordBy(by: Pretty.(T) -> Unit = Pretty::simple, conjunction: St
 fun Pretty.oxford(conjunction: String = "or", vararg docs: Doc) = oxfordBy(Pretty::run, conjunction, *docs)
 
 fun Pretty.collection(open: Doc, close: Doc, sep: Doc, vararg docs: Doc) {
-  if (docs.isEmpty()) { open; close }
+  if (docs.isEmpty()) { open(this); close(this) }
   else grouped {
     hvsepTight(
-      { hsepTight({open},{align(docs[0])}) },
+      { hsepTight(open,{align(docs[0])}) },
       *docs.drop(1).map {x -> doc {hsep(sep, {align(x)}) } }.toTypedArray(),
       close
     )
