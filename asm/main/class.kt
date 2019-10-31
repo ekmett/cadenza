@@ -8,45 +8,46 @@ import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type.*
 import org.objectweb.asm.tree.*
 
+// construct a raw method node
 fun methodNode(
   access: Mod,
   name: String,
   returnType: Type,
   vararg parameterTypes: Type,
-  signature: String? = null,
-  exceptions: Array<Type>? = null,
   f: MethodNode.() -> Unit
 ) = MethodNode(
   ASM7,
   access.access,
   name,
   getMethodDescriptor(returnType, *parameterTypes),
-  signature,
-  exceptions?.map { it.internalName }?.toTypedArray()
+  null,
+  null
 ).also {
   f(it)
 }
 
+fun MethodNode.throws(vararg throwable: Type) {
+  exceptions = throwable.map { it.internalName }
+}
+
+// construct a method and add it to the class
 fun ClassNode.method(
   access: Mod,
   name: String,
   returnType: Type,
   vararg parameterTypes: Type,
-  signature: String? = null,
-  exceptions: Array<Type>? = null,
   f: MethodNode.() -> Unit // use -> A and change return type?
 ) = methodNode(
   access,
   name,
   returnType,
   parameterTypes = *parameterTypes,
-  signature = signature,
-  exceptions = exceptions,
   f = f
 ).also {
   methods.add(it)
 }
 
+// construct a field and add it to the class
 fun ClassNode.field(
   access: Mod,
   type: Type,

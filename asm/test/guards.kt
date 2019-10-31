@@ -23,7 +23,7 @@ class Guards {
                 ldc("Caught!")
                 invokevirtual(+PrintStream::class, "println", void, +String::class)
               }
-               getstatic(+System::class, "out", +PrintStream::class)
+              getstatic(+System::class, "out", +PrintStream::class)
               aconst_null
               invokevirtual(+Object::class, "toString", +String::class)
               invokevirtual(+PrintStream::class, "println", void, +String::class)
