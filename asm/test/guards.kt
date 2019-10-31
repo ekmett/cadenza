@@ -11,7 +11,7 @@ class Guards {
       try {
         `class`(public, "test/Guards") {
           method(public and static, "main", void, +Array<String>::class) {
-            throws(+NullPointerException::class) // this is an unchecked exception anyways, but might as well be explicit
+            throws(+NullPointerException::class) // unchecked anyways, meh
             asm {
               guard {
                 new(+RuntimeException::class)
