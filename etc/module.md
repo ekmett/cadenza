@@ -6,30 +6,14 @@ This module attempts to define a functional language using truffle.
 
 truffle language details
 
-# Package cadenza.nbe
+# Package cadenza.asm
 
-Normalization by evaluation
+A lightweight dsl wrapper around objectweb's assembler
 
-# Package cadenza.nodes
+# Package cadenza.parser
 
-Truffle nodes
+Parser combinators
 
-# Package cadenza.syntax
+# Package cadenza.pretty
 
-Parser and syntax trees
-
-# Package cadenza.types
-
-Type checking and inference
-
-# Package cadenza.util
-
-Internal utilities
-
-# Package cadenza.values
-
-Runtime values
-
-# Package cadenza.launcher
-
-The `cadenza` command line
+Pretty printing

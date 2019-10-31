@@ -1,4 +1,4 @@
-import org.intelligence.asm.*
+import cadenza.asm.*
 import org.junit.jupiter.api.Test
 import java.io.PrintStream
 import java.lang.NullPointerException

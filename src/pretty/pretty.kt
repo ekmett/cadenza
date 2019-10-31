@@ -1,4 +1,4 @@
-package org.intelligence.pretty
+package cadenza.pretty
 
 import com.oracle.truffle.api.source.Source
 import kotlin.math.max

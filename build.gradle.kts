@@ -22,51 +22,16 @@ buildscript {
   }
 }
 
-val SourceSet.kotlin: SourceDirectorySet
-  get() = (this as HasConvention).convention.getPlugin(KotlinSourceSet::class.java).kotlin
-
 repositories {
+  jcenter()
   mavenCentral()
+  maven { url = uri("https://jitpack.io") }
+  maven { url = uri("http://palantir.bintray.com/releases") }
 }
 
-allprojects {
-  repositories {
-    jcenter()
-    mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-    maven { url = uri("http://palantir.bintray.com/releases") }
-  }
 
-  apply(plugin = "kotlin")
-
-  dependencies {
-    implementation(kotlin("stdlib"))
-    implementation(kotlin("stdlib-jdk8"))
-  }
-
-  java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-  }
-
-  tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
-  }
-}
-
-subprojects {
-  // version = project.properties["version"]
-  sourceSets {
-    main {
-      java.srcDir("java")
-      kotlin.srcDirs("main")
-    }
-    test {
-      java.srcDir("test")
-      kotlin.srcDirs("test")
-    }
-  }
-}
+apply(plugin = "kotlin")
+apply(plugin = "kotlin-kapt")
 
 plugins {
   application
@@ -75,6 +40,41 @@ plugins {
   id("com.palantir.graal") version "0.6.0"
   id("org.jetbrains.dokka") version "0.9.17"
   id("org.ajoberstar.git-publish") version "2.1.1"
+}
+
+dependencies {
+  implementation(kotlin("stdlib"))
+  implementation(kotlin("stdlib-jdk8"))
+  arrayOf("asm","asm-tree","asm-commons").forEach { implementation("org.ow2.asm:$it:7.1") }
+  implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
+  implementation("org.graalvm.sdk:launcher-common:19.2.0.1")
+  implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
+  "kapt"("org.graalvm.truffle:truffle-api:19.2.0.1")
+  "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
+  testImplementation("org.testng:testng:6.14.3")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
+}
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_1_8
+  targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType<KotlinCompile> {
+  kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
+}
+
+val SourceSet.kotlin: SourceDirectorySet
+  get() = (this as HasConvention).convention.getPlugin(KotlinSourceSet::class.java).kotlin
+
+sourceSets {
+  main {
+    java.srcDir("java")
+    kotlin.srcDirs("src")
+  }
+  test {
+    kotlin.srcDirs("t")
+  }
 }
 
 // disable for private
@@ -89,27 +89,16 @@ buildScan {
 }
 
 gitPublish {
-  if (System.getenv("CI") != null) {
-    repoUri.set("https://github.com/ekmett/cadenza.git") // only pulling on CI, use https
-  } else {
-    repoUri.set("git@github.com:ekmett/cadenza.git")
-  }
+  repoUri.set(
+    if (System.getenv("CI") != null) "https://github.com/ekmett/cadenza.git"
+    else "git@github.com:ekmett/cadenza.git"
+  )
   branch.set("gh-pages")
   repoDir.set(file("$buildDir/javadoc"))
-  contents {
-    from("etc/gh-pages")
-  }
+  contents { from("etc/gh-pages") }
 }
 
 tasks.getByName("gitPublishCommit").dependsOn(":dokka")
-
-dependencies {
-  implementation(project(":asm"))
-  implementation(project(":parser"))
-  implementation(project(":pretty"))
-  implementation(project(":language"))
-  implementation(project(":launcher"))
-}
 
 graal {
   graalVersion("19.2.0.1")
@@ -123,137 +112,35 @@ application {
   applicationDefaultJvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
-    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-language.jar"
+    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza.jar"
   )
-}
-
-distributions {
-  main {
-    baseName = "cadenza"
-    contents {
-      exclude(
-        "graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar",
-        "antlr4-4*.jar", "javax.json*.jar", "org.abego.*.jar", "ST4*.jar",
-        "annotations*.jar"
-      )
-      filesMatching("**/cadenza") {
-        filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "\$APP_HOME"))
-      }
-      filesMatching("**/cadenza.bat") {
-        filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "%~dp0.."))
-      }
-      from("LICENSE.txt")
-    }
-  }
 }
 
 var rootBuildDir = project.buildDir
 
-project(":pretty") {
-  dependencies.compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
-  tasks.getByName<Jar>("jar") {
-    archiveBaseName.set("cadenza-pretty")
-    manifest {
-      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
-    }
-  }
+tasks.test {
+  useJUnitPlatform()
+  testLogging { events("passed","skipped","failed") }
 }
 
-project(":parser") {
-  dependencies { 
-    compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
-    implementation(project(":pretty"))
-  }
-  tasks.getByName<Jar>("jar") {
-    archiveBaseName.set("cadenza-parser")
-    manifest {
-      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
-    }
-  }
-}
-
-project(":asm") {
-  dependencies {
-    arrayOf("asm","asm-tree","asm-commons").forEach {
-      implementation("org.ow2.asm:$it:7.1")
-    }
-    testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
-  }
-  tasks.test {
-    useJUnitPlatform()
-    testLogging {
-      events("passed","skipped","failed")
-    }
-  }
-  tasks.getByName<Jar>("jar") {
-    archiveBaseName.set("cadenza-asm")
-    manifest {
-      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
-    }
-  }
-}
-
-project(":language") {
-  apply(plugin = "kotlin-kapt")
-
-  val kotlinRuntime by configurations.creating
-
-  dependencies {
-    "kapt"("org.graalvm.truffle:truffle-api:19.2.0.1")
-    "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
-    compileOnly("org.graalvm.truffle:truffle-api:19.2.0.1")
-    compileOnly("org.graalvm.sdk:graal-sdk:19.2.0.1")
-    implementation("org.antlr:antlr4-runtime:4.7.2")
-    kotlinRuntime(kotlin("stdlib"))
-    kotlinRuntime(kotlin("stdlib-jdk8"))
-    testImplementation("org.testng:testng:6.14.3")
-    implementation(project(":asm"))
-    implementation(project(":parser"))
-    implementation(project(":pretty"))
-  }
-
-  tasks.getByName<Jar>("jar") {
-    archiveBaseName.set("cadenza-language")
-    manifest {
-      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
-    }
-  }
-}
-
-project(":launcher") {
-  dependencies {
-    implementation(project(":language"))
-    implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
-    implementation("org.graalvm.sdk:launcher-common:19.2.0.1")
-  }
-  
-  tasks.getByName<Jar>("jar") {
-    archiveBaseName.set("cadenza-launcher")
-    manifest {
-      attributes["Main-Class"] = "cadenza.Launcher"
-      attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
-    }
-  }
-}
-
-// needed to avoid non-thread-safe access to configuration data
-val languageRuntime: Configuration by configurations.creating {
-  val languageConfigurations = project(":language").configurations
-  extendsFrom(
-    languageConfigurations.getByName("kotlinRuntime"),
-    languageConfigurations.getByName("runtime")
-  )
-}
-
-// calculate local platform values
-
-val jar = tasks.getByName<Jar>("jar") {
+tasks.getByName<Jar>("jar") {
+  exclude("jre/**")
+  exclude("META-INF/symlinks")
+  exclude("META-INF/permissions")
   archiveBaseName.set("cadenza")
-  description = "Build the cadenza component for graal"
+  manifest {
+    attributes["Main-Class"] = "cadenza.Launcher"
+    attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(separator = " ") { it.absolutePath }
+  }
+}
 
+
+tasks.register("componentJar", Jar::class) {
+  archiveBaseName.set("cadenza-component")
+  from(tasks.getByPath(":processResources"))
+  description = "Build the cadenza component for graal"
   from("LICENSE.txt") { rename("LICENSE.txt","LICENSE_cadenza.txt") }
   from("LICENSE.txt") { rename("LICENSE.txt","jre/languages/cadenza/LICENSE.txt") }
-
   from(tasks.getByPath(":startScripts")) {
     rename("(.*)","jre/languages/cadenza/bin/$1")
     filesMatching("**/cadenza") {
@@ -265,15 +152,11 @@ val jar = tasks.getByName<Jar>("jar") {
   }
 
   from(files(
-    tasks.getByPath(":asm:jar"),
-    tasks.getByPath(":parser:jar"),
-    tasks.getByPath(":pretty:jar"),
-    tasks.getByPath(":language:jar"),
-    tasks.getByPath(":launcher:jar"),
-    languageRuntime
+    tasks.getByPath(":jar"),
+    configurations.getByName("runtimeClasspath")
   )) {
     rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
-    exclude("graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar", "annotations*.jar")
+    exclude("graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar") //, "annotations*.jar")
   }
 
   manifest {
@@ -287,11 +170,42 @@ val jar = tasks.getByName<Jar>("jar") {
   }
 }
 
+val componentJar = tasks.getByName<Jar>("componentJar")
+
+tasks.register("register", Exec::class) {
+  group = "installation"
+  if (needsExtract) dependsOn(":extractGraalTooling")
+  dependsOn(componentJar)
+  description = "Register cadenza with graal"
+  commandLine = listOf(
+    "$graalBinDir/gu",
+    "install",
+    "-f",
+    "-L",
+    "build/libs/cadenza-component.jar"
+  )
+}
+
+distributions.main {
+  baseName = "cadenza"
+  contents {
+    from(componentJar)
+    exclude( "graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar")
+    filesMatching("**/cadenza") {
+      filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "\$APP_HOME"))
+    }
+    filesMatching("**/cadenza.bat") {
+      filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "%~dp0.."))
+    }
+    from("LICENSE.txt")
+  }
+}
+
 
 tasks.withType<ProcessResources> {
   from("etc/native-image.properties") {
     expand(project.properties)
-    rename("/etc/native-image.properties","jre/languages/cadenza/native-image.properties")
+    rename("native-image.properties","jre/languages/cadenza/native-image.properties")
   }
   from(files("etc/symlinks","etc/permissions")) {
     rename("(.*)","META-INF/$1")
@@ -302,14 +216,13 @@ tasks.withType<DokkaTask> {
   outputFormat = "html"
   outputDirectory = gitPublish.repoDir.get().getAsFile().getAbsolutePath()
   dependsOn(":gitPublishReset")
-  subProjects = listOf("language","launcher")
   configuration {
     jdkVersion = 8
     includes = listOf("etc/module.md")
-    arrayOf("asm","language","launcher").forEach {
+    arrayOf("src","t","java").forEach {
       sourceLink {
-        path = "$it/src/main/kotlin"
-        url = "https://github.com/ekmett/cadenza/blob/master/$it/src/main/kotlin/"
+        path = "$it"
+        url = "https://github.com/ekmett/cadenza/blob/master/$it"
         lineSuffix = "#L"
       }
     }
@@ -352,17 +265,17 @@ val graalBinDir : String = if (os == "Linux") graalHome else "$graalHome/bin"
 logger.info("graalHome = {}", graalHome)
 logger.info("graalBinDir = {}", graalBinDir)
 
+// can i just tweak this one now?
 tasks.replace("run", JavaExec::class.java).run {
   if (needsExtract) dependsOn(":extractGraalTooling")
   description = "Run cadenza directly from the working directory"
-  dependsOn(":launcher:jar")
+  dependsOn(":jar")
   executable = "$graalBinDir/java"
-  classpath = project(":launcher").sourceSets["main"].runtimeClasspath
+  classpath = sourceSets["main"].runtimeClasspath
   jvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
-    "-Dtruffle.class.path.append=language/build/libs/cadenza-language.jar"
-    // "-Dtruffle.class.path.append=language/build/libs/cadenza-language-${project.version}.jar"
+    "-Dtruffle.class.path.append=build/libs/cadenza.jar"
   )
   main = "cadenza.Launcher"
 }
@@ -376,20 +289,6 @@ tasks.register("runInstalled", Exec::class) {
   executable = "$buildDir/install/cadenza/bin/cadenza"
   environment("JAVA_HOME", graalHome)
   outputs.upToDateWhen { false }
-}
-
-tasks.register("register", Exec::class) {
-  group = "installation"
-  if (needsExtract) dependsOn(":extractGraalTooling")
-  dependsOn(jar)
-  description = "Register cadenza with graal"
-  commandLine = listOf(
-    "$graalBinDir/gu",
-    "install",
-    "-f",
-    "-L",
-    jar.archiveFile.get().asFile.path
-  )
 }
 
 // assumes we are building on graal

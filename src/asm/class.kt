@@ -1,4 +1,4 @@
-package org.intelligence.asm
+package cadenza.asm
 
 // dsl-based java assembler as a simple wrapper around ObjectWeb's assembler
 

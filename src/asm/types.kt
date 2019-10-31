@@ -1,4 +1,4 @@
-package org.intelligence.asm
+package cadenza.asm
 
 import org.objectweb.asm.Type
 import kotlin.reflect.KClass
