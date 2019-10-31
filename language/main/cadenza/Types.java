@@ -16,8 +16,8 @@ import kotlin.Unit;
   boolean.class,
   int.class,
   BigInt.class,
-  NeutralValue.class, // probably unused, but we'll see
-  Unit.class // with manual typecheck of looking for null?
+  NeutralValue.class,
+  Unit.class
 })
 public abstract class Types {
   @ImplicitCast

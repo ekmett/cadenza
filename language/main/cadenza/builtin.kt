@@ -30,7 +30,7 @@ abstract class Builtin(@Suppress("unused") val resultType: Type) : Node(), Seria
     TypesGen.expectInteger(execute(frame, arg))
 }
 
-@NodeInfo(shortName = "print$")
+@NodeInfo(shortName = "Print")
 object Print : Builtin(Action) {
   @Throws(NeutralException::class)
   override fun execute(frame: VirtualFrame, arg: Code) = executeUnit(frame, arg)

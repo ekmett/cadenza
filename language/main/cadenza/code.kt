@@ -304,33 +304,35 @@ inline fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<Fra
 @Suppress("NOTHING_TO_INLINE")
 inline fun `var`(slot: FrameSlot): Var = VarNodeGen.create(slot)
 
-
 @Suppress("NOTHING_TO_INLINE","unused")
-inline fun booleanLiteral(b: Boolean): Code = object : Code() {
+@NodeInfo(shortName = "LitBool")
+class LitBool(val value: Boolean): Code() {
   @Suppress("UNUSED_PARAMETER")
-  override fun execute(frame: VirtualFrame) = b
+  override fun execute(frame: VirtualFrame) = value
   @Suppress("UNUSED_PARAMETER")
-  override fun executeBoolean(frame: VirtualFrame) = b
+  override fun executeBoolean(frame: VirtualFrame) = value
 }
 
 @Suppress("NOTHING_TO_INLINE")
-inline fun intLiteral(i: Int): Code = object : Code() {
+@NodeInfo(shortName = "LitInt")
+class LitInt(val value: Int): Code() {
   @Suppress("UNUSED_PARAMETER")
-  override fun execute(frame: VirtualFrame) = i
+  override fun execute(frame: VirtualFrame) = value
   @Suppress("UNUSED_PARAMETER")
-  override fun executeInteger(frame: VirtualFrame) = i
+  override fun executeInteger(frame: VirtualFrame) = value
 }
 
 @Suppress("NOTHING_TO_INLINE","unused")
-inline fun bigLiteral(i: BigInt): Code = object : Code() {
+@NodeInfo(shortName = "LitBigInt")
+class LitBigInt(val value: BigInt): Code() {
   @Suppress("UNUSED_PARAMETER")
-  override fun execute(frame: VirtualFrame) = i
+  override fun execute(frame: VirtualFrame) = value
   @Throws(UnexpectedResultException::class)
   @Suppress("UNUSED_PARAMETER")
   override fun executeInteger(frame: VirtualFrame): Int =
     try {
-      if (i.fitsInInt()) i.asInt()
-      else throw UnexpectedResultException(i)
+      if (value.fitsInInt()) value.asInt()
+      else throw UnexpectedResultException(value)
     } catch (e: UnsupportedMessageException) {
       panic("fitsInInt lied", e)
     }
