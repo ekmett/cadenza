@@ -69,11 +69,11 @@ val SourceSet.kotlin: SourceDirectorySet
 
 sourceSets {
   main {
-    java.srcDir("java")
-    kotlin.srcDirs("src")
+    java.srcDir("src/java")
+    kotlin.srcDirs("src/kotlin")
   }
   test {
-    kotlin.srcDirs("t")
+    kotlin.srcDirs("src/test")
   }
 }
 
