@@ -51,7 +51,6 @@ dependencies {
   implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
   "kapt"("org.graalvm.truffle:truffle-api:19.2.0.1")
   "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
-  testImplementation("org.testng:testng:6.14.3")
   testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
 }
 
