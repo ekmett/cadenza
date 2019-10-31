@@ -1,0 +1,1071 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Block - cadenza</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza.asm</a>&nbsp;/&nbsp;<a href="./index.html">Block</a><br/>
+<br/>
+<h1>Block</h1>
+<code><span class="keyword">interface </span><span class="identifier">Block</span></code> <a href="https://github.com/ekmett/cadenza/blob/master/src/asm/class.kt#L92">(source)</a>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="instructions.html">instructions</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">val </span><span class="identifier">instructions</span><span class="symbol">: </span><span class="identifier">InsnList</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Extension Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="../aaload.html">aaload</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">aaload</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../aastore.html">aastore</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">aastore</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../aconst_null.html">aconst_null</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">aconst_null</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../areturn.html">areturn</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">areturn</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../arraylength.html">arraylength</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">arraylength</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../athrow.html">athrow</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">athrow</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../baload.html">baload</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">baload</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../bastore.html">bastore</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">bastore</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../caload.html">caload</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">caload</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../castore.html">castore</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">castore</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../d2f.html">d2f</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">d2f</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../d2i.html">d2i</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">d2i</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../d2l.html">d2l</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">d2l</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dadd.html">dadd</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dadd</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../daload.html">daload</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">daload</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dastore.html">dastore</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dastore</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dcmpg.html">dcmpg</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dcmpg</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dcmpl.html">dcmpl</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dcmpl</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dconst_0.html">dconst_0</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dconst_0</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dconst_1.html">dconst_1</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dconst_1</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ddiv.html">ddiv</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ddiv</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dmul.html">dmul</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dmul</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dneg.html">dneg</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dneg</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../drem.html">drem</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">drem</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dreturn.html">dreturn</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dreturn</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dsub.html">dsub</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dsub</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dup.html">dup</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dup</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dup2.html">dup2</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dup2</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dup2_x1.html">dup2_x1</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dup2_x1</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dup2_x2.html">dup2_x2</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dup2_x2</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dup_x1.html">dup_x1</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dup_x1</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../dup_x2.html">dup_x2</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">dup_x2</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../f2d.html">f2d</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">f2d</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../f2i.html">f2i</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">f2i</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../f2l.html">f2l</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">f2l</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fadd.html">fadd</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fadd</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../faload.html">faload</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">faload</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fastore.html">fastore</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fastore</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fcmpg.html">fcmpg</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fcmpg</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fcmpl.html">fcmpl</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fcmpl</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fconst_0.html">fconst_0</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fconst_0</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fconst_1.html">fconst_1</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fconst_1</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fconst_2.html">fconst_2</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fconst_2</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fdiv.html">fdiv</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fdiv</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fmul.html">fmul</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fmul</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fneg.html">fneg</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fneg</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../frem.html">frem</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">frem</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../freturn.html">freturn</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">freturn</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../fsub.html">fsub</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">fsub</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../i2b.html">i2b</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">i2b</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../i2c.html">i2c</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">i2c</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../i2d.html">i2d</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">i2d</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../i2f.html">i2f</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">i2f</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../i2l.html">i2l</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">i2l</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../i2s.html">i2s</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">i2s</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iadd.html">iadd</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iadd</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iaload.html">iaload</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iaload</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iand.html">iand</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iand</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iastore.html">iastore</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iastore</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iconst_0.html">iconst_0</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iconst_0</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iconst_1.html">iconst_1</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iconst_1</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iconst_2.html">iconst_2</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iconst_2</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iconst_3.html">iconst_3</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iconst_3</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iconst_4.html">iconst_4</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iconst_4</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iconst_5.html">iconst_5</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iconst_5</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iconst_m1.html">iconst_m1</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iconst_m1</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../idiv.html">idiv</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">idiv</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../imul.html">imul</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">imul</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ineg.html">ineg</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ineg</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ior.html">ior</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ior</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../irem.html">irem</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">irem</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ireturn.html">ireturn</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ireturn</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ishl.html">ishl</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ishl</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ishr.html">ishr</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ishr</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../isub.html">isub</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">isub</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iushr.html">iushr</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iushr</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ixor.html">ixor</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ixor</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../l2d.html">l2d</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">l2d</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../l2f.html">l2f</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">l2f</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../l2i.html">l2i</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">l2i</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ladd.html">ladd</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ladd</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../laload.html">laload</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">laload</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../land.html">land</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">land</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lastore.html">lastore</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lastore</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lcmp.html">lcmp</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lcmp</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lconst_0.html">lconst_0</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lconst_0</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lconst_1.html">lconst_1</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lconst_1</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ldiv.html">ldiv</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ldiv</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lmul.html">lmul</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lmul</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lneg.html">lneg</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lneg</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lor.html">lor</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lor</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lrem.html">lrem</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lrem</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lreturn.html">lreturn</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lreturn</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lshl.html">lshl</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lshl</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lshr.html">lshr</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lshr</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lsub.html">lsub</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lsub</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lushr.html">lushr</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lushr</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lxor.html">lxor</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lxor</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../nop.html">nop</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">nop</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../pop.html">pop</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">pop</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../pop2.html">pop2</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">pop2</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../return.html">return</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">return</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../saload.html">saload</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">saload</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../sastore.html">sastore</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">sastore</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../swap.html">swap</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">swap</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Extension Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="../add.html">add</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">add</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$add(cadenza.asm.Block, org.objectweb.asm.tree.AbstractInsnNode)/it">it</span><span class="symbol">:</span>&nbsp;<span class="identifier">AbstractInsnNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code><br/>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">add</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$add(cadenza.asm.Block, org.objectweb.asm.tree.InsnList)/many">many</span><span class="symbol">:</span>&nbsp;<span class="identifier">InsnList</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../anewarray.html">anewarray</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">anewarray</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$anewarray(cadenza.asm.Block, org.objectweb.asm.Type)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../bipush.html">bipush</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">bipush</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$bipush(cadenza.asm.Block, kotlin.Int)/v">v</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../checkcast.html">checkcast</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">checkcast</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$checkcast(cadenza.asm.Block, org.objectweb.asm.Type)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../getfield.html">getfield</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">getfield</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$getfield(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/owner">owner</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="identifier" id="cadenza.asm$getfield(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$getfield(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../getstatic.html">getstatic</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">getstatic</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$getstatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/owner">owner</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="identifier" id="cadenza.asm$getstatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$getstatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../goto.html">goto</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">goto</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$goto(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../if_acmpeq.html">if_acmpeq</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">if_acmpeq</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$if_acmpeq(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../if_acmpne.html">if_acmpne</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">if_acmpne</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$if_acmpne(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../if_icmpeq.html">if_icmpeq</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">if_icmpeq</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$if_icmpeq(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../if_icmpge.html">if_icmpge</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">if_icmpge</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$if_icmpge(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../if_icmpgt.html">if_icmpgt</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">if_icmpgt</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$if_icmpgt(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../if_icmple.html">if_icmple</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">if_icmple</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$if_icmple(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../if_icmplt.html">if_icmplt</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">if_icmplt</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$if_icmplt(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../if_icmpne.html">if_icmpne</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">if_icmpne</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$if_icmpne(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ifeq.html">ifeq</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ifeq</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$ifeq(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ifge.html">ifge</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ifge</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$ifge(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ifgt.html">ifgt</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ifgt</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$ifgt(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ifle.html">ifle</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ifle</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$ifle(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iflt.html">iflt</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iflt</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$iflt(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ifne.html">ifne</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ifne</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$ifne(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ifnonnull.html">ifnonnull</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ifnonnull</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$ifnonnull(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ifnull.html">ifnull</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ifnull</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$ifnull(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../iinc.html">iinc</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iinc</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$iinc(cadenza.asm.Block, kotlin.Int)/slot">slot</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code><br/>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">iinc</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$iinc(cadenza.asm.Block, kotlin.Int, kotlin.Int)/slot">slot</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$iinc(cadenza.asm.Block, kotlin.Int, kotlin.Int)/amount">amount</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../instanceof.html">instanceof</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">instanceof</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$instanceof(cadenza.asm.Block, org.objectweb.asm.Type)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../invokeinterface.html">invokeinterface</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">invokeinterface</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$invokeinterface(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/owner">owner</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="identifier" id="cadenza.asm$invokeinterface(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$invokeinterface(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/returnType">returnType</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="cadenza.asm$invokeinterface(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/parameterTypes">parameterTypes</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../invokespecial.html">invokespecial</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">invokespecial</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$invokespecial(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/owner">owner</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="identifier" id="cadenza.asm$invokespecial(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$invokespecial(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/returnType">returnType</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="cadenza.asm$invokespecial(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/parameterTypes">parameterTypes</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../invokestatic.html">invokestatic</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">invokestatic</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$invokestatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/owner">owner</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="identifier" id="cadenza.asm$invokestatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$invokestatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/returnType">returnType</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="cadenza.asm$invokestatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/parameterTypes">parameterTypes</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../invokevirtual.html">invokevirtual</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">invokevirtual</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$invokevirtual(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/owner">owner</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="identifier" id="cadenza.asm$invokevirtual(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$invokevirtual(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/returnType">returnType</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="cadenza.asm$invokevirtual(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)))/parameterTypes">parameterTypes</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../jsr.html">jsr</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">jsr</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$jsr(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode)/label">label</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ldc.html">ldc</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ldc</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$ldc(cadenza.asm.Block, kotlin.Any)/v">v</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../lookup-switch.html">lookupSwitch</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">lookupSwitch</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$lookupSwitch(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode, kotlin.Array((kotlin.Pair((kotlin.Int, org.objectweb.asm.tree.LabelNode)))))/defaultLabel">defaultLabel</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="cadenza.asm$lookupSwitch(cadenza.asm.Block, org.objectweb.asm.tree.LabelNode, kotlin.Array((kotlin.Pair((kotlin.Int, org.objectweb.asm.tree.LabelNode)))))/branches">branches</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html"><span class="identifier">Pair</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">,</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../multianewarray.html">multianewarray</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">multianewarray</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$multianewarray(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.Int)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="identifier" id="cadenza.asm$multianewarray(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.Int)/dimensions">dimensions</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../new.html">new</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">new</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$new(cadenza.asm.Block, org.objectweb.asm.Type)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../newarray.html">newarray</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">newarray</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$newarray(cadenza.asm.Block, org.objectweb.asm.Type)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../push.html">push</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">push</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$push(cadenza.asm.Block, kotlin.Int)/i">i</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../putfield.html">putfield</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">putfield</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$putfield(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/owner">owner</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="identifier" id="cadenza.asm$putfield(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$putfield(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../putstatic.html">putstatic</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">putstatic</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$putstatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/owner">owner</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">, </span><span class="identifier" id="cadenza.asm$putstatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$putstatic(cadenza.asm.Block, org.objectweb.asm.Type, kotlin.String, org.objectweb.asm.Type)/type">type</span><span class="symbol">:</span>&nbsp;<span class="identifier">Type</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ret.html">ret</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">ret</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$ret(cadenza.asm.Block, kotlin.Int)/slot">slot</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../sipush.html">sipush</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">sipush</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$sipush(cadenza.asm.Block, kotlin.Int)/v">v</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../table-switch.html">tableSwitch</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="./index.html"><span class="identifier">Block</span></a><span class="symbol">.</span><span class="identifier">tableSwitch</span><span class="symbol">(</span><span class="identifier" id="cadenza.asm$tableSwitch(cadenza.asm.Block, kotlin.Int, kotlin.Int, org.objectweb.asm.tree.LabelNode, kotlin.Array((org.objectweb.asm.tree.LabelNode)))/min">min</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$tableSwitch(cadenza.asm.Block, kotlin.Int, kotlin.Int, org.objectweb.asm.tree.LabelNode, kotlin.Array((org.objectweb.asm.tree.LabelNode)))/max">max</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.asm$tableSwitch(cadenza.asm.Block, kotlin.Int, kotlin.Int, org.objectweb.asm.tree.LabelNode, kotlin.Array((org.objectweb.asm.tree.LabelNode)))/defaultLabel">defaultLabel</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="cadenza.asm$tableSwitch(cadenza.asm.Block, kotlin.Int, kotlin.Int, org.objectweb.asm.tree.LabelNode, kotlin.Array((org.objectweb.asm.tree.LabelNode)))/labels">labels</span><span class="symbol">:</span>&nbsp;<span class="identifier">LabelNode</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Inheritors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="../-assembly/index.html">Assembly</a></h4>
+</td>
+<td>
+<code><span class="keyword">interface </span><span class="identifier">Assembly</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Block</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>
