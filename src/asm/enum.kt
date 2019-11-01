@@ -29,7 +29,7 @@ fun enumNode(access: Mod = public, name: String, vararg members: String): ClassN
       areturn
     }
   }
-  method(private, void, "<init>", +String::class, +Int::class) {
+  constructor(private, +String::class, +Int::class) {
     asm {
       aload_0
       aload_1

@@ -47,6 +47,19 @@ fun ClassNode.method(
   methods.add(it)
 }
 
+fun constructorNode(
+  access: Mod,
+  vararg parameterTypes: Type,
+  f: MethodNode.() -> Unit
+) = methodNode(access,void, "<init>", parameterTypes = *parameterTypes, f = f)
+
+fun ClassNode.constructor(
+  access: Mod,
+  vararg parameterTypes: Type,
+  f: MethodNode.() -> Unit
+) = method(access,void, "<init>", parameterTypes = *parameterTypes, f = f)
+
+
 val ClassNode.type: Type get() = Type.getType("L$name;")
 
 // construct a field and add it to the class
