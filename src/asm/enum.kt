@@ -10,31 +10,32 @@ fun enumNode(access: Mod = public, name: String, vararg members: String): ClassN
   val type = this.type
   val typeArray = type.array
   val values = "\$VALUES"
+  val enum = +Enum::class
   for (member in members) field(public and static and final, type, member)
   field(private and static and final, typeArray, values)
   method(public and static, typeArray, "values") {
     asm {
       getstatic(type, values, typeArray)
-      invokevirtual(type.array, +Object::class, "clone")
+      invokevirtual(type.array, `object`, "clone")
       checkcast(type.array)
       areturn
     }
   }
-  method(public and static, type, "valueOf", +String::class) {
+  method(public and static, type, "valueOf", string) {
     asm {
       ldc(type)
       aload_0
-      invokestatic(+Enum::class, +Enum::class, "valueOf", +Class::class, +String::class)
+      invokestatic(enum, enum, "valueOf", `class`, string)
       checkcast(type)
       areturn
     }
   }
-  method(private, void, "<init>", +String::class, +Int::class) {
+  method(private, void, "<init>", string, int) {
     asm {
       aload_0
       aload_1
       iload_2
-      invokespecial(+Enum::class, void, "<init>", +String::class, +Int::class)
+      invokespecial(enum, void, "<init>", string, int)
       `return`
     }
   }

@@ -146,6 +146,11 @@ class If(
   override fun executeInteger(frame: VirtualFrame): Int =
     if (branch(frame)) thenNode.executeInteger(frame)
     else elseNode.executeInteger(frame)
+
+  @Throws(UnexpectedResultException::class, NeutralException::class)
+  override fun executeBoolean(frame: VirtualFrame): Boolean =
+    if (branch(frame)) thenNode.executeBoolean(frame)
+    else elseNode.executeBoolean(frame)
 }
 
 // lambdas can be constructed from foreign calltargets, you just need to supply an arity
@@ -218,8 +223,10 @@ class Ann(@field:Child private var body: Code, val type: Type) : Code() {
 // a fully saturated call to a builtin
 // invariant: builtins themselves do not return neutral values, other than through evaluating their argument
 @Suppress("unused")
-abstract class CallBuiltin(val type: Type, private val builtin: Builtin, @field:Child
-internal var arg: Code) : Code() {
+abstract class CallBuiltin(
+  val type: Type,
+  private val builtin: Builtin,
+  @field:Child internal var arg: Code) : Code() {
   override fun executeAny(frame: VirtualFrame): Any? =
     try {
       builtin.execute(frame, arg)
