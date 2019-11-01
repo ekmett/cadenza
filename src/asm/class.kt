@@ -73,7 +73,7 @@ fun classNode(
   version: Int = 49,
   superName: String = "java/lang/Object",
   f: ClassNode.() -> Unit
-)= ClassNode(ASM7).also {
+) = ClassNode(ASM7).also {
   it.name = name
   it.version = version
   it.superName = superName
@@ -89,7 +89,7 @@ fun `class`(
   version: Int = 49,
   superName: String = "java/lang/Object",
   f: ClassNode.() -> Unit
-) = classNode(access,name,version,superName,f).assemble
+) = classNode(access, name, version, superName, f).assemble
 
 interface Block {
   val instructions: InsnList
@@ -126,7 +126,7 @@ class GuardedAssembly internal constructor(base: Assembly) : Assembly by base {
     f: Assembly.() -> Unit
   ): GuardedAssembly {
     val handlerNode = LabelNode()
-    val handler = SimpleAssembly(InsnList(),tryCatchBlocks).apply {
+    val handler = SimpleAssembly(InsnList(), tryCatchBlocks).apply {
       add(handlerNode)
       add(FrameNode(F_SAME1, 0, null, 1, arrayOf(exceptionType.internalName)))
       f(this)

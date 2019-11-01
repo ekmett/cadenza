@@ -91,6 +91,7 @@ fun Block.newarray(type: Type) {
     else -> error("Invalid type for primitive array creation")
   }))
 }
+
 fun Block.getstatic(owner: Type, name: String, type: Type) = add(FieldInsnNode(GETSTATIC, owner.internalName, name, type.descriptor))
 fun Block.getfield(owner: Type, name: String, type: Type) = add(FieldInsnNode(GETFIELD, owner.internalName, name, type.descriptor))
 fun Block.putstatic(owner: Type, name: String, type: Type) = add(FieldInsnNode(PUTSTATIC, owner.internalName, name, type.descriptor))
@@ -108,10 +109,12 @@ val Block.dup2_x1: Unit get() = add(InsnNode(DUP2_X1))
 val Block.dup2_x2: Unit get() = add(InsnNode(DUP2_X2))
 fun Block.tableSwitch(min: Int, max: Int, defaultLabel: LabelNode, vararg labels: LabelNode) =
   add(TableSwitchInsnNode(min, max, defaultLabel, *labels))
+
 fun Block.lookupSwitch(defaultLabel: LabelNode, vararg branches: Pair<Int, LabelNode>) =
   add(LookupSwitchInsnNode(defaultLabel,
     IntArray(branches.size) { branches[it].first },
     Array(branches.size) { branches[it].second }))
+
 val Block.aconst_null: Unit get() = add(InsnNode(ACONST_NULL))
 val Block.iconst_m1: Unit get() = add(InsnNode(ICONST_M1))
 val Block.iconst_0: Unit get() = add(InsnNode(ICONST_0))
@@ -138,20 +141,25 @@ fun Block.push(i: Int) {
     3 -> iconst_3
     4 -> iconst_4
     5 -> iconst_5
-    in Byte.MIN_VALUE .. Byte.MAX_VALUE -> bipush(i)
-    in Short.MIN_VALUE .. Short.MAX_VALUE -> sipush(i)
+    in Byte.MIN_VALUE..Byte.MAX_VALUE -> bipush(i)
+    in Short.MIN_VALUE..Short.MAX_VALUE -> sipush(i)
     else -> ldc(i)
   }
 }
+
 fun Block.ldc(v: Any) = add(LdcInsnNode(v))
 fun Block.invokevirtual(owner: Type, returnType: Type, name: String, vararg parameterTypes: Type) =
   add(MethodInsnNode(INVOKEVIRTUAL, owner.internalName, name, Type.getMethodDescriptor(returnType, *parameterTypes)))
+
 fun Block.invokespecial(owner: Type, returnType: Type, name: String, vararg parameterTypes: Type) =
   add(MethodInsnNode(INVOKESPECIAL, owner.internalName, name, Type.getMethodDescriptor(returnType, *parameterTypes)))
+
 fun Block.invokestatic(owner: Type, returnType: Type, name: String, vararg parameterTypes: Type) =
   add(MethodInsnNode(INVOKESTATIC, owner.internalName, name, Type.getMethodDescriptor(returnType, *parameterTypes)))
+
 fun Block.invokeinterface(owner: Type, returnType: Type, name: String, vararg parameterTypes: Type) =
   add(MethodInsnNode(INVOKEINTERFACE, owner.internalName, name, Type.getMethodDescriptor(`returnType`, *parameterTypes)))
+
 val Block.ireturn: Unit get() = add(InsnNode(IRETURN))
 val Block.lreturn: Unit get() = add(InsnNode(LRETURN))
 val Block.freturn: Unit get() = add(InsnNode(FRETURN))

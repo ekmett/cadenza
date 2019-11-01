@@ -5,18 +5,19 @@ import java.lang.NullPointerException
 import java.lang.reflect.InvocationTargetException
 
 class Guards {
-  @Test fun work() {
+  @Test
+  fun work() {
     var caught = false
     val output = without {
       try {
         `class`(public, "test/Guards") {
-          method(public and static, void,"main",+Array<String>::class) {
+          method(public and static, void, "main", +Array<String>::class) {
             throws(+NullPointerException::class) // unchecked anyways, meh
             asm {
               guard {
                 new(+RuntimeException::class)
                 dup
-                invokespecial(+RuntimeException::class, void,"<init>")
+                invokespecial(+RuntimeException::class, void, "<init>")
                 athrow
               }.handle(+RuntimeException::class, true) {
                 pop
@@ -33,11 +34,11 @@ class Guards {
           }
         }.loadClass("test.Guards").declaredMethods.first().invoke(null, emptyArray<String>())
       } catch (e: InvocationTargetException) {
-        assert(e.cause is NullPointerException) {"expected NullPointerException"}
+        assert(e.cause is NullPointerException) { "expected NullPointerException" }
         caught = true;
       }
     }
-    assert(output == "Caught!\n",{"unexpected output: ${output}"})
-    assert(caught) {"expected exception not caught"}
+    assert(output == "Caught!\n", { "unexpected output: ${output}" })
+    assert(caught) { "expected exception not caught" }
   }
 }

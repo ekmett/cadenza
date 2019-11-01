@@ -3,10 +3,11 @@ import org.junit.jupiter.api.Test
 import java.io.PrintStream
 
 class Hello {
-  @Test fun world() {
+  @Test
+  fun world() {
     val output = without {
       `class`(public, "test/HelloWorld") {
-        method(public and static, void,"main", +Array<String>::class) {
+        method(public and static, void, "main", +Array<String>::class) {
           asm {
             getstatic(+System::class, "out", +PrintStream::class)
             ldc("Hello, world!")
