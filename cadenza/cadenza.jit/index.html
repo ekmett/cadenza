@@ -1,0 +1,112 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>cadenza.jit - cadenza</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">cadenza.jit</a><br/>
+<br/>
+<h2>Package cadenza.jit</h2>
+<p>These truffle nodes allow us to JIT</p>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-builtin/index.html">Builtin</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Builtin</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializable.html"><span class="identifier">Serializable</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-cadenza-node/index.html">CadenzaNode</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">CadenzaNode</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-closure-body/index.html">ClosureBody</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ClosureBody</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-closure-root-node/index.html">ClosureRootNode</a></h4>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ClosureRootNode</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">RootNode</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-code/index.html">Code</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Code</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-frame-builder/index.html">FrameBuilder</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">FrameBuilder</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-inline-code/index.html">InlineCode</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">InlineCode</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">ExecutableNode</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-print/index.html">Print</a></h4>
+</td>
+<td>
+<code><span class="keyword">object </span><span class="identifier">Print</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-builtin/index.html"><span class="identifier">Builtin</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-program-root-node/index.html">ProgramRootNode</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">ProgramRootNode</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">RootNode</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-stmt/index.html">Stmt</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Stmt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-cadenza-node/index.html"><span class="identifier">CadenzaNode</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="no-frame-builders.html">noFrameBuilders</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">noFrameBuilders</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="put.html">put</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="cadenza.jit$put(com.oracle.truffle.api.frame.FrameSlot, cadenza.jit.Code)/slot">slot</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameSlot</span><span class="symbol">, </span><span class="identifier" id="cadenza.jit$put(com.oracle.truffle.api.frame.FrameSlot, cadenza.jit.Code)/value">value</span><span class="symbol">:</span>&nbsp;<a href="-code/index.html"><span class="identifier">Code</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

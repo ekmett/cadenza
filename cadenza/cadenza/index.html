@@ -14,122 +14,10 @@
 <tbody>
 <tr>
 <td>
-<h4><a href="-big-int/index.html">BigInt</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">BigInt</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span><span class="symbol">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-comparable/index.html"><span class="identifier">Comparable</span></a><span class="symbol">&lt;</span><a href="-big-int/index.html"><span class="identifier">BigInt</span></a><span class="symbol">&gt;</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-builtin/index.html">Builtin</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Builtin</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/Serializable.html"><span class="identifier">Serializable</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-cadenza-node/index.html">CadenzaNode</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">CadenzaNode</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-closure/index.html">Closure</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Closure</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-closure-body/index.html">ClosureBody</a></h4>
-</td>
-<td>
-<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ClosureBody</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-closure-root-node/index.html">ClosureRootNode</a></h4>
-</td>
-<td>
-<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">ClosureRootNode</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">RootNode</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-code/index.html">Code</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Code</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-cons-env/index.html">ConsEnv</a></h4>
-</td>
-<td>
-<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">ConsEnv</span><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<span class="identifier">T</span><span class="symbol">&gt;</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-context/index.html">Context</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Context</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-ctx.html">Ctx</a></h4>
-</td>
-<td>
-<code><span class="keyword">typealias </span><span class="identifier">Ctx</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="-env.html"><span class="identifier">Env</span></a><span class="symbol">&lt;</span><a href="-type/index.html"><span class="identifier">Type</span></a><span class="symbol">&gt;</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-def/index.html">Def</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Def</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-stmt/index.html"><span class="identifier">Stmt</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-detector/index.html">Detector</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Detector</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">FileTypeDetector</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-do/index.html">Do</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Do</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-stmt/index.html"><span class="identifier">Stmt</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-env.html">Env</a></h4>
-</td>
-<td>
-<code><span class="keyword">typealias </span><span class="identifier">Env</span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="-cons-env/index.html"><span class="identifier">ConsEnv</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span><span class="symbol">?</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-frame-builder/index.html">FrameBuilder</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">FrameBuilder</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-inline-code/index.html">InlineCode</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">InlineCode</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">ExecutableNode</span></code></td>
-</tr>
-<tr>
-<td>
 <h4><a href="-language/index.html">Language</a></h4>
 </td>
 <td>
-<code><span class="keyword">class </span><span class="identifier">Language</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleLanguage</span><span class="symbol">&lt;</span><a href="-context/index.html"><span class="identifier">Context</span></a><span class="symbol">&gt;</span></code></td>
+<code><span class="keyword">class </span><span class="identifier">Language</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleLanguage</span><span class="symbol">&lt;</span><span class="identifier">Context</span><span class="symbol">&gt;</span></code></td>
 </tr>
 <tr>
 <td>
@@ -138,135 +26,11 @@
 <td>
 <code><span class="keyword">class </span><span class="identifier">Launcher</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">AbstractLanguageLauncher</span></code></td>
 </tr>
-<tr>
-<td>
-<h4><a href="-name.html">Name</a></h4>
-</td>
-<td>
-<code><span class="keyword">typealias </span><span class="identifier">Name</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-n-app/index.html">NApp</a></h4>
-</td>
-<td>
-<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">NApp</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-neutral/index.html"><span class="identifier">Neutral</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-n-call-builtin/index.html">NCallBuiltin</a></h4>
-</td>
-<td>
-<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">NCallBuiltin</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-neutral/index.html"><span class="identifier">Neutral</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-neutral/index.html">Neutral</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Neutral</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-neutral-value/index.html">NeutralValue</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">NeutralValue</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-n-if/index.html">NIf</a></h4>
-</td>
-<td>
-<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">NIf</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-neutral/index.html"><span class="identifier">Neutral</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-print/index.html">Print</a></h4>
-</td>
-<td>
-<code><span class="keyword">object </span><span class="identifier">Print</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-builtin/index.html"><span class="identifier">Builtin</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-program-root-node/index.html">ProgramRootNode</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">ProgramRootNode</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">RootNode</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-stmt/index.html">Stmt</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Stmt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-cadenza-node/index.html"><span class="identifier">CadenzaNode</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-term/index.html">Term</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Term</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-type/index.html">Type</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Type</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-types/index.html">Types</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Types</span></code></td>
-</tr>
-</tbody>
-</table>
-<h3>Exceptions</h3>
-<table>
-<tbody>
-<tr>
-<td>
-<h4><a href="-neutral-exception/index.html">NeutralException</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">NeutralException</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">SlowPathException</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-panic/index.html">Panic</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Panic</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-runtime-exception/index.html"><span class="identifier">RuntimeException</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-t-o-d-o/index.html">TODO</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">TODO</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-runtime-exception/index.html"><span class="identifier">RuntimeException</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-type-error/index.html">TypeError</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">TypeError</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
-</tr>
 </tbody>
 </table>
 <h3>Properties</h3>
 <table>
 <tbody>
-<tr>
-<td>
-<h4><a href="-l-a-n-g-u-a-g-e_-b-u-i-l-t-i-n_-s-o-u-r-c-e.html">LANGUAGE_BUILTIN_SOURCE</a></h4>
-</td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">LANGUAGE_BUILTIN_SOURCE</span><span class="symbol">: </span><span class="identifier">Source</span></code></td>
-</tr>
 <tr>
 <td>
 <h4><a href="-l-a-n-g-u-a-g-e_-e-x-t-e-n-s-i-o-n.html">LANGUAGE_EXTENSION</a></h4>
@@ -297,79 +61,16 @@
 </tr>
 <tr>
 <td>
-<h4><a href="-l-a-n-g-u-a-g-e_-s-h-e-b-a-n-g_-r-e-g-e-x-p.html">LANGUAGE_SHEBANG_REGEXP</a></h4>
-</td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">LANGUAGE_SHEBANG_REGEXP</span><span class="symbol">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"><span class="identifier">Pattern</span></a></code></td>
-</tr>
-<tr>
-<td>
 <h4><a href="-l-a-n-g-u-a-g-e_-v-e-r-s-i-o-n.html">LANGUAGE_VERSION</a></h4>
 </td>
 <td>
 <code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">LANGUAGE_VERSION</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="-nil-env.html">NilEnv</a></h4>
-</td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">NilEnv</span><span class="symbol">: </span><a href="-env.html"><span class="identifier">Env</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a><span class="symbol">&gt;</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="no-frame-builders.html">noFrameBuilders</a></h4>
-</td>
-<td>
-<code><span class="keyword">val </span><span class="identifier">noFrameBuilders</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span></code></td>
 </tr>
 </tbody>
 </table>
 <h3>Functions</h3>
 <table>
 <tbody>
-<tr>
-<td>
-<h4><a href="after.html">after</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><a href="-type/index.html"><span class="identifier">Type</span></a><span class="symbol">.</span><span class="identifier">after</span><span class="symbol">(</span><span class="identifier" id="cadenza$after(cadenza.Type, kotlin.Int)/n">n</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-type/index.html"><span class="identifier">Type</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="def.html">def</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">def</span><span class="symbol">(</span><span class="identifier" id="cadenza$def(com.oracle.truffle.api.frame.FrameSlot, cadenza.Code)/slot">slot</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameSlot</span><span class="symbol">, </span><span class="identifier" id="cadenza$def(com.oracle.truffle.api.frame.FrameSlot, cadenza.Code)/body">body</span><span class="symbol">:</span>&nbsp;<a href="-code/index.html"><span class="identifier">Code</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-def/index.html"><span class="identifier">Def</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="get-meta-object.html">getMetaObject</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">getMetaObject</span><span class="symbol">(</span><span class="identifier" id="cadenza$getMetaObject(kotlin.Any)/value">value</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="lookup.html">lookup</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-env.html"><span class="identifier">Env</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span><span class="symbol">.</span><span class="identifier">lookup</span><span class="symbol">(</span><span class="identifier" id="cadenza$lookup(cadenza.ConsEnv((cadenza.lookup.T)), kotlin.String)/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">T</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="lookup-node-info.html">lookupNodeInfo</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">lookupNodeInfo</span><span class="symbol">(</span><span class="identifier" id="cadenza$lookupNodeInfo(java.lang.Class((kotlin.Any)))/clazz">clazz</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/Class.html"><span class="identifier">Class</span></a><span class="symbol">&lt;</span><span class="identifier">*</span><span class="symbol">&gt;</span><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">NodeInfo</span><span class="symbol">?</span></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="neutral.html">neutral</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">neutral</span><span class="symbol">(</span><span class="identifier" id="cadenza$neutral(cadenza.Type, cadenza.Neutral)/type">type</span><span class="symbol">:</span>&nbsp;<a href="-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza$neutral(cadenza.Type, cadenza.Neutral)/term">term</span><span class="symbol">:</span>&nbsp;<a href="-neutral/index.html"><span class="identifier">Neutral</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code></td>
-</tr>
 <tr>
 <td>
 <h4><a href="panic.html">panic</a></h4>
@@ -380,32 +81,11 @@
 </tr>
 <tr>
 <td>
-<h4><a href="put.html">put</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">put</span><span class="symbol">(</span><span class="identifier" id="cadenza$put(com.oracle.truffle.api.frame.FrameSlot, cadenza.Code)/slot">slot</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameSlot</span><span class="symbol">, </span><span class="identifier" id="cadenza$put(com.oracle.truffle.api.frame.FrameSlot, cadenza.Code)/value">value</span><span class="symbol">:</span>&nbsp;<a href="-code/index.html"><span class="identifier">Code</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="throw-if-neutral-value.html">throwIfNeutralValue</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">throwIfNeutralValue</span><span class="symbol">(</span><span class="identifier" id="cadenza$throwIfNeutralValue(cadenza.throwIfNeutralValue.T)/x">x</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">T</span></code></td>
-</tr>
-<tr>
-<td>
 <h4><a href="todo.html">todo</a></h4>
 </td>
 <td>
 <code><span class="keyword">fun </span><span class="identifier">todo</span><span class="symbol">(</span><span class="identifier" id="cadenza$todo(kotlin.String, kotlin.Throwable)/msg">msg</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="cadenza$todo(kotlin.String, kotlin.Throwable)/base">base</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code><br/>
 <code><span class="keyword">fun </span><span class="identifier">todo</span><span class="symbol">(</span><span class="identifier" id="cadenza$todo(kotlin.String)/msg">msg</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="to-string.html">toString</a></h4>
-</td>
-<td>
-<code><span class="keyword">fun </span><span class="identifier">toString</span><span class="symbol">(</span><span class="identifier" id="cadenza$toString(kotlin.Any)/value">value</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
 </tr>
 <tr>
 <td>

@@ -1,0 +1,105 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>cadenza.data - cadenza</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">cadenza.data</a><br/>
+<br/>
+<h2>Package cadenza.data</h2>
+<p>These are the objects and environments that are manupulated by cadenza</p>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-big-int/index.html">BigInt</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">BigInt</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span><span class="symbol">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-comparable/index.html"><span class="identifier">Comparable</span></a><span class="symbol">&lt;</span><a href="-big-int/index.html"><span class="identifier">BigInt</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-closure/index.html">Closure</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Closure</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-data-frame/index.html">DataFrame</a></h4>
+</td>
+<td>
+<code><span class="keyword">interface </span><span class="identifier">DataFrame</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-data-types/index.html">DataTypes</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">DataTypes</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-neutral/index.html">Neutral</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Neutral</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-neutral-value/index.html">NeutralValue</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">NeutralValue</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">TruffleObject</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-slot.html">Slot</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">Slot</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Exceptions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-neutral-exception/index.html">NeutralException</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">NeutralException</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">SlowPathException</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="data-frame.html">dataFrame</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">dataFrame</span><span class="symbol">(</span><span class="identifier" id="cadenza.data$dataFrame(kotlin.String)/signature">signature</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="neutral.html">neutral</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">neutral</span><span class="symbol">(</span><span class="identifier" id="cadenza.data$neutral(cadenza.semantics.Type, cadenza.data.Neutral)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../cadenza.semantics/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.data$neutral(cadenza.semantics.Type, cadenza.data.Neutral)/term">term</span><span class="symbol">:</span>&nbsp;<a href="-neutral/index.html"><span class="identifier">Neutral</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="throw-if-neutral-value.html">throwIfNeutralValue</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">throwIfNeutralValue</span><span class="symbol">(</span><span class="identifier" id="cadenza.data$throwIfNeutralValue(cadenza.data.throwIfNeutralValue.T)/x">x</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">T</span></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

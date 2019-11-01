@@ -1,0 +1,102 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>cadenza.semantics - cadenza</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">cadenza.semantics</a><br/>
+<br/>
+<h2>Package cadenza.semantics</h2>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-cons-env/index.html">ConsEnv</a></h4>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">ConsEnv</span><span class="symbol">&lt;</span><span class="keyword">out</span>&nbsp;<span class="identifier">T</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-ctx.html">Ctx</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">Ctx</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="-env.html"><span class="identifier">Env</span></a><span class="symbol">&lt;</span><a href="-type/index.html"><span class="identifier">Type</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-env.html">Env</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">Env</span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="-cons-env/index.html"><span class="identifier">ConsEnv</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-name.html">Name</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">Name</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-term/index.html">Term</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Term</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-type/index.html">Type</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Type</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Exceptions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-type-error/index.html">TypeError</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">TypeError</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-exception/index.html"><span class="identifier">Exception</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-nil-env.html">NilEnv</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">NilEnv</span><span class="symbol">: </span><a href="-env.html"><span class="identifier">Env</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="after.html">after</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-type/index.html"><span class="identifier">Type</span></a><span class="symbol">.</span><span class="identifier">after</span><span class="symbol">(</span><span class="identifier" id="cadenza.semantics$after(cadenza.semantics.Type, kotlin.Int)/n">n</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="-type/index.html"><span class="identifier">Type</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="lookup.html">lookup</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-env.html"><span class="identifier">Env</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span><span class="symbol">.</span><span class="identifier">lookup</span><span class="symbol">(</span><span class="identifier" id="cadenza.semantics$lookup(cadenza.semantics.ConsEnv((cadenza.semantics.lookup.T)), kotlin.String)/name">name</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">T</span></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

@@ -12,7 +12,9 @@ $dokka.location:org.intelligence.asm$type#org.objectweb.asm.tree.ClassNodeorg.i
 $dokka.location:org.intelligence.asm$unaryPlus(kotlin.reflect.KClass((kotlin.Any)))org.intelligence.asm/kotlin.reflect.-k-class/unary-plus.html
 $dokka.location:org.intelligence.parser$parse(com.oracle.truffle.api.source.Source, kotlin.Function1((org.intelligence.parser.ParseState, org.intelligence.parser.parse.T)))org.intelligence.parser/com.oracle.truffle.api.source.-source/parse.html
 cadenza
-cadenza.asm
+cadenza.data
+cadenza.jit
+cadenza.semantics
 org.intelligence.asm
 org.intelligence.parser
 org.intelligence.pretty
