@@ -128,7 +128,7 @@ class GuardedAssembly internal constructor(base: Assembly) : Assembly by base {
   internal fun create(f: GuardedAssembly.() -> Unit) {
     add(startNode)
     f(this)
-    add(JumpInsnNode(GOTO, exitNode))
+    goto(exitNode)
     add(endNode)
     add(exitNode)
   }
@@ -143,7 +143,7 @@ class GuardedAssembly internal constructor(base: Assembly) : Assembly by base {
       add(handlerNode)
       add(FrameNode(F_SAME1, 0, null, 1, arrayOf(exceptionType.internalName)))
       f(this)
-      if (!fallthrough) add(JumpInsnNode(GOTO, exitNode))
+      if (!fallthrough) goto(exitNode)
     }
     instructions.insertBefore(exitNode, handler.instructions)
     tryCatchBlocks.add(TryCatchBlockNode(startNode, endNode, handlerNode, exceptionType.internalName))

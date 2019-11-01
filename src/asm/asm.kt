@@ -108,10 +108,10 @@ val Block.dup_x2: Unit get() = add(InsnNode(DUP_X2))
 val Block.dup2: Unit get() = add(InsnNode(DUP2))
 val Block.dup2_x1: Unit get() = add(InsnNode(DUP2_X1))
 val Block.dup2_x2: Unit get() = add(InsnNode(DUP2_X2))
-fun Block.tableSwitch(min: Int, max: Int, defaultLabel: LabelNode, vararg labels: LabelNode) =
+fun Block.tableswitch(min: Int, max: Int, defaultLabel: LabelNode, vararg labels: LabelNode) =
   add(TableSwitchInsnNode(min, max, defaultLabel, *labels))
 
-fun Block.lookupSwitch(defaultLabel: LabelNode, vararg branches: Pair<Int, LabelNode>) =
+fun Block.lookupswitch(defaultLabel: LabelNode, vararg branches: Pair<Int, LabelNode>) =
   add(LookupSwitchInsnNode(defaultLabel,
     IntArray(branches.size) { branches[it].first },
     Array(branches.size) { branches[it].second }))
