@@ -207,6 +207,41 @@ inline fun <A> ParseState.manyTill(p: Parser<A>, q: Parser<*>): List<A> {
 
 sealed class ParseResult<out T>
 data class Success<T>(val value: T): ParseResult<T>()
+
+enum class Severity { info, warning, error }
+
+// convenient pretty printer
+fun Pretty.error(source: Source, severity: Severity = Severity.error, pos: Int, message: String? = null, vararg expected: Any) {
+  val l = source.getLineNumber(pos)
+  val c = source.getColumnNumber(pos)
+  bold {
+    text(source.name); char(':'); simple(l); char(':'); simple(c); space
+    when (severity) {
+      Severity.error -> red { text("error:") }
+      Severity.warning -> magenta { text("warning:") }
+      Severity.info -> blue { text("info:") }
+    }
+    space
+    nest(2) {
+      if (expected.isEmpty()) text(message ?: "expected nothing")
+      else {
+        if (message != null) {
+          text(message);text(",");space
+        }
+        text("expected")
+        space
+        oxfordBy(by = Pretty::simple, conjunction = "or", docs = *expected)
+      }
+    }
+  }
+  hardLine
+  val ls = source.getLineStartOffset(l)
+  val ll = source.getLineLength(l)
+  text(source.characters.subSequence(ls, ls+ll))
+  nest(c-1) { newline; cyan { char('^') } }
+  hardLine
+}
+
 data class Failure(
   val source: Source,
   val pos: Int,
@@ -216,7 +251,7 @@ data class Failure(
   val line: Int get() = source.getLineNumber(pos)
   val col: Int get() = source.getColumnNumber(pos)
   val loc : String get() = "${source.name}:$line:$col"
-  override fun toString(): String = ppString { error(source, pos, message, *expected.toTypedArray()) }
+  override fun toString(): String = Pretty.ppString { error(source, Severity.error, pos, message, *expected.toTypedArray()) }
 }
 
 fun <T> Source.parse(parser: Parser<T>) : ParseResult<T> =

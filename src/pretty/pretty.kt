@@ -1,85 +1,158 @@
 package cadenza.pretty
 
-import com.oracle.truffle.api.source.Source
+import org.fusesource.jansi.*
 
 // assumptions
 typealias W = Int // characters
-typealias Format = Unit
-typealias Ann = Unit // eventually colors
-
-val emptyFormat: Format = Unit
-fun merge(@Suppress("UNUSED_PARAMETER") x: Format, @Suppress("UNUSED_PARAMETER") y: Format): Format = Unit
-@Suppress("unused")
-fun Pretty.measure(l: List<FormattedChunk>): W = l.sumBy { it.len() }
 
 sealed class Out {
-  abstract fun emit(s: StringBuilder)
+  abstract fun emit(s: Ansi)
 }
+
 data class Annotated(val ann: Ann, val body: Out) : Out() {
-  override fun emit(s: StringBuilder) = body.emit(s) // and include annotations
+  override fun emit(s: Ansi) {
+    ann.set(s)
+    try {
+      body.emit(s)
+    } finally {
+      ann.reset(s)
+    }
+  }
 }
+
 data class Seq(val children: List<Out>) : Out() {
-  override fun emit(s: StringBuilder) = children.forEach { it.emit(s) } // and include annotations
+  override fun emit(s: Ansi) = children.forEach { it.emit(s) } // and include annotations
 }
-sealed class Atom : Out()
-object Newline : Atom() {
-  override fun emit(s: StringBuilder) { s.append('\n') }
+
+internal sealed class Atom : Out()
+
+internal object Newline : Atom() {
+  override fun emit(s: Ansi) { s.a(System.getProperty("line.separator")) };
 }
-sealed class Chunk : Atom() {
+
+internal sealed class Chunk : Atom() {
   abstract fun len(): W
 }
-data class Text(val text: CharSequence): Chunk() {
+
+internal data class Text(val text: CharSequence): Chunk() {
   override fun len(): W = text.length
-  override fun emit(s: StringBuilder) { s.append(text) }
+  override fun emit(s: Ansi) { s.a(text) }
 }
-data class Space(val w: W): Chunk() {
+
+internal data class Space(val w: W): Chunk() {
   override fun len(): W = w
-  override fun emit(s: StringBuilder) { for (i in 0 until w) s.append(' ') }
+  override fun emit(s: Ansi) { for (i in 0 until w) s.a(' ') }
 }
 
-data class FormattedChunk(val fmt: Format, val chunk: Chunk) {
-  fun len(): W = chunk.len()
+interface Ann {
+  val delta: Format.Delta
+  fun set(ansi: Ansi)
+  fun reset(ansi: Ansi)
 }
 
-typealias Line = MutableList<FormattedChunk>
+data class Color(val color: Ansi.Color, val bright: Boolean) {
+  fun fg(ansi: Ansi) { if (bright) ansi.fg(color) else ansi.fgBright(color) }
+  fun bg(ansi: Ansi) { if (bright) ansi.bg(color) else ansi.bgBright(color) }
+}
 
-class Fail : RuntimeException() { override fun fillInStackTrace() = this }
-val fail: Nothing get() { throw Fail() }
+class Format private constructor(
+  val fg: Color = Color(Ansi.Color.DEFAULT, false),
+  val bg: Color = Color(Ansi.Color.DEFAULT, false),
+  val italic: Boolean = false,
+  val bold: Boolean = false
+) {
+  fun set(s: Ansi) { // forcibly set the format
+    // forcibly set this format
+    s.reset()
+    fg.fg(s)
+    bg.bg(s)
+    if (italic) s.a(Ansi.Attribute.ITALIC)
+    if (bold) s.bold()
+  }
 
-abstract class Pretty(
-  // env
-  var maxWidth : W,
-  var maxRibbon : W,
-  var nesting : W,
-  var isFlat : Boolean, // if not flat we're in "break" mode
-  var canFail : Boolean,
-  var format : Format = Unit,
-  // state
-  val curLine : Line = mutableListOf(),
-  // output
+  class Delta(
+    val fg: Color? = null,
+    val bg: Color? = null,
+    val italic: Boolean? = null,
+    val bold: Boolean? = null
+  ) {
+    operator fun plus(other: Delta) = Delta(
+      other.fg ?: fg,
+      other.bg ?: bg,
+      other.italic ?: italic,
+      other.bold ?: bold
+    )
+  }
+  operator fun plus(other: Delta) = Format(
+    other.fg ?: fg,
+    other.bg ?: bg,
+    other.italic ?: italic,
+    other.bold ?: bold
+  )
+
+  companion object {
+    val default: Format by lazy { Format() }
+  }
+}
+
+class Pretty(
+  var maxWidth : W = DEFAULT_MAX_WIDTH,
+  var maxRibbon : W = DEFAULT_MAX_RIBBON, // i like big chonky ribbons
+  var nesting : W = 0,
+  var isFlat : Boolean = false, // if not flat we're in "break" mode
+  var canFail : Boolean = false,
+  var format : Format = Format.default,
+  var curLineLen: W = 0, // memoized sum of the lengths of the elements on the current line
   var output : MutableList<Out> = mutableListOf()
 ) {
-  abstract fun formatAnn(a: Ann): Format
   fun tell(a: Out) = output.add(a)
+
+  internal class Fail : RuntimeException() { override fun fillInStackTrace() = this }
+  internal val fail: Nothing get() { throw Fail() }
+
+  companion object {
+    const val DEFAULT_MAX_WIDTH: Int = 80
+    const val DEFAULT_MAX_RIBBON: Int = 60
+
+    fun prep(maxWidth: W = Pretty.DEFAULT_MAX_WIDTH, maxRibbon: W = Pretty.DEFAULT_MAX_RIBBON, doc: Doc): Out {
+      val printer = Pretty(maxWidth,maxRibbon)
+      doc(printer)
+      return Seq(printer.output)
+    }
+
+    fun ppString(maxWidth: W = Pretty.DEFAULT_MAX_WIDTH, maxRibbon: W = Pretty.DEFAULT_MAX_RIBBON, doc: Doc): String {
+      val builder = Ansi.ansi()
+      prep(maxWidth, maxRibbon, doc).emit(builder)
+      return builder.toString()
+    }
+
+    fun pp(maxWidth: W = Pretty.DEFAULT_MAX_WIDTH, maxRibbon: W = Pretty.DEFAULT_MAX_RIBBON, doc: Doc) = println(ppString(maxWidth, maxRibbon, doc))
+    fun doc(x: Doc): Doc = x
+
+    fun Ansi.out(s: Out): Ansi = this.also { s.emit(this) }
+  }
+
+  fun text(t: CharSequence) = chunk(Text(t))
+  fun char(c: Char) = text(c.toString())
+  fun space(w: W) = chunk(Space(w))
+  val space: Unit get() = space(spaceWidth)
+  val hardLine: Unit get() { output.add(Newline); curLineLen = 0 }
+  val newline: Unit get() { hardLine; space(nesting) }
+  internal fun chunk(c: Chunk) {
+    val newLineLen = curLineLen + c.len()
+    if (canFail && (nesting + newLineLen > maxWidth || newLineLen > maxRibbon)) fail
+    tell(c)
+    curLineLen = newLineLen
+  }
+  fun measureText(s: String): W = s.length // it may some day care about current format, not in ansi, but elsewhere
+  val spaceWidth: W get() = measureText(" ")
+  val emWidth: W get() = measureText("M")
 }
 
 typealias D<A> = Pretty.() -> A
 typealias Doc = D<Unit>
 
-fun <A> Pretty.run(d: D<A>): A = d(this)
-
-// Chunk -> Doc
-fun Pretty.chunk(c: Chunk) {
-  curLine.add(FormattedChunk(format, c))
-  if (canFail)
-    measure(curLine).let {
-      if (nesting + it > maxWidth || it > maxRibbon) {
-        curLine.removeAt(curLine.size-1)
-        fail
-      }
-    }
-  tell(c)
-}
+inline fun <A> Pretty.run(d: D<A>): A = d(this)
 
 // Doc -> Doc
 @Suppress("NOTHING_TO_INLINE")
@@ -90,7 +163,7 @@ inline fun <A> Pretty.grouped(body: D<A>): A {
     isFlat = true
     try {
       return body(this)
-    } catch(e: Fail) {
+    } catch(e: Pretty.Fail) {
     } finally {
       canFail = oldCanFail
       isFlat = false
@@ -98,13 +171,6 @@ inline fun <A> Pretty.grouped(body: D<A>): A {
   }
   return body(this)
 }
-
-fun Pretty.text(t: CharSequence) = chunk(Text(t))
-fun Pretty.char(c: Char) = text(c.toString())
-fun Pretty.space(w: W) = chunk(Space(w))
-val Pretty.space: Unit get() = space(spaceWidth)
-val Pretty.hardLine: Unit get() { output.add(Newline); curLine.clear() }
-val Pretty.newline: Unit get() { hardLine; space(nesting) }
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun <A> Pretty.nest(w: W, body: D<A>): A {
@@ -119,14 +185,13 @@ inline fun <A> Pretty.nest(w: W, body: D<A>): A {
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun <A> Pretty.align(body: D<A>): A =
-  nest(measure(curLine) - nesting, body)
+  nest(curLineLen - nesting, body)
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun <A> Pretty.annotate(ann: Ann, body: D<A>): A {
-  val fmt = formatAnn(ann)
   val oldOutput = output
   val oldFormat = format
-  format = merge(format,fmt)
+  format += ann.delta
   output = mutableListOf()
   try {
     return body(this)
@@ -149,10 +214,6 @@ inline fun <T> Pretty.intersperseBy(by: Pretty.(T) -> Unit, delim: Doc, vararg d
     by(this,it)
   }
 }
-
-fun Pretty.measureText(s: String): W = measure(listOf(FormattedChunk(format, Text(s))))
-val Pretty.spaceWidth: W get() = measureText(" ")
-val Pretty.emWidth: W get() = measureText(" ")
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun Pretty.hsep(vararg docs: Doc) = intersperse({ text(" ") }, *docs)
@@ -195,8 +256,6 @@ inline fun Pretty.hvsepTight(vararg docs: Doc) = grouped { intersperse({ if (!is
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun <T> Pretty.hvsepByTight(by: Pretty.(T) -> Unit, vararg docs: T) = grouped { intersperseBy(by, { if (!isFlat) newline }, *docs) }
-
-fun doc(x: Doc): Doc = x
 
 fun Pretty.guttered(t: String) {
   val s = spaceWidth
@@ -242,7 +301,6 @@ fun <T> Pretty.oxfordBy(by: Pretty.(T) -> Unit = Pretty::simple, conjunction: St
     }
   }
 
-
 fun Pretty.oxford(conjunction: String = "or", vararg docs: Doc) = oxfordBy(Pretty::run, conjunction, *docs)
 
 fun Pretty.collection(open: Doc, close: Doc, sep: Doc, vararg docs: Doc) {
@@ -250,7 +308,7 @@ fun Pretty.collection(open: Doc, close: Doc, sep: Doc, vararg docs: Doc) {
   else grouped {
     hvsepTight(
       { hsepTight(open,{align(docs[0])}) },
-      *docs.drop(1).map {x -> doc {hsep(sep, {align(x)}) } }.toTypedArray(),
+      *docs.drop(1).map {x -> Pretty.doc {hsep(sep, {align(x)}) } }.toTypedArray(),
       close
     )
   }
@@ -261,7 +319,7 @@ fun <T> Pretty.collectionBy(by: Pretty.(T) -> Unit, open: Doc, close: Doc, sep: 
   else grouped {
     hvsepTight(
       { hsepTight(open,{align{by(this,docs[0])}}) },
-      *docs.drop(1).map {x -> doc {hsep(sep, {align{by(this,x)}})}}.toTypedArray(),
+      *docs.drop(1).map {x -> Pretty.doc {hsep(sep, {align{by(this,x)}})}}.toTypedArray(),
       close
     )
   }
@@ -270,44 +328,59 @@ fun <T> Pretty.collectionBy(by: Pretty.(T) -> Unit, open: Doc, close: Doc, sep: 
 @Suppress("NOTHING_TO_INLINE")
 inline fun <A> Pretty.expr(d: D<A>): A = align { grouped(d) }
 
-const val DEFAULT_MAX_WIDTH: Int = 80
-const val DEFAULT_MAX_RIBBON: Int = 60
+// ansi color
 
-fun prep(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc): Out {
-  val printer = object : Pretty(maxWidth,maxRibbon, 0, false, false) {
-    override fun formatAnn(a: Ann) {}
+fun <A> Pretty.fg(color: Ansi.Color, bright: Boolean = true, f: D<A>): A {
+  val old: Format = format
+  val new: Color = Color(color, bright)
+  val ann = object : Ann {
+    override val delta: Format.Delta get() = Format.Delta(fg = new)
+    override fun set(ansi: Ansi) = new.fg(ansi)
+    override fun reset(ansi: Ansi) =
+      if (old.fg.color == Ansi.Color.DEFAULT) old.set(ansi) // default colors are dumb, reset is the only way to be sure
+      else old.fg.fg(ansi)
   }
-  doc(printer)
-  return Seq(printer.output)
+  return annotate(ann,f)
 }
 
-fun ppString(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc): String {
-  val builder = StringBuilder()
-  prep(maxWidth, maxRibbon, doc).emit(builder)
-  return builder.toString()
+fun <A> Pretty.red(bright: Boolean = true, f: D<A>): A = fg(Ansi.Color.RED, bright, f)
+fun <A> Pretty.green(bright: Boolean = true, f: D<A>): A = fg(Ansi.Color.GREEN, bright, f)
+fun <A> Pretty.blue(bright: Boolean = true, f: D<A>): A = fg(Ansi.Color.BLUE, bright, f)
+fun <A> Pretty.magenta(bright: Boolean = true, f: D<A>): A = fg(Ansi.Color.MAGENTA, bright, f)
+fun <A> Pretty.white(bright: Boolean = true, f: D<A>): A = fg(Ansi.Color.WHITE, bright, f)
+fun <A> Pretty.black(bright: Boolean = true, f: D<A>): A = fg(Ansi.Color.BLACK, bright, f)
+fun <A> Pretty.cyan(bright: Boolean = true, f: D<A>): A = fg(Ansi.Color.CYAN, bright, f)
+fun <A> Pretty.yellow(bright: Boolean = true, f: D<A>): A = fg(Ansi.Color.YELLOW, bright, f)
+
+fun <A> Pretty.bg(color: Ansi.Color, bright: Boolean = false, f: D<A>): A {
+  val old: Format = format
+  val new: Color = Color(color, bright)
+  val ann = object : Ann {
+    override val delta: Format.Delta get() = Format.Delta(bg = new)
+    override fun set(ansi: Ansi) = new.bg(ansi)
+    override fun reset(ansi: Ansi) = if (old.bg.color == Ansi.Color.DEFAULT) old.set(ansi) else old.bg.bg(ansi)
+  }
+  return annotate(ann,f)
 }
 
-fun pp(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc) = println(ppString(maxWidth, maxRibbon, doc))
-
-// convenient pretty printer
-fun Pretty.error(source: Source, pos: Int, message: String? = null, vararg expected: Any) {
-  val l = source.getLineNumber(pos)
-  val c = source.getColumnNumber(pos)
-  text(source.name); char(':'); simple(l); char(':'); simple(c); space
-  text("error:"); space
-  nest(2) {
-    if (expected.isEmpty()) text(message ?: "expected nothing")
-    else {
-      if (message != null) { text(message);text(",");space }
-      text("expected")
-      space
-      oxfordBy(by = Pretty::simple, conjunction = "or", docs = *expected)
+fun<A> Pretty.bold(f: D<A>): A =
+  if (format.bold) f(this)
+  else {
+    val ann = object : Ann {
+      override val delta: Format.Delta get() = Format.Delta(bold = true)
+      override fun set(ansi: Ansi) { ansi.bold() }
+      override fun reset(ansi: Ansi) { ansi.boldOff() }
     }
+    annotate(ann, f)
   }
-  hardLine
-  val ls = source.getLineStartOffset(l)
-  val ll = source.getLineLength(l)
-  text(source.characters.subSequence(ls, ls+ll))
-  nest(c-1) { newline; char('^') }
-  hardLine
-}
+
+fun<A> Pretty.italic(f: D<A>): A =
+  if (format.italic) f(this)
+  else {
+    val ann = object : Ann {
+      override val delta: Format.Delta get() = Format.Delta(bold = true)
+      override fun set(ansi: Ansi) { ansi.a(Ansi.Attribute.ITALIC) }
+      override fun reset(ansi: Ansi) { ansi.a(Ansi.Attribute.ITALIC_OFF) }
+    }
+    annotate(ann, f)
+  }

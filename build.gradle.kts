@@ -273,11 +273,14 @@ tasks.replace("run", JavaExec::class.java).run {
   dependsOn(":jar")
   executable = "$graalBinDir/java"
   classpath = sourceSets["main"].runtimeClasspath
-  jvmArgs = listOf(
+  val args = mutableListOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
-    "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar"
+    "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar",
+    "-Djansi.force=true"
   )
+
+  jvmArgs = args
   main = "cadenza.Launcher"
 }
 

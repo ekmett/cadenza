@@ -1,5 +1,8 @@
 package cadenza
 
+import cadenza.pretty.*
+import org.fusesource.jansi.AnsiConsole
+import org.fusesource.jansi.Ansi
 import org.graalvm.launcher.*
 import org.graalvm.options.OptionCategory
 import org.graalvm.polyglot.Context
@@ -17,13 +20,18 @@ class Launcher : AbstractLanguageLauncher() {
   private var programArgs: Array<String> = emptyArray()
   private var versionAction: VersionAction = VersionAction.None
   private var file: File? = null
+  private var use_ansi: Boolean? = null
 
   override fun getLanguageId() = LANGUAGE_ID
 
   override fun launch(contextBuilder: Context.Builder) =
     exitProcess(execute(contextBuilder))
 
-  private fun execute(contextBuilder: Context.Builder): Int {
+  private fun execute(contextBuilder: Context.Builder): Int =
+    withAnsi(use_ansi) { executeWithAnsi(contextBuilder) }
+
+  private fun executeWithAnsi(contextBuilder: Context.Builder): Int {
+    System.out.println(Ansi.ansi().fg(Ansi.Color.GREEN).a("hello").toString())
     contextBuilder.arguments(languageId, programArgs)
     try {
       contextBuilder.build().use { ctx ->
@@ -56,6 +64,8 @@ class Launcher : AbstractLanguageLauncher() {
         "--" -> {
         }
         "--show-version" -> versionAction = VersionAction.PrintAndContinue
+        "--color" -> use_ansi = true
+        "--no-color" -> use_ansi = false
         "--version" -> versionAction = VersionAction.PrintAndExit
         else -> {
           var optionName = option
@@ -115,16 +125,28 @@ class Launcher : AbstractLanguageLauncher() {
       throw abort("no file provided", 6)
   }
 
+  internal fun Ansi.ansiOption(option: String, description: String) {
+    var o = option
+    if (option.length >= 22) {
+      format("%s%s\n", "  ", o)
+      o = ""
+    }
+    format("  %-22s%s\n", o, description)
+  }
+
   override fun printHelp(_maxCategory: OptionCategory) {
-    println()
-    println("Usage: cadenza [OPTION]... [FILE] [PROGRAM ARGS]\n")
-    println("Run cadenza programs on GraalVM\n")
-    println("Mandatory arguments to long options are mandatory for short options too.\n")
-    println("Options:")
-    printOption("-L <path>", "set the path to search for cadenza libraries")
-    printOption("--lib <library>", "add a library")
-    printOption("--version", "print the version and exit")
-    printOption("--show-version", "print the version and continue")
+    Ansi.ansi().run {
+      newline()
+      render("Usage: @|italic,blue cadenza|@ @|bold [OPTION]|@... @|bold [FILE]|@ @|bold [PROGRAM ARGS]|@\n\n")
+      a("Run cadenza programs on GraalVM\n\n")
+      a("Mandatory arguments to long options are mandatory for short options too.\n\n")
+      a("Options:\n")
+      ansiOption("-L <path>", "set the path to search for cadenza libraries")
+      ansiOption("--lib <library>", "add a library")
+      ansiOption("--version", "print the version and exit")
+      ansiOption("--show-version", "print the version and continue")
+      println(toString())
+    }
   }
 
   override fun collectArguments(args: MutableSet<String>) {
@@ -141,14 +163,6 @@ class Launcher : AbstractLanguageLauncher() {
   }
 }
 
-internal fun printOption(option: String, description: String) {
-  var o = option
-  if (option.length >= 22) {
-    println(String.format("%s%s", "  ", o))
-    o = ""
-  }
-  println(String.format("  %-22s%s", o, description))
-}
 
 internal fun printStackTraceSkipTrailingHost(e: PolyglotException) {
   val stackTrace = ArrayList<PolyglotException.StackFrame>()

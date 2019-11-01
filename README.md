@@ -35,10 +35,17 @@ This code is very much a work-in-progress.
 
 * I'm hopeful that I can use truffle rewrites to dynamically trampoline tail-calls, degrading tail positions from a set of recursive calls, to something that handles self-tailcalls, to something that handles self-tailcalls with differing environments to something that does an arbitrary trampoline for the worst case. This would enable us to trust the space usage.
 
-* Currently, Normalization-by-evaluation proceeds through an exceptional control flow path. Is this the right direction going forward if I move to dependent types and this becomes more important?
+* Currently, Normalization-by-evaluation proceeds through an exceptional control flow path. It is worth noting this is basically completely irrelevant if we're seeking "just a better Haskell runtime" but it is pretty important for dependent types. Different ways to pass around neutral values should probably be explored.
+
+## Windows XP
+
+In the unlikely event that anybody cares about this project that also uses Windows XP, one of the dependencies used for color pretty printing depends on the "Microsoft Visual C++ 2008 SP1 Redistributable" when invoked on Windows.
+
+You can get a free copy from MS at:
+
+http://www.microsoft.com/en-us/download/details.aspx?displaylang=en&id=5582
 
 ## Contribution
-
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you shall be licensed as per [LICENSE.txt][license], without any
