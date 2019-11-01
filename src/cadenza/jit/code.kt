@@ -1,5 +1,7 @@
-package cadenza
+package cadenza.jit
 
+import cadenza.*
+import cadenza.data.*
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
@@ -60,7 +62,8 @@ abstract class Code : Node(), InstrumentableNode {
     sourceLength = length
   }
 
-  fun setUnavailableSourceSection() { sourceCharIndex = UNAVAILABLE_SOURCE }
+  fun setUnavailableSourceSection() { sourceCharIndex = UNAVAILABLE_SOURCE
+  }
 
   override fun getSourceSection(): SourceSection? =
     rootNode.takeIf { sourceCharIndex != NO_SOURCE } ?.sourceSection?.source?.run {
@@ -143,7 +146,7 @@ abstract class Code : Node(), InstrumentableNode {
       } catch (e: UnexpectedResultException) {
         panic("non-boolean branch", e)
       } catch (e: NeutralException) {
-        neutral(type, NIf(e.term, thenNode.executeAny(frame), elseNode.executeAny(frame)))
+        neutral(type, Neutral.NIf(e.term, thenNode.executeAny(frame), elseNode.executeAny(frame)))
       }
 
     @Throws(NeutralException::class)
@@ -234,7 +237,7 @@ abstract class Code : Node(), InstrumentableNode {
       try {
         builtin.execute(frame, arg)
       } catch (n: NeutralException) {
-        NeutralValue(type, NCallBuiltin(builtin, n.term))
+        NeutralValue(type, Neutral.NCallBuiltin(builtin, n.term))
       }
 
     @Throws(NeutralException::class)
@@ -242,7 +245,7 @@ abstract class Code : Node(), InstrumentableNode {
       try {
         builtin.execute(frame, arg)
       } catch (n: NeutralException) {
-        neutral(type, NCallBuiltin(builtin, n.term))
+        neutral(type, Neutral.NCallBuiltin(builtin, n.term))
       }
 
     @Throws(UnexpectedResultException::class, NeutralException::class)
@@ -250,7 +253,7 @@ abstract class Code : Node(), InstrumentableNode {
       try {
         builtin.executeInteger(frame, arg)
       } catch (n: NeutralException) {
-        neutral(type, NCallBuiltin(builtin, n.term))
+        neutral(type, Neutral.NCallBuiltin(builtin, n.term))
       }
 
     @Throws(NeutralException::class)
@@ -258,7 +261,7 @@ abstract class Code : Node(), InstrumentableNode {
       try {
         builtin.executeUnit(frame, arg)
       } catch (n: NeutralException) {
-        neutral(type, NCallBuiltin(builtin, n.term))
+        neutral(type, Neutral.NCallBuiltin(builtin, n.term))
       }
 
     @Throws(UnexpectedResultException::class, NeutralException::class)
@@ -266,7 +269,7 @@ abstract class Code : Node(), InstrumentableNode {
       try {
         builtin.executeBoolean(frame, arg)
       } catch (n: NeutralException) {
-        neutral(type, NCallBuiltin(builtin, n.term))
+        neutral(type, Neutral.NCallBuiltin(builtin, n.term))
       }
   }
 

@@ -1,5 +1,6 @@
 package cadenza
 
+import cadenza.jit.Code
 import com.oracle.truffle.api.frame.FrameDescriptor
 
 typealias Ctx = Env<Type>

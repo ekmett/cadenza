@@ -1,6 +1,10 @@
 package cadenza
 
 import cadenza.Type.*
+import cadenza.data.Closure
+import cadenza.jit.Code
+import cadenza.jit.InlineCode
+import cadenza.jit.ProgramRootNode
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
 import com.oracle.truffle.api.debug.DebuggerTags
@@ -26,15 +30,15 @@ const val LANGUAGE_MIME_TYPE = "application/x-cadenza"
 const val LANGUAGE_EXTENSION = "za"
 
 @Suppress("unused")
-val LANGUAGE_BUILTIN_SOURCE by lazy { Source.newBuilder(LANGUAGE_ID, "", "[cadenza builtin]").buildLiteral()!! }
-val LANGUAGE_SHEBANG_REGEXP by lazy { Pattern.compile("^#! ?/usr/bin/(env +cadenza|cadenza).*")!! }
+private val LANGUAGE_BUILTIN_SOURCE by lazy { Source.newBuilder(LANGUAGE_ID, "", "[cadenza builtin]").buildLiteral()!! }
+private val LANGUAGE_SHEBANG_REGEXP by lazy { Pattern.compile("^#! ?/usr/bin/(env +cadenza|cadenza).*")!! }
 
 @Suppress("unused")
-fun lookupNodeInfo(clazz: Class<*>?): NodeInfo? =
+private fun lookupNodeInfo(clazz: Class<*>?): NodeInfo? =
   if (clazz == null) null
   else clazz.getAnnotation<NodeInfo>(NodeInfo::class.java) ?: lookupNodeInfo(clazz.superclass)
 
-fun getMetaObject(value: Any?): String =
+private fun getMetaObject(value: Any?): String =
   if (value == null) "ANY"
   else {
     val interop = InteropLibrary.getFactory().getUncached(value)
@@ -50,7 +54,7 @@ fun getMetaObject(value: Any?): String =
   }
 
 // crappy version of show
-fun toString(value: Any?): String =
+private fun toString(value: Any?): String =
   when(value) {
     null -> "null"
     is Number -> value.toString()
@@ -73,32 +77,6 @@ fun toString(value: Any?): String =
     }
   }
 
-class Detector : TruffleFile.FileTypeDetector {
-  override fun findEncoding(@Suppress("UNUSED_PARAMETER") file: TruffleFile): Charset = StandardCharsets.UTF_8
-  override fun findMimeType(file: TruffleFile): String? {
-    val name = file.name ?: return null
-    if (name.endsWith(LANGUAGE_EXTENSION)) return LANGUAGE_MIME_TYPE
-    try {
-      file.newBufferedReader(StandardCharsets.UTF_8).use { fileContent ->
-        val firstLine = fileContent.readLine()
-        if (firstLine != null && LANGUAGE_SHEBANG_REGEXP.matcher(firstLine).matches())
-          return LANGUAGE_MIME_TYPE
-      }
-    } catch (e: IOException) { // ok
-    } catch (e: SecurityException) { // ok
-    }
-    return null
-  }
-}
-
-class Context(
-  @Suppress("unused") val language: Language,
-  var env: TruffleLanguage.Env
-) {
-  val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")!!
-  fun shutdown() {}
-}
-
 @Option.Group("cadenza")
 @TruffleLanguage.Registration(
   id = LANGUAGE_ID,
@@ -107,13 +85,42 @@ class Context(
   defaultMimeType = LANGUAGE_MIME_TYPE,
   characterMimeTypes = [LANGUAGE_MIME_TYPE],
   contextPolicy = ContextPolicy.SHARED,
-  fileTypeDetectors = [Detector::class]
+  fileTypeDetectors = [Language.Detector::class]
 )
 @ProvidedTags(
   CallTag::class, StatementTag::class, RootTag::class, RootBodyTag::class, ExpressionTag::class,
   DebuggerTags.AlwaysHalt::class
 )
-class Language : TruffleLanguage<Context>() {
+class Language : TruffleLanguage<Language.Context>() {
+  class Detector : TruffleFile.FileTypeDetector {
+    override fun findEncoding(@Suppress("UNUSED_PARAMETER") file: TruffleFile): Charset = StandardCharsets.UTF_8
+    override fun findMimeType(file: TruffleFile): String? {
+      val name = file.name ?: return null
+      if (name.endsWith(LANGUAGE_EXTENSION)) return LANGUAGE_MIME_TYPE
+      try {
+        file.newBufferedReader(StandardCharsets.UTF_8).use { fileContent ->
+          val firstLine = fileContent.readLine()
+          if (firstLine != null && LANGUAGE_SHEBANG_REGEXP.matcher(firstLine).matches())
+            return LANGUAGE_MIME_TYPE
+        }
+      } catch (e: IOException) { // ok
+      } catch (e: SecurityException) { // ok
+      }
+      return null
+    }
+  }
+
+  class Context(
+    @Suppress("unused") val language: Language,
+    var env: TruffleLanguage.Env
+  ) {
+    val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")!!
+    fun shutdown() {}
+  }
+
+
+
+
   private val singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active")!!
   override fun createContext(env: Env) = Context(this, env)
   override fun initializeContext(ctx: Context?) {}

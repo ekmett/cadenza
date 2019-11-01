@@ -1,10 +1,8 @@
-package cadenza.asm
+package cadenza.data
 
-import cadenza.NeutralException
 import org.intelligence.asm.*
 import cadenza.panic
 import com.oracle.truffle.api.frame.FrameSlotTypeException
-import com.oracle.truffle.api.nodes.UnexpectedResultException
 import org.objectweb.asm.tree.LabelNode
 import org.objectweb.asm.Type
 import java.lang.IndexOutOfBoundsException
@@ -118,7 +116,7 @@ private fun assembleThrow(asm: Block, exceptionType: Type) = asm.run {
 }
 
 // we should also build a fallback version for holding neutrals as a subclass?
-fun data(signature: String) : ByteArray = `class`(public,"cadenza/data/$signature") {
+fun dataFrame(signature: String) : ByteArray = `class`(public,"cadenza/data/$signature") {
   interfaces = mutableListOf(type(DataFrame::class).internalName)
   val types = signature.map { FieldInfo.of(it) }.toTypedArray()
   val N = types.size

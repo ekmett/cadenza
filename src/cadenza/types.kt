@@ -1,5 +1,7 @@
 package cadenza
 
+import cadenza.data.BigInt
+import cadenza.data.Closure
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.frame.FrameSlotKind
 import com.oracle.truffle.api.interop.UnsupportedTypeException

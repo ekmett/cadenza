@@ -1,5 +1,7 @@
-package cadenza
+package cadenza.jit
 
+import cadenza.Language
+import cadenza.Types
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.TruffleLanguage
 import com.oracle.truffle.api.dsl.TypeSystemReference

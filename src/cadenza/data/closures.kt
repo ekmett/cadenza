@@ -1,5 +1,7 @@
-package cadenza
+package cadenza.data
 
+import cadenza.*
+import cadenza.jit.ClosureRootNode
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.frame.MaterializedFrame

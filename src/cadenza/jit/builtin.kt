@@ -1,5 +1,10 @@
-package cadenza
+package cadenza.jit
 
+import cadenza.Type
+import cadenza.Types
+import cadenza.TypesGen
+import cadenza.data.Closure
+import cadenza.data.NeutralException
 import com.oracle.truffle.api.dsl.TypeSystemReference
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.*
