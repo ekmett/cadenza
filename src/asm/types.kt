@@ -13,6 +13,7 @@ val double: Type get() = Type.DOUBLE_TYPE
 val boolean: Type get() = Type.BOOLEAN_TYPE
 fun type(k : KClass<*>): Type = Type.getType(k.java)
 fun type(t : String): Type = Type.getObjectType(t)
+val Type.array: Type get() = Type.getType("[${descriptor}")
 
 // this lets you use +String::class as a Type for convenience.
 operator fun KClass<*>.unaryPlus(): Type = type(this)

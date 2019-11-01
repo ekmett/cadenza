@@ -11,8 +11,8 @@ import org.objectweb.asm.tree.*
 // construct a raw method node
 fun methodNode(
   access: Mod,
-  name: String,
   returnType: Type,
+  name: String,
   vararg parameterTypes: Type,
   f: MethodNode.() -> Unit
 ) = MethodNode(
@@ -33,19 +33,21 @@ fun MethodNode.throws(vararg throwable: Type) {
 // construct a method and add it to the class
 fun ClassNode.method(
   access: Mod,
-  name: String,
   returnType: Type,
+  name: String,
   vararg parameterTypes: Type,
   f: MethodNode.() -> Unit // use -> A and change return type?
 ) = methodNode(
   access,
-  name,
   returnType,
+  name,
   parameterTypes = *parameterTypes,
   f = f
 ).also {
   methods.add(it)
 }
+
+val ClassNode.type: Type get() = Type.getType("L$name;")
 
 // construct a field and add it to the class
 fun ClassNode.field(

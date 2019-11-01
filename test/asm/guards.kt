@@ -10,24 +10,24 @@ class Guards {
     val output = without {
       try {
         `class`(public, "test/Guards") {
-          method(public and static, "main", void, +Array<String>::class) {
+          method(public and static, void,"main",+Array<String>::class) {
             throws(+NullPointerException::class) // unchecked anyways, meh
             asm {
               guard {
                 new(+RuntimeException::class)
                 dup
-                invokespecial(+RuntimeException::class, "<init>", void)
+                invokespecial(+RuntimeException::class, void,"<init>")
                 athrow
               }.handle(+RuntimeException::class, true) {
                 pop
                 getstatic(+System::class, "out", +PrintStream::class)
                 ldc("Caught!")
-                invokevirtual(+PrintStream::class, "println", void, +String::class)
+                invokevirtual(+PrintStream::class, void, "println", +String::class)
               }
               getstatic(+System::class, "out", +PrintStream::class)
               aconst_null
-              invokevirtual(+Object::class, "toString", +String::class)
-              invokevirtual(+PrintStream::class, "println", void, +String::class)
+              invokevirtual(+Object::class,, +String::class,"toString")
+              invokevirtual(+PrintStream::class, void, "println", +String::class)
               `return`
             }
           }

@@ -6,11 +6,11 @@ class Hello {
   @Test fun world() {
     val output = without {
       `class`(public, "test/HelloWorld") {
-        method(public and static, "main", void, +Array<String>::class) {
+        method(public and static, void,"main", +Array<String>::class) {
           asm {
             getstatic(+System::class, "out", +PrintStream::class)
             ldc("Hello, world!")
-            invokevirtual(+PrintStream::class, "println", void, +String::class)
+            invokevirtual(+PrintStream::class, void,"println", +String::class)
             `return`
           }
         }
