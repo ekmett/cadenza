@@ -2,7 +2,6 @@ package cadenza
 
 import org.fusesource.jansi.Ansi
 import org.fusesource.jansi.AnsiConsole
-import org.fusesource.jansi.internal.CLibrary.*
 
 fun <A> withAnsi(use_ansi: Boolean? = null, f: () -> A): A {
   AnsiConsole.systemInstall()

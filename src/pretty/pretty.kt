@@ -1,4 +1,4 @@
-package cadenza.pretty
+package org.intelligence.pretty
 
 import org.fusesource.jansi.*
 

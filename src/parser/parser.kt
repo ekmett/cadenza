@@ -1,6 +1,6 @@
-package cadenza.parser
+package org.intelligence.parser
 
-import cadenza.pretty.*
+import org.intelligence.pretty.*
 import com.oracle.truffle.api.source.Source
 import java.util.regex.Matcher
 import java.util.regex.Pattern
