@@ -98,6 +98,7 @@ fun Block.putstatic(owner: Type, name: String, type: Type) = add(FieldInsnNode(P
 fun Block.putfield(owner: Type, name: String, type: Type) = add(FieldInsnNode(PUTFIELD, owner.internalName, name, type.descriptor))
 fun Block.new(type: Type) = add(TypeInsnNode(NEW, type.internalName))
 fun Block.checkcast(type: Type) = add(TypeInsnNode(CHECKCAST, type.internalName))
+fun <T,A> T.checkcast(type: Type, of: T.() -> A) where T : Block = of(this).also { checkcast(type) }
 fun Block.instanceof(type: Type) = add(TypeInsnNode(INSTANCEOF, type.internalName))
 val Block.pop: Unit get() = add(InsnNode(POP))
 val Block.pop2: Unit get() = add(InsnNode(POP2))
@@ -161,11 +162,18 @@ fun Block.invokeinterface(owner: Type, returnType: Type, name: String, vararg pa
   add(MethodInsnNode(INVOKEINTERFACE, owner.internalName, name, Type.getMethodDescriptor(`returnType`, *parameterTypes)))
 
 val Block.ireturn: Unit get() = add(InsnNode(IRETURN))
+inline fun <T,A> T.ireturn(of: T.() -> A): A where T: Block = of(this).also { ireturn }
 val Block.lreturn: Unit get() = add(InsnNode(LRETURN))
+inline fun <T,A> T.lreturn(of: T.() -> A): A where T: Block = of(this).also { lreturn }
 val Block.freturn: Unit get() = add(InsnNode(FRETURN))
+inline fun <T,A> T.freturn(of: T.() -> A): A where T: Block = of(this).also { freturn }
 val Block.dreturn: Unit get() = add(InsnNode(DRETURN))
+inline fun <T,A> T.dreturn(of: T.() -> A): A where T: Block = of(this).also { dreturn }
 val Block.areturn: Unit get() = add(InsnNode(ARETURN))
+inline fun <T,A> T.areturn(of: T.() -> A): A where T: Block = of(this).also { areturn }
 val Block.`return`: Unit get() = add(InsnNode(RETURN))
+inline fun <T,A> T.`return`(of: T.() -> A): A where T: Block = of(this).also { `return` }
+
 val Block.lcmp: Unit get() = add(InsnNode(LCMP))
 val Block.fcmpl: Unit get() = add(InsnNode(FCMPL))
 val Block.fcmpg: Unit get() = add(InsnNode(FCMPG))
