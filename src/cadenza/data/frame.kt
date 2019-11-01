@@ -1,9 +1,16 @@
 package cadenza.data // cadenza.aot?
 
+import cadenza.jit.Code
 import org.intelligence.asm.*
 import cadenza.panic
+import cadenza.todo
 import com.oracle.truffle.api.frame.FrameSlotTypeException
-import org.objectweb.asm.tree.LabelNode
+import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.nodes.Node
+import com.oracle.truffle.api.nodes.NodeCost
+import com.oracle.truffle.api.nodes.NodeInfo
+import org.objectweb.asm.Opcodes.ASM7
+import org.objectweb.asm.tree.*
 import org.objectweb.asm.Type
 import java.lang.IndexOutOfBoundsException
 
@@ -11,31 +18,32 @@ import java.lang.IndexOutOfBoundsException
 
 typealias Slot = Int
 
+// an immutable dataframe
 interface DataFrame {
   fun getValue(slot: Slot): Any
   fun getSize() : Int
 
-  @Throws(FrameSlotTypeException::class, NeutralException::class)
+  @Throws(FrameSlotTypeException::class)// , NeutralException::class)
   fun getBoolean(slot: Slot): Boolean // B
   fun isBoolean(slot: Slot): Boolean
 
-  @Throws(FrameSlotTypeException::class, NeutralException::class)
+  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
   fun getDouble(slot: Slot): Double // D
   fun isDouble(slot: Slot): Boolean
 
-  @Throws(FrameSlotTypeException::class, NeutralException::class)
+  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
   fun getFloat(slot: Slot): Float // F
   fun isFloat(slot: Slot): Boolean
 
-  @Throws(FrameSlotTypeException::class, NeutralException::class)
+  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
   fun getInteger(slot: Slot): Int // I
   fun isInteger(slot: Slot): Boolean
 
-  @Throws(FrameSlotTypeException::class, NeutralException::class)
+  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
   fun getLong(slot: Slot): Long // L
   fun isLong(slot: Slot): Boolean
 
-  @Throws(FrameSlotTypeException::class, NeutralException::class)
+  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
   fun getObject(slot: Slot): Any // O
   fun isObject(slot: Slot): Boolean
 }
@@ -116,7 +124,7 @@ private fun assembleThrow(asm: Block, exceptionType: Type) = asm.run {
 }
 
 // we should also build a fallback version for holding neutrals as a subclass?
-fun dataFrame(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/$signature") {
+fun frame(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/$signature") {
   interfaces = mutableListOf(type(DataFrame::class).internalName)
   val types = signature.map { FieldInfo.of(it) }.toTypedArray()
   val N = types.size
@@ -131,7 +139,7 @@ fun dataFrame(signature: String) : ByteArray = `class`(public,"cadenza/data/fram
           else -> {
             val no = LabelNode()
             val yes = LabelNode()
-            lookupswitch(no, *types.withIndex().filter { predicate(it.value) }.mapIndexed { i, _ -> i to yes }.toTypedArray())
+            lookupswitch(no, *types.mapIndexedNotNull { i, v -> if (predicate(v)) i to yes else null }.toTypedArray())
             add(no)
             iconst_0
             ireturn
@@ -173,7 +181,7 @@ fun dataFrame(signature: String) : ByteArray = `class`(public,"cadenza/data/fram
   constructor(public and final, parameterTypes = *types.map{it.type}.toTypedArray()) {
     asm {
       for (i in types.indices) {
-        types[i].load(this, i)
+        types[i].load(this, i+1)
         putfield(type, members[i], types[i].type)
       }
     }
@@ -216,5 +224,40 @@ fun dataFrame(signature: String) : ByteArray = `class`(public,"cadenza/data/fram
       push(types.size)
       ireturn
     }
+  }
+}
+
+fun ClassNode.nodeInfo(
+  shortName: String = "",
+  cost: NodeCost = NodeCost.MONOMORPHIC,
+  description: String = "",
+  language: String = ""
+)= AnnotationNode(ASM7,type(NodeInfo::class).descriptor).apply {
+  values = listOf("${signature}_Builder", NodeCost.MONOMORPHIC, "", "")
+}
+
+val FieldNode.child: AnnotationNode get() = AnnotationNode(ASM7, type(Node.Child::class).descriptor)
+
+val code = +Code::class
+
+fun builder(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/${signature}_Builder", superName = code.descriptor) {
+  val types = signature.map { FieldInfo.of(it) }.toTypedArray()
+  visibleAnnotations = listOf(nodeInfo(shortName="${signature}_Builder"))
+  val N = types.size
+  val members = types.indices.map { "_$it" }.toTypedArray()
+  types.indices.forEach {
+    field(public,code,members[it]).apply { visibleAnnotations = listOf(child) }
+  }
+  constructor(public,*types.map { it.type }.toTypedArray()) {
+    asm {
+      types.forEachIndexed { i, info ->
+        aload_0
+        aload(i+1)
+        putfield(type,members[i],code)
+      }
+    }
+  }
+  method(public and final, `object`, "execute", +VirtualFrame::class) {
+    todo("execute")
   }
 }
