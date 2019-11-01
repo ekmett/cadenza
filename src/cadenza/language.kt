@@ -143,6 +143,7 @@ class Language : TruffleLanguage<Context>() {
   // stubbed: returns a calculation that adds two numbers
   override fun parse(request: ParsingRequest): CallTarget {
     val rootNode = ProgramRootNode(this, LitInt(0), FrameDescriptor())
+    //panic("at the disco")
     return Truffle.getRuntime().createCallTarget(rootNode)
   }
 

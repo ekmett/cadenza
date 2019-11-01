@@ -1,8 +1,7 @@
 package cadenza
 
-import cadenza.pretty.*
-import org.fusesource.jansi.AnsiConsole
 import org.fusesource.jansi.Ansi
+import org.fusesource.jansi.Ansi.*
 import org.graalvm.launcher.*
 import org.graalvm.options.OptionCategory
 import org.graalvm.polyglot.Context
@@ -16,6 +15,29 @@ import java.util.*
 import kotlin.io.*
 import kotlin.system.exitProcess
 
+internal fun PolyglotException.prettyStackTrace(trim: Boolean = true) {
+  val stackTrace = ArrayList<PolyglotException.StackFrame>()
+  for (s in polyglotStackTrace)
+    stackTrace.add(s)
+  if (trim) {
+    val iterator = stackTrace.listIterator(stackTrace.size)
+    while (iterator.hasPrevious()) {
+      if (iterator.previous().isHostFrame) iterator.remove()
+      else break
+    }
+  }
+  val out = ansi()
+  if (isHostException) out.fgRed().a(asHostException().toString())
+  else out.fgBrightYellow().a(message)
+  out.reset().a('\n').fgBrightBlack()
+  for (s in stackTrace) {
+    out.a(Attribute.ITALIC).a("  at ").a(Attribute.ITALIC_OFF).a(s).a('\n')
+  }
+  out.reset()
+  println(out.toString())
+}
+
+
 class Launcher : AbstractLanguageLauncher() {
   private var programArgs: Array<String> = emptyArray()
   private var versionAction: VersionAction = VersionAction.None
@@ -24,27 +46,31 @@ class Launcher : AbstractLanguageLauncher() {
 
   override fun getLanguageId() = LANGUAGE_ID
 
-  override fun launch(contextBuilder: Context.Builder) =
-    exitProcess(execute(contextBuilder))
+  override fun launch(contextBuilder: Context.Builder) = exitProcess(execute(contextBuilder))
 
   private fun execute(contextBuilder: Context.Builder): Int =
     withAnsi(use_ansi) { executeWithAnsi(contextBuilder) }
 
   private fun executeWithAnsi(contextBuilder: Context.Builder): Int {
-    System.out.println(Ansi.ansi().fg(Ansi.Color.GREEN).a("hello").toString())
     contextBuilder.arguments(languageId, programArgs)
     try {
       contextBuilder.build().use { ctx ->
         runVersionAction(versionAction, ctx.engine)
         val v = ctx.eval(Source.newBuilder(languageId, file).build())
-        return if (v.canExecute()) v.execute().asInt() else v.asInt()
+        return if (v.canExecute()) v.execute().asInt()
+        else v.asInt()
       }
     } catch (e: PolyglotException) {
-      if (e.isExit || e.isInternalError) throw e
-      printStackTraceSkipTrailingHost(e)
+      if (e.isExit) return e.exitStatus
+      e.prettyStackTrace(!e.isInternalError)
       return -1
     } catch (e: IOException) {
-      throw abort(String.format("Error loading file '%s' (%s)", file, e.message))
+      println(
+        ansi().a("Error loading file ")
+        .bold().fgBrightBlack().a("'").reset().bold().a(file).boldOff().fgBrightBlack().a("'")
+        .fgBrightBlack().a(" (").fgRed().a(e.message).fgBrightBlack().a(")").toString()
+      )
+      return -1
     }
   }
 
@@ -61,8 +87,7 @@ class Launcher : AbstractLanguageLauncher() {
       }
       // Ignore fall through
       when (option) {
-        "--" -> {
-        }
+        "--" -> { }
         "--show-version" -> versionAction = VersionAction.PrintAndContinue
         "--color" -> use_ansi = true
         "--no-color" -> use_ansi = false
@@ -164,19 +189,3 @@ class Launcher : AbstractLanguageLauncher() {
 }
 
 
-internal fun printStackTraceSkipTrailingHost(e: PolyglotException) {
-  val stackTrace = ArrayList<PolyglotException.StackFrame>()
-  for (s in e.polyglotStackTrace)
-    stackTrace.add(s)
-  val iterator = stackTrace.listIterator(stackTrace.size)
-  while (iterator.hasPrevious()) {
-    if (iterator.previous().isHostFrame)
-      iterator.remove()
-    else
-      break
-  }
-  System.err.println(if (e.isHostException) e.asHostException().toString() else e.message)
-  for (s in stackTrace) {
-    System.err.println("\tat $s")
-  }
-}
