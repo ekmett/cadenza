@@ -1,7 +1,7 @@
 package cadenza.data
 
 import cadenza.jit.Builtin
-import cadenza.Type
+import cadenza.semantics.Type
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.interop.ArityException
 import com.oracle.truffle.api.interop.InteropLibrary

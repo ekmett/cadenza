@@ -1,10 +1,12 @@
 package cadenza
 
-import cadenza.Type.*
+import cadenza.semantics.Type.*
 import cadenza.data.Closure
 import cadenza.jit.Code
 import cadenza.jit.InlineCode
 import cadenza.jit.ProgramRootNode
+import cadenza.semantics.Term
+import cadenza.semantics.Type
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
 import com.oracle.truffle.api.debug.DebuggerTags

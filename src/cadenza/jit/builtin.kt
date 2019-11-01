@@ -1,17 +1,16 @@
 package cadenza.jit
 
-import cadenza.Type
-import cadenza.Types
-import cadenza.TypesGen
-import cadenza.data.Closure
-import cadenza.data.NeutralException
+import cadenza.data.DataTypes
+import cadenza.data.DataTypesGen
+import cadenza.semantics.Type
+import cadenza.data.*
 import com.oracle.truffle.api.dsl.TypeSystemReference
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.*
 
 import java.io.Serializable
 
-@TypeSystemReference(Types::class)
+@TypeSystemReference(DataTypes::class)
 abstract class Builtin(@Suppress("unused") val resultType: Type) : Node(), Serializable {
   @Throws(NeutralException::class)
   abstract fun execute(frame: VirtualFrame, arg: Code): Any?
@@ -24,15 +23,15 @@ abstract class Builtin(@Suppress("unused") val resultType: Type) : Node(), Seria
   @Throws(UnexpectedResultException::class, NeutralException::class)
   @Suppress("unused")
   open fun executeClosure(frame: VirtualFrame, arg: Code): Closure =
-    TypesGen.expectClosure(execute(frame, arg))
+    DataTypesGen.expectClosure(execute(frame, arg))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
   open fun executeBoolean(frame: VirtualFrame, arg: Code): Boolean =
-    TypesGen.expectBoolean(execute(frame, arg))
+    DataTypesGen.expectBoolean(execute(frame, arg))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
   open fun executeInteger(frame: VirtualFrame, arg: Code): Int =
-    TypesGen.expectInteger(execute(frame, arg))
+    DataTypesGen.expectInteger(execute(frame, arg))
 }
 
 @NodeInfo(shortName = "Print")

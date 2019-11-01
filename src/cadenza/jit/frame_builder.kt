@@ -1,6 +1,6 @@
 package cadenza.jit
 
-import cadenza.Types
+import cadenza.data.DataTypes
 import cadenza.data.NeutralException
 import com.oracle.truffle.api.dsl.Fallback
 import com.oracle.truffle.api.dsl.Specialization
@@ -13,7 +13,7 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException
 val noFrameBuilders = arrayOf<FrameBuilder>() // can't make const because kotlin is silly
 
 // this copies information from the VirtualFrame frame into a materialized frame
-@TypeSystemReference(Types::class)
+@TypeSystemReference(DataTypes::class)
 @NodeInfo(shortName = "FrameBuilder")
 abstract class FrameBuilder(
   private val slot: FrameSlot,

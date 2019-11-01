@@ -18,14 +18,10 @@ Pretty printing combinators
 
 An exploration of functional programming on truffle
 
-# Package cadenza.asm
+# Package cadenza.data
 
-Custom data frames and any other assembly pieces needed for cadenza
+These are the objects and environments that are manupulated by cadenza
 
-# Package cadenza.parser
+# Package cadenza.jit
 
-The parser for cadenza
-
-# Package cadenza.pretty
-
-Pretty printing utilities for cadenza
+These truffle nodes allow us to JIT

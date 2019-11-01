@@ -1,4 +1,4 @@
-package cadenza
+package cadenza.semantics
 
 import cadenza.jit.Code
 import com.oracle.truffle.api.frame.FrameDescriptor

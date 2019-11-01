@@ -4,8 +4,8 @@ import com.oracle.truffle.api.CompilerDirectives
 
 private inline fun <reified T> Array<T>.trim(i : Int = 1): Array<T> = this.drop(i).toTypedArray()
 
-class Panic(message: String? = null) : RuntimeException(message) {
-  constructor(message: String? = null, cause: Throwable?): this(message) {
+internal class Panic(message: String? = null) : RuntimeException(message) {
+  internal constructor(message: String? = null, cause: Throwable?): this(message) {
     initCause(cause)
   }
   companion object { const val serialVersionUID : Long = 1L }
@@ -23,8 +23,8 @@ fun panic(msg: String): Nothing {
   throw Panic(msg).also { it.stackTrace = it.stackTrace.trim() }
 }
 
-class TODO(message: String? = null) : RuntimeException(message) {
-  constructor(message: String? = null, cause: Throwable?): this(message) {
+internal class TODO(message: String? = null) : RuntimeException(message) {
+  internal constructor(message: String? = null, cause: Throwable?): this(message) {
     initCause(cause)
   }
   companion object { const val serialVersionUID : Long = 1L }

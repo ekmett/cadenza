@@ -1,4 +1,4 @@
-package cadenza.data
+package cadenza.data // cadenza.aot?
 
 import org.intelligence.asm.*
 import cadenza.panic
@@ -7,7 +7,7 @@ import org.objectweb.asm.tree.LabelNode
 import org.objectweb.asm.Type
 import java.lang.IndexOutOfBoundsException
 
-// manufacture cadenza.data.IIO, OIO, etc.
+// manufacture cadenza.data.frame.IIO, OIO, etc.
 
 typealias Slot = Int
 
@@ -116,7 +116,7 @@ private fun assembleThrow(asm: Block, exceptionType: Type) = asm.run {
 }
 
 // we should also build a fallback version for holding neutrals as a subclass?
-fun dataFrame(signature: String) : ByteArray = `class`(public,"cadenza/data/$signature") {
+fun dataFrame(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/$signature") {
   interfaces = mutableListOf(type(DataFrame::class).internalName)
   val types = signature.map { FieldInfo.of(it) }.toTypedArray()
   val N = types.size

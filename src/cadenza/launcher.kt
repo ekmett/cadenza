@@ -2,6 +2,7 @@ package cadenza
 
 import org.fusesource.jansi.Ansi
 import org.fusesource.jansi.Ansi.*
+import org.fusesource.jansi.AnsiConsole
 import org.graalvm.launcher.*
 import org.graalvm.options.OptionCategory
 import org.graalvm.polyglot.Context
@@ -15,6 +16,20 @@ import java.util.*
 import kotlin.io.*
 import kotlin.system.exitProcess
 
+
+fun <A> withAnsi(use_ansi: Boolean? = null, f: () -> A): A {
+  AnsiConsole.systemInstall()
+  when (use_ansi) {
+    true -> Ansi.setEnabled(true)
+    false -> Ansi.setEnabled(false)
+    else -> {}
+  }
+  return try {
+    f()
+  } finally {
+    AnsiConsole.systemUninstall()
+  }
+}
 internal fun PolyglotException.prettyStackTrace(trim: Boolean = true) {
   val stackTrace = ArrayList<PolyglotException.StackFrame>()
   for (s in polyglotStackTrace)

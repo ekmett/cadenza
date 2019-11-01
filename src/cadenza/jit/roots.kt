@@ -1,7 +1,7 @@
 package cadenza.jit
 
 import cadenza.Language
-import cadenza.Types
+import cadenza.data.DataTypes
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.TruffleLanguage
 import com.oracle.truffle.api.dsl.TypeSystemReference
@@ -12,11 +12,11 @@ import com.oracle.truffle.api.source.SourceSection
 
 internal val noArguments = arrayOf<Any>()
 
-@TypeSystemReference(Types::class)
+@TypeSystemReference(DataTypes::class)
 abstract class CadenzaNode : Node(), InstrumentableNode
 
 @NodeInfo(language = "core", description = "A root of a core tree.")
-@TypeSystemReference(Types::class)
+@TypeSystemReference(DataTypes::class)
 class ProgramRootNode constructor(
   language: Language,
   @field:Child private var body: Code,
@@ -45,7 +45,7 @@ open class ClosureBody constructor(@field:Child protected var content: Code) : N
 }
 
 @GenerateWrapper
-@TypeSystemReference(Types::class)
+@TypeSystemReference(DataTypes::class)
 open class ClosureRootNode(
   private val language: TruffleLanguage<*>,
   frameDescriptor: FrameDescriptor = FrameDescriptor(),

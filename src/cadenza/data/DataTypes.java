@@ -1,4 +1,4 @@
-package cadenza;
+package cadenza.data;
 
 import cadenza.data.BigInt;
 import cadenza.data.Closure;
@@ -19,7 +19,7 @@ import kotlin.Unit;
   NeutralValue.class,
   Unit.class
 })
-public abstract class Types {
+public abstract class DataTypes {
   @ImplicitCast
   @CompilerDirectives.TruffleBoundary
   public static BigInt castBigNumber(int value) { return new BigInt(value); }

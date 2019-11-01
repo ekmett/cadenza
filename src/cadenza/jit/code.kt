@@ -2,6 +2,7 @@ package cadenza.jit
 
 import cadenza.*
 import cadenza.data.*
+import cadenza.semantics.Type
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
@@ -27,7 +28,7 @@ private inline fun isSuperCombinator(callTarget: RootCallTarget): Boolean {
 @Suppress("NOTHING_TO_INLINE","unused")
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
-@TypeSystemReference(Types::class)
+@TypeSystemReference(DataTypes::class)
 abstract class Code : Node(), InstrumentableNode {
 
   private var sourceCharIndex = NO_SOURCE
@@ -45,13 +46,13 @@ abstract class Code : Node(), InstrumentableNode {
   }
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  open fun executeClosure(frame: VirtualFrame): Closure = TypesGen.expectClosure(execute(frame))
+  open fun executeClosure(frame: VirtualFrame): Closure = DataTypesGen.expectClosure(execute(frame))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  open fun executeInteger(frame: VirtualFrame): Int = TypesGen.expectInteger(execute(frame))
+  open fun executeInteger(frame: VirtualFrame): Int = DataTypesGen.expectInteger(execute(frame))
 
   @Throws(UnexpectedResultException::class, NeutralException::class)
-  open fun executeBoolean(frame: VirtualFrame): Boolean = TypesGen.expectBoolean(execute(frame))
+  open fun executeBoolean(frame: VirtualFrame): Boolean = DataTypesGen.expectBoolean(execute(frame))
 
   @Throws(NeutralException::class)
   open fun executeUnit(frame: VirtualFrame) { execute(frame) }
@@ -75,7 +76,7 @@ abstract class Code : Node(), InstrumentableNode {
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.ExpressionTag::class.java
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = CodeWrapper(this, probe)
 
-  @TypeSystemReference(Types::class)
+  @TypeSystemReference(DataTypes::class)
   @NodeInfo(shortName = "App")
   class App(
     @field:Child var rator: Code,
@@ -110,7 +111,7 @@ abstract class Code : Node(), InstrumentableNode {
     override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.CallTag::class.java || super.hasTag(tag)
   }
 
-  @TypeSystemReference(Types::class)
+  @TypeSystemReference(DataTypes::class)
   @NodeInfo(shortName = "Arg")
   class Arg(private val index: Int) : Code() {
     init { assert(0 <= index) { "negative index" } }
@@ -167,7 +168,7 @@ abstract class Code : Node(), InstrumentableNode {
 
   // lambdas can be constructed from foreign calltargets, you just need to supply an arity
   @Suppress("NOTHING_TO_INLINE")
-  @TypeSystemReference(Types::class)
+  @TypeSystemReference(DataTypes::class)
   @NodeInfo(shortName = "Lambda")
   class Lam(
     private val closureFrameDescriptor: FrameDescriptor?,
