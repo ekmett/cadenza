@@ -26,7 +26,7 @@ class Guards {
               }
               getstatic(+System::class, "out", +PrintStream::class)
               aconst_null
-              invokevirtual(+Object::class,, +String::class,"toString")
+              invokevirtual(+Object::class, +String::class, "toString")
               invokevirtual(+PrintStream::class, void, "println", +String::class)
               `return`
             }

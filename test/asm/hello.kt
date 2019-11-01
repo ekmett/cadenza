@@ -10,7 +10,7 @@ class Hello {
           asm {
             getstatic(+System::class, "out", +PrintStream::class)
             ldc("Hello, world!")
-            invokevirtual(+PrintStream::class, void,"println", +String::class)
+            invokevirtual(+PrintStream::class, void, "println", +String::class)
             `return`
           }
         }
