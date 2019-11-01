@@ -1,4 +1,5 @@
-import cadenza.asm.*
+package cadenza.asm
+
 import org.junit.jupiter.api.Test
 import java.io.PrintStream
 

@@ -1,7 +1,6 @@
 package cadenza.pretty
 
 import com.oracle.truffle.api.source.Source
-import kotlin.math.max
 
 // assumptions
 typealias W = Int // characters
@@ -10,33 +9,28 @@ typealias Ann = Unit // eventually colors
 
 val emptyFormat: Format = Unit
 fun merge(@Suppress("UNUSED_PARAMETER") x: Format, @Suppress("UNUSED_PARAMETER") y: Format): Format = Unit
+@Suppress("unused")
 fun Pretty.measure(l: List<FormattedChunk>): W = l.sumBy { it.len() }
 
 sealed class Out {
   abstract fun emit(s: StringBuilder)
-  //override fun toString() = StringBuilder().also { emit(it); }.toString()
 }
 data class Annotated(val ann: Ann, val body: Out) : Out() {
   override fun emit(s: StringBuilder) = body.emit(s) // and include annotations
-  //override fun toString() = StringBuilder().also { emit(it); }.toString()
 }
 data class Seq(val children: List<Out>) : Out() {
   override fun emit(s: StringBuilder) = children.forEach { it.emit(s) } // and include annotations
-  //override fun toString() = StringBuilder().also { emit(it); }.toString()
 }
-sealed class Atom() : Out()
+sealed class Atom : Out()
 object Newline : Atom() {
   override fun emit(s: StringBuilder) { s.append('\n') }
-  //override fun toString() = StringBuilder().also { emit(it); }.toString()
-
 }
-sealed class Chunk() : Atom() {
+sealed class Chunk : Atom() {
   abstract fun len(): W
 }
 data class Text(val text: CharSequence): Chunk() {
   override fun len(): W = text.length
   override fun emit(s: StringBuilder) { s.append(text) }
-  //override fun toString() = text
 }
 data class Space(val w: W): Chunk() {
   override fun len(): W = w
@@ -312,7 +306,7 @@ fun Pretty.error(source: Source, pos: Int, message: String? = null, vararg expec
   }
   hardLine
   val ls = source.getLineStartOffset(l)
-  val ll = source.getLineLength(l);
+  val ll = source.getLineLength(l)
   text(source.characters.subSequence(ls, ls+ll))
   nest(c-1) { newline; char('^') }
   hardLine

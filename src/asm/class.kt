@@ -60,7 +60,7 @@ fun ClassNode.constructor(
 ) = method(access,void, "<init>", parameterTypes = *parameterTypes, f = f)
 
 
-val ClassNode.type: Type get() = Type.getType("L$name;")
+val ClassNode.type: Type get() = getType("L$name;")
 
 // construct a field and add it to the class
 fun ClassNode.field(
@@ -91,7 +91,7 @@ fun classNode(
   it.version = version
   it.superName = superName
   it.access = access.access
-  f(it);
+  f(it)
 }
 
 val ClassNode.assemble: ByteArray get() = ClassWriter(COMPUTE_FRAMES).also { this.accept(it) }.toByteArray()
@@ -147,7 +147,7 @@ class GuardedAssembly internal constructor(base: Assembly) : Assembly by base {
     }
     instructions.insertBefore(exitNode, handler.instructions)
     tryCatchBlocks.add(TryCatchBlockNode(startNode, endNode, handlerNode, exceptionType.internalName))
-    return this;
+    return this
   }
 }
 

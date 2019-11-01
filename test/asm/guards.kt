@@ -1,4 +1,5 @@
-import cadenza.asm.*
+package cadenza.asm
+
 import org.junit.jupiter.api.Test
 import java.io.PrintStream
 import java.lang.NullPointerException
@@ -35,10 +36,10 @@ class Guards {
         }.loadClass("test.Guards").declaredMethods.first().invoke(null, emptyArray<String>())
       } catch (e: InvocationTargetException) {
         assert(e.cause is NullPointerException) { "expected NullPointerException" }
-        caught = true;
+        caught = true
       }
     }
-    assert(output == "Caught!\n", { "unexpected output: ${output}" })
+    assert(output == "Caught!\n") { "unexpected output: $output" }
     assert(caught) { "expected exception not caught" }
   }
 }

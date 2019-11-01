@@ -5,7 +5,7 @@ import com.oracle.truffle.api.source.Source
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-open class ParseError(var pos: Int, message: String? = null) : Exception(message) {
+class ParseError(var pos: Int, message: String? = null) : Exception(message) {
   constructor(pos: Int, message: String? = null, cause: Throwable): this(pos,message) {
     initCause(cause)
   }
@@ -18,7 +18,7 @@ data class Expected(val what: Any, val next: Expected?)
 
 fun Expected?.toList() : List<Any> {
   val out = mutableListOf<Any>()
-  var current = this;
+  var current = this
   while (current != null) {
     out.add(current.what)
     current = current.next
@@ -136,7 +136,7 @@ inline fun <T> ParseState.choice(vararg alts: Parser<T>): T {
     try {
       return it(this)
     } catch (e: ParseError) {
-      if (e.pos != old) throw e; //  position didn't change, try next alternative
+      if (e.pos != old) throw e //  position didn't change, try next alternative
     }
   }
   throw ParseError(old)

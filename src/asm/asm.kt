@@ -159,7 +159,7 @@ fun Block.invokestatic(owner: Type, returnType: Type, name: String, vararg param
   add(MethodInsnNode(INVOKESTATIC, owner.internalName, name, Type.getMethodDescriptor(returnType, *parameterTypes)))
 
 fun Block.invokeinterface(owner: Type, returnType: Type, name: String, vararg parameterTypes: Type) =
-  add(MethodInsnNode(INVOKEINTERFACE, owner.internalName, name, Type.getMethodDescriptor(`returnType`, *parameterTypes)))
+  add(MethodInsnNode(INVOKEINTERFACE, owner.internalName, name, Type.getMethodDescriptor(returnType, *parameterTypes)))
 
 val Block.ireturn: Unit get() = add(InsnNode(IRETURN))
 inline fun <T,A> T.ireturn(of: T.() -> A): A where T: Block = of(this).also { ireturn }
