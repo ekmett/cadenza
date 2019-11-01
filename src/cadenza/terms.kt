@@ -23,7 +23,7 @@ abstract class Term {
 fun tvar(name: String): Term = object : Term() {
   @Throws(TypeError::class)
   override fun infer(ctx: Ctx): Witness = object : Witness(ctx.lookup(name)) {
-    override fun compile(fd: FrameDescriptor): Code = `var`(fd.findOrAddFrameSlot(name))
+    override fun compile(fd: FrameDescriptor): Code = Code.`var`(fd.findOrAddFrameSlot(name))
   }
 }
 
@@ -37,7 +37,7 @@ fun tif(cond: Term, thenTerm: Term, elseTerm: Term): Term = object : Term() {
     val elseWitness = elseTerm.check(ctx, actualType)
     return object : Witness(actualType) {
       override fun compile(fd: FrameDescriptor): Code {
-        return If(actualType, condWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd))
+        return Code.If(actualType, condWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd))
       }
     }
   }
@@ -57,7 +57,7 @@ fun tapp(trator: Term, vararg trands: Term): Term = object : Term() {
     }.toTypedArray<Witness>()
     return object : Witness(currentType) {
       override fun compile(fd: FrameDescriptor): Code {
-        return App(
+        return Code.App(
           wrator.compile(fd),
           wrands.map { it.compile(fd) }.toTypedArray()
         )
