@@ -1,5 +1,6 @@
 package cadenza
 
+import cadenza.Type.*
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
 import com.oracle.truffle.api.debug.DebuggerTags

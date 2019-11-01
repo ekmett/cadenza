@@ -33,6 +33,55 @@ abstract class Type protected constructor(@Suppress("unused") val rep: FrameSlot
   fun match(expected: Type) {
     if (!equals(expected)) throw TypeError("type mismatch", this, expected)
   }
+
+  @Suppress("NOTHING_TO_INLINE")
+  internal inline fun unsupported(msg: String, vararg objects: Any?): Nothing =
+    throw UnsupportedTypeException.create(objects, msg)
+
+  @CompilerDirectives.ValueType
+  data class Arr(val argument: Type, val result: Type) : Type(FrameSlotKind.Object) {
+    override val arity: Int = result.arity + 1
+    @Throws(UnsupportedTypeException::class)
+    override fun validate(t: Any?) {
+      if (t !is Closure) unsupported("expected closure", t)
+      if (this.argument != t.type) unsupported("wrong closure type")
+    }
+  }
+
+  // IO actions represented ML-style as nullary functions
+  @CompilerDirectives.ValueType
+  data class IO(val result: Type) : Type(FrameSlotKind.Object) {
+    @Throws(UnsupportedTypeException::class)
+    override fun validate(t: Any?) = todo("io")
+  }
+
+  object Bool : Type(FrameSlotKind.Boolean) {
+    @Throws(UnsupportedTypeException::class)
+    override fun validate(t: Any?) { if (t !is Boolean) unsupported("expected boolean", t)
+    }
+  }
+
+  @Suppress("unused")
+  object Obj : Type(FrameSlotKind.Object) {
+    override fun validate(@Suppress("UNUSED_PARAMETER") t: Any?) {}
+  }
+
+  object UnitTy : Type(FrameSlotKind.Object) {
+    @Throws(UnsupportedTypeException::class)
+    override fun validate(t: Any?) { if (Unit != t) unsupported("expected unit", t)
+    }
+  }
+
+  object Nat : Type(FrameSlotKind.Int) {
+    @Throws(UnsupportedTypeException::class)
+    override fun validate(t: Any?) {
+      if (!(t is Int && t >= 0 || t is BigInt && t.isNatural())) unsupported("expected nat", t)
+    }
+  }
+
+  companion object {
+    val Action = IO(UnitTy)
+  }
 }
 
 // assumes validity
@@ -41,54 +90,8 @@ abstract class Type protected constructor(@Suppress("unused") val rep: FrameSlot
 fun Type.after(n: Int): Type {
   var current = this
   for (i in 0 until n)
-    current = (current as Arr).result
+    current = (current as Type.Arr).result
   return current
 }
 
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun unsupported(msg: String, vararg objects: Any?): Nothing =
-  throw UnsupportedTypeException.create(objects, msg)
-
-@CompilerDirectives.ValueType
-data class Arr(val argument: Type, val result: Type) : Type(FrameSlotKind.Object) {
-  override val arity: Int = result.arity + 1
-  @Throws(UnsupportedTypeException::class)
-  override fun validate(t: Any?) {
-    if (t !is Closure) unsupported("expected closure", t)
-    if (this.argument != t.type) unsupported("wrong closure type")
-  }
-}
-
-// IO actions represented ML-style as nullary functions
-@CompilerDirectives.ValueType
-data class IO(val result: Type) : Type(FrameSlotKind.Object) {
-  @Throws(UnsupportedTypeException::class)
-  override fun validate(t: Any?) = todo("io")
-}
-
-object Bool : Type(FrameSlotKind.Boolean) {
-  @Throws(UnsupportedTypeException::class)
-  override fun validate(t: Any?) { if (t !is Boolean) unsupported("expected boolean", t)
-  }
-}
-
-@Suppress("unused")
-object Obj : Type(FrameSlotKind.Object) {
-  override fun validate(@Suppress("UNUSED_PARAMETER") t: Any?) {}
-}
-
-object UnitTy : Type(FrameSlotKind.Object) {
-  @Throws(UnsupportedTypeException::class)
-  override fun validate(t: Any?) { if (Unit != t) unsupported("expected unit", t)
-  }
-}
-
-object Nat : Type(FrameSlotKind.Int) {
-  @Throws(UnsupportedTypeException::class)
-  override fun validate(t: Any?) {
-    if (!(t is Int && t >= 0 || t is BigInt && t.isNatural())) unsupported("expected nat", t)
-  }
-}
-
-val Action = IO(UnitTy)
 

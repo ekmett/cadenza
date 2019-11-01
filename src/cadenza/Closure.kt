@@ -41,7 +41,7 @@ class Closure (
     if (len > maxArity) throw ArityException.create(maxArity, len)
     var currentType = type
     for (argument in arguments) { // lint foreign arguments for safety
-      val arr = currentType as Arr // safe by arity check
+      val arr = currentType as Type.Arr // safe by arity check
       arr.argument.validate(argument)
       currentType = arr.result
     }

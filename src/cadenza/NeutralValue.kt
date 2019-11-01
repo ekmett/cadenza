@@ -16,7 +16,7 @@ class NeutralValue(val type: Type, private val term : Neutral) : TruffleObject {
   fun execute(vararg arguments: Any?): NeutralValue {
     var resultType = type
     for (i in arguments.indices) {
-      if (resultType !is Arr) throw ArityException.create(i, arguments.size)
+      if (resultType !is Type.Arr) throw ArityException.create(i, arguments.size)
       resultType = resultType.result
     }
     return NeutralValue(resultType, term.apply(arguments))
@@ -27,7 +27,7 @@ class NeutralValue(val type: Type, private val term : Neutral) : TruffleObject {
   fun apply(arguments: Array<out Any?>): NeutralValue {
     var resultType = type
     for (i in arguments.indices)
-      resultType = (resultType as Arr).result
+      resultType = (resultType as Type.Arr).result
     return NeutralValue(resultType, term.apply(arguments))
   }
 
