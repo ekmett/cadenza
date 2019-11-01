@@ -1,14 +1,18 @@
 $dokka.format:html
 $dokka.linkExtension:html
-$dokka.location:cadenza.asm$asm(org.objectweb.asm.tree.MethodNode, kotlin.Function1((cadenza.asm.Assembly, cadenza.asm.asm.A)))cadenza.asm/org.objectweb.asm.tree.-method-node/asm.html
-$dokka.location:cadenza.asm$assemble#org.objectweb.asm.tree.ClassNodecadenza.asm/org.objectweb.asm.tree.-class-node/assemble.html
-$dokka.location:cadenza.asm$field(org.objectweb.asm.tree.ClassNode, cadenza.asm.Mod, org.objectweb.asm.Type, kotlin.String, kotlin.String, kotlin.Any)cadenza.asm/org.objectweb.asm.tree.-class-node/field.html
-$dokka.location:cadenza.asm$guard(org.objectweb.asm.tree.MethodNode, kotlin.Function1((cadenza.asm.GuardedAssembly, kotlin.Unit)))cadenza.asm/org.objectweb.asm.tree.-method-node/guard.html
-$dokka.location:cadenza.asm$method(org.objectweb.asm.tree.ClassNode, cadenza.asm.Mod, kotlin.String, org.objectweb.asm.Type, kotlin.Array((org.objectweb.asm.Type)), kotlin.Function1((org.objectweb.asm.tree.MethodNode, kotlin.Unit)))cadenza.asm/org.objectweb.asm.tree.-class-node/method.html
-$dokka.location:cadenza.asm$throws(org.objectweb.asm.tree.MethodNode, kotlin.Array((org.objectweb.asm.Type)))cadenza.asm/org.objectweb.asm.tree.-method-node/throws.html
-$dokka.location:cadenza.asm$unaryPlus(kotlin.reflect.KClass((kotlin.Any)))cadenza.asm/kotlin.reflect.-k-class/unary-plus.html
-$dokka.location:cadenza.parser$parse(com.oracle.truffle.api.source.Source, kotlin.Function1((cadenza.parser.ParseState, cadenza.parser.parse.T)))cadenza.parser/com.oracle.truffle.api.source.-source/parse.html
+$dokka.location:org.intelligence.asm$array#org.objectweb.asm.Typeorg.intelligence.asm/org.objectweb.asm.-type/array.html
+$dokka.location:org.intelligence.asm$asm(org.objectweb.asm.tree.MethodNode, kotlin.Function1((org.intelligence.asm.Assembly, org.intelligence.asm.asm.A)))org.intelligence.asm/org.objectweb.asm.tree.-method-node/asm.html
+$dokka.location:org.intelligence.asm$assemble#org.objectweb.asm.tree.ClassNodeorg.intelligence.asm/org.objectweb.asm.tree.-class-node/assemble.html
+$dokka.location:org.intelligence.asm$constructor(org.objectweb.asm.tree.ClassNode, org.intelligence.asm.Mod, kotlin.Array((org.objectweb.asm.Type)), kotlin.Function1((org.objectweb.asm.tree.MethodNode, kotlin.Unit)))org.intelligence.asm/org.objectweb.asm.tree.-class-node/constructor.html
+$dokka.location:org.intelligence.asm$field(org.objectweb.asm.tree.ClassNode, org.intelligence.asm.Mod, org.objectweb.asm.Type, kotlin.String, kotlin.String, kotlin.Any)org.intelligence.asm/org.objectweb.asm.tree.-class-node/field.html
+$dokka.location:org.intelligence.asm$guard(org.objectweb.asm.tree.MethodNode, kotlin.Function1((org.intelligence.asm.GuardedAssembly, kotlin.Unit)))org.intelligence.asm/org.objectweb.asm.tree.-method-node/guard.html
+$dokka.location:org.intelligence.asm$method(org.objectweb.asm.tree.ClassNode, org.intelligence.asm.Mod, org.objectweb.asm.Type, kotlin.String, kotlin.Array((org.objectweb.asm.Type)), kotlin.Function1((org.objectweb.asm.tree.MethodNode, kotlin.Unit)))org.intelligence.asm/org.objectweb.asm.tree.-class-node/method.html
+$dokka.location:org.intelligence.asm$throws(org.objectweb.asm.tree.MethodNode, kotlin.Array((org.objectweb.asm.Type)))org.intelligence.asm/org.objectweb.asm.tree.-method-node/throws.html
+$dokka.location:org.intelligence.asm$type#org.objectweb.asm.tree.ClassNodeorg.intelligence.asm/org.objectweb.asm.tree.-class-node/type.html
+$dokka.location:org.intelligence.asm$unaryPlus(kotlin.reflect.KClass((kotlin.Any)))org.intelligence.asm/kotlin.reflect.-k-class/unary-plus.html
+$dokka.location:org.intelligence.parser$parse(com.oracle.truffle.api.source.Source, kotlin.Function1((org.intelligence.parser.ParseState, org.intelligence.parser.parse.T)))org.intelligence.parser/com.oracle.truffle.api.source.-source/parse.html
 cadenza
 cadenza.asm
-cadenza.parser
-cadenza.pretty
+org.intelligence.asm
+org.intelligence.parser
+org.intelligence.pretty

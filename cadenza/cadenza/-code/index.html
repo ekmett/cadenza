@@ -8,7 +8,82 @@
 <a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">Code</a><br/>
 <br/>
 <h1>Code</h1>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Code</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code> <a href="https://github.com/ekmett/cadenza/blob/master/src/code.kt#L19">(source)</a>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Code</span>&nbsp;<span class="symbol">:</span>&nbsp;<span class="identifier">Node</span><span class="symbol">, </span><span class="identifier">InstrumentableNode</span></code> <a href="https://github.com/ekmett/cadenza/blob/master/src/cadenza/code.kt#L29">(source)</a>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-ann/index.html">Ann</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Ann</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-app/index.html">App</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">App</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-arg/index.html">Arg</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Arg</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-call-builtin/index.html">CallBuiltin</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">CallBuiltin</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-if/index.html">If</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">If</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-lam/index.html">Lam</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Lam</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-lit-big-int/index.html">LitBigInt</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">LitBigInt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-lit-bool/index.html">LitBool</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">LitBool</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-lit-int/index.html">LitInt</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">LitInt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-var/index.html">Var</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Var</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+</tr>
+</tbody>
+</table>
 <h3>Constructors</h3>
 <table>
 <tbody>
@@ -110,78 +185,25 @@
 </tr>
 </tbody>
 </table>
-<h3>Inheritors</h3>
+<h3>Companion Object Functions</h3>
 <table>
 <tbody>
 <tr>
 <td>
-<h4><a href="../-ann/index.html">Ann</a></h4>
+<h4><a href="lam.html">lam</a></h4>
 </td>
 <td>
-<code><span class="keyword">class </span><span class="identifier">Ann</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.RootCallTarget, cadenza.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.RootCallTarget, cadenza.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Lam</span></code><br/>
+<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.Code.Companion$lam(kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.Type)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Lam</span></code><br/>
+<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.Type)/closureFrameDescriptor">closureFrameDescriptor</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameDescriptor</span><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.Type)/captureSteps">captureSteps</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.FrameBuilder)), com.oracle.truffle.api.RootCallTarget, cadenza.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Lam</span></code><br/>
+<code><span class="keyword">fun </span><span class="identifier">lam</span><span class="symbol">(</span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.Type)/closureFrameDescriptor">closureFrameDescriptor</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameDescriptor</span><span class="symbol">?</span><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.Type)/captureSteps">captureSteps</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="../-frame-builder/index.html"><span class="identifier">FrameBuilder</span></a><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.Type)/arity">arity</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.Type)/callTarget">callTarget</span><span class="symbol">:</span>&nbsp;<span class="identifier">RootCallTarget</span><span class="symbol">, </span><span class="identifier" id="cadenza.Code.Companion$lam(com.oracle.truffle.api.frame.FrameDescriptor, kotlin.Array((cadenza.FrameBuilder)), kotlin.Int, com.oracle.truffle.api.RootCallTarget, cadenza.Type)/type">type</span><span class="symbol">:</span>&nbsp;<a href="../-type/index.html"><span class="identifier">Type</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Lam</span></code></td>
 </tr>
 <tr>
 <td>
-<h4><a href="../-app/index.html">App</a></h4>
+<h4><a href="var.html">var</a></h4>
 </td>
 <td>
-<code><span class="keyword">class </span><span class="identifier">App</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="../-arg/index.html">Arg</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Arg</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="../-call-builtin/index.html">CallBuiltin</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">CallBuiltin</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="../-if/index.html">If</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">If</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="../-lam/index.html">Lam</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">Lam</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="../-lit-big-int/index.html">LitBigInt</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">LitBigInt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="../-lit-bool/index.html">LitBool</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">LitBool</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="../-lit-int/index.html">LitInt</a></h4>
-</td>
-<td>
-<code><span class="keyword">class </span><span class="identifier">LitInt</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
-</tr>
-<tr>
-<td>
-<h4><a href="../-var/index.html">Var</a></h4>
-</td>
-<td>
-<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">Var</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="./index.html"><span class="identifier">Code</span></a></code></td>
+<code><span class="keyword">fun </span><span class="identifier">var</span><span class="symbol">(</span><span class="identifier" id="cadenza.Code.Companion$var(com.oracle.truffle.api.frame.FrameSlot)/slot">slot</span><span class="symbol">:</span>&nbsp;<span class="identifier">FrameSlot</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Var</span></code></td>
 </tr>
 </tbody>
 </table>

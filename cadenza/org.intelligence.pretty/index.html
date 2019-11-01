@@ -1,0 +1,345 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>org.intelligence.pretty - cadenza</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">org.intelligence.pretty</a><br/>
+<br/>
+<h2>Package org.intelligence.pretty</h2>
+<p>Pretty printing combinators</p>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-ann/index.html">Ann</a></h4>
+</td>
+<td>
+<code><span class="keyword">interface </span><span class="identifier">Ann</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-annotated/index.html">Annotated</a></h4>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Annotated</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-out/index.html"><span class="identifier">Out</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-color/index.html">Color</a></h4>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Color</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-d.html">D</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">D</span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-doc.html">Doc</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">Doc</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-format/index.html">Format</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Format</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-out/index.html">Out</a></h4>
+</td>
+<td>
+<code><span class="keyword">sealed</span> <span class="keyword">class </span><span class="identifier">Out</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-pretty/index.html">Pretty</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">Pretty</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-seq/index.html">Seq</a></h4>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">Seq</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-out/index.html"><span class="identifier">Out</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-w.html">W</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">W</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="align.html">align</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">align</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$align(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.align.A)))/body">body</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="annotate.html">annotate</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">annotate</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$annotate(org.intelligence.pretty.Pretty, org.intelligence.pretty.Ann, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.annotate.A)))/ann">ann</span><span class="symbol">:</span>&nbsp;<a href="-ann/index.html"><span class="identifier">Ann</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$annotate(org.intelligence.pretty.Pretty, org.intelligence.pretty.Ann, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.annotate.A)))/body">body</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="bg.html">bg</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">bg</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$bg(org.intelligence.pretty.Pretty, org.fusesource.jansi.Ansi.Color, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.bg.A)))/color">color</span><span class="symbol">:</span>&nbsp;<span class="identifier">Color</span><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$bg(org.intelligence.pretty.Pretty, org.fusesource.jansi.Ansi.Color, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.bg.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;false<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$bg(org.intelligence.pretty.Pretty, org.fusesource.jansi.Ansi.Color, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.bg.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="black.html">black</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">black</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$black(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.black.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$black(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.black.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="blue.html">blue</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">blue</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$blue(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.blue.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$blue(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.blue.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="bold.html">bold</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">bold</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$bold(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.bold.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="collection.html">collection</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">collection</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$collection(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/open">open</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$collection(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/close">close</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$collection(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/sep">sep</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$collection(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/docs">docs</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="collection-by.html">collectionBy</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">collectionBy</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$collectionBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.collectionBy.T, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.collectionBy.T)))/by">by</span><span class="symbol">:</span>&nbsp;<a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="symbol">(</span><span class="identifier">T</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$collectionBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.collectionBy.T, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.collectionBy.T)))/open">open</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$collectionBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.collectionBy.T, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.collectionBy.T)))/close">close</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$collectionBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.collectionBy.T, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.collectionBy.T)))/sep">sep</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$collectionBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.collectionBy.T, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.collectionBy.T)))/docs">docs</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="cyan.html">cyan</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">cyan</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$cyan(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.cyan.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$cyan(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.cyan.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="expr.html">expr</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">expr</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$expr(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.expr.A)))/d">d</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="fg.html">fg</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">fg</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$fg(org.intelligence.pretty.Pretty, org.fusesource.jansi.Ansi.Color, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.fg.A)))/color">color</span><span class="symbol">:</span>&nbsp;<span class="identifier">Color</span><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$fg(org.intelligence.pretty.Pretty, org.fusesource.jansi.Ansi.Color, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.fg.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$fg(org.intelligence.pretty.Pretty, org.fusesource.jansi.Ansi.Color, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.fg.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="green.html">green</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">green</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$green(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.green.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$green(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.green.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="grouped.html">grouped</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">grouped</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$grouped(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.grouped.A)))/body">body</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="guttered.html">guttered</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">guttered</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$guttered(org.intelligence.pretty.Pretty, kotlin.String)/t">t</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="hsep.html">hsep</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">hsep</span><span class="symbol">(</span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$hsep(org.intelligence.pretty.Pretty, kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/docs">docs</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="hsep-by.html">hsepBy</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">hsepBy</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$hsepBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.hsepBy.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.hsepBy.T)))/by">by</span><span class="symbol">:</span>&nbsp;<a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="symbol">(</span><span class="identifier">T</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$hsepBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.hsepBy.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.hsepBy.T)))/docs">docs</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="hsep-by-tight.html">hsepByTight</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">hsepByTight</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$hsepByTight(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.hsepByTight.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.hsepByTight.T)))/by">by</span><span class="symbol">:</span>&nbsp;<a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="symbol">(</span><span class="identifier">T</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$hsepByTight(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.hsepByTight.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.hsepByTight.T)))/docs">docs</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="hsep-tight.html">hsepTight</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">hsepTight</span><span class="symbol">(</span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$hsepTight(org.intelligence.pretty.Pretty, kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/docs">docs</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="hvsep.html">hvsep</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">hvsep</span><span class="symbol">(</span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$hvsep(org.intelligence.pretty.Pretty, kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/docs">docs</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="hvsep-by.html">hvsepBy</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">hvsepBy</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$hvsepBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.hvsepBy.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.hvsepBy.T)))/by">by</span><span class="symbol">:</span>&nbsp;<a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="symbol">(</span><span class="identifier">T</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$hvsepBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.hvsepBy.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.hvsepBy.T)))/docs">docs</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="hvsep-by-tight.html">hvsepByTight</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">hvsepByTight</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$hvsepByTight(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.hvsepByTight.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.hvsepByTight.T)))/by">by</span><span class="symbol">:</span>&nbsp;<a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="symbol">(</span><span class="identifier">T</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$hvsepByTight(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.hvsepByTight.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.hvsepByTight.T)))/docs">docs</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="hvsep-tight.html">hvsepTight</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">hvsepTight</span><span class="symbol">(</span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$hvsepTight(org.intelligence.pretty.Pretty, kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/docs">docs</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="intersperse.html">intersperse</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">intersperse</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$intersperse(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/delim">delim</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$intersperse(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/docs">docs</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="intersperse-by.html">intersperseBy</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">intersperseBy</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$intersperseBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.intersperseBy.T, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.intersperseBy.T)))/by">by</span><span class="symbol">:</span>&nbsp;<a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="symbol">(</span><span class="identifier">T</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$intersperseBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.intersperseBy.T, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.intersperseBy.T)))/delim">delim</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$intersperseBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.intersperseBy.T, kotlin.Unit)), kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.intersperseBy.T)))/docs">docs</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="italic.html">italic</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">italic</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$italic(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.italic.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="magenta.html">magenta</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">magenta</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$magenta(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.magenta.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$magenta(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.magenta.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="nest.html">nest</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">nest</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$nest(org.intelligence.pretty.Pretty, kotlin.Int, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.nest.A)))/w">w</span><span class="symbol">:</span>&nbsp;<a href="-w.html"><span class="identifier">W</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$nest(org.intelligence.pretty.Pretty, kotlin.Int, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.nest.A)))/body">body</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="oxford.html">oxford</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">oxford</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$oxford(org.intelligence.pretty.Pretty, kotlin.String, kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/conjunction">conjunction</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;"or"<span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$oxford(org.intelligence.pretty.Pretty, kotlin.String, kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/docs">docs</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="oxford-by.html">oxfordBy</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">oxfordBy</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$oxfordBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.oxfordBy.T, kotlin.Unit)), kotlin.String, kotlin.Array((org.intelligence.pretty.oxfordBy.T)))/by">by</span><span class="symbol">:</span>&nbsp;<a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="symbol">(</span><span class="identifier">T</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Pretty::simple<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$oxfordBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.oxfordBy.T, kotlin.Unit)), kotlin.String, kotlin.Array((org.intelligence.pretty.oxfordBy.T)))/conjunction">conjunction</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;"or"<span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$oxfordBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.oxfordBy.T, kotlin.Unit)), kotlin.String, kotlin.Array((org.intelligence.pretty.oxfordBy.T)))/docs">docs</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="red.html">red</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">red</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$red(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.red.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$red(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.red.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="run.html">run</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">run</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$run(org.intelligence.pretty.Pretty, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.run.A)))/d">d</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="simple.html">simple</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">simple</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$simple(org.intelligence.pretty.Pretty, kotlin.Any)/t">t</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="vsep.html">vsep</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">vsep</span><span class="symbol">(</span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$vsep(org.intelligence.pretty.Pretty, kotlin.Array((kotlin.Function1((org.intelligence.pretty.Pretty, kotlin.Unit)))))/docs">docs</span><span class="symbol">:</span>&nbsp;<a href="-doc.html"><span class="identifier">Doc</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="vsep-by.html">vsepBy</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">vsepBy</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$vsepBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.vsepBy.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.vsepBy.T)))/by">by</span><span class="symbol">:</span>&nbsp;<a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="symbol">(</span><span class="identifier">T</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a><span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.pretty$vsepBy(org.intelligence.pretty.Pretty, kotlin.Function2((org.intelligence.pretty.Pretty, org.intelligence.pretty.vsepBy.T, kotlin.Unit)), kotlin.Array((org.intelligence.pretty.vsepBy.T)))/docs">docs</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="white.html">white</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">white</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$white(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.white.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$white(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.white.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="yellow.html">yellow</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span> <a href="-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">yellow</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.pretty$yellow(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.yellow.A)))/bright">bright</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a>&nbsp;<span class="symbol">=</span>&nbsp;true<span class="symbol">, </span><span class="identifier" id="org.intelligence.pretty$yellow(org.intelligence.pretty.Pretty, kotlin.Boolean, kotlin.Function1((org.intelligence.pretty.Pretty, org.intelligence.pretty.yellow.A)))/f">f</span><span class="symbol">:</span>&nbsp;<a href="-d.html"><span class="identifier">D</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>
