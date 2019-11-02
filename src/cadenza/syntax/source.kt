@@ -1,10 +1,7 @@
-package cadenza.parser
+package cadenza.syntax
 
 import com.oracle.truffle.api.source.Source
-import org.intelligence.diagnostics.Severity
-import org.intelligence.diagnostics.error
 import org.intelligence.parser.Parse
-import org.intelligence.pretty.Pretty
 
 class SourceParse(val source: Source) : Parse(source.characters)
 

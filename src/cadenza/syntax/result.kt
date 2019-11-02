@@ -1,4 +1,4 @@
-package cadenza.parser
+package cadenza.syntax
 
 import com.oracle.truffle.api.source.Source
 import org.intelligence.diagnostics.Severity
