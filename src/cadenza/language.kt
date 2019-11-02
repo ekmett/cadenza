@@ -172,13 +172,13 @@ class Language : TruffleLanguage<Language.Context>() {
     }
 
   @Suppress("UNUSED_PARAMETER")
-  private fun s(tx: Type, ty: Type, tz: Type): Code = todo("S")
+  private fun s(tx: Type, ty: Type, tz: Type): Code = todo
   private fun k(tx: Type, ty: Type) = binary({ x, _ -> x }, tx, ty)
   private fun i(tx: Type) = unary({ x -> x }, tx)
 
   @Suppress("UNUSED_PARAMETER")
-  inline fun unary(f: (x: Term) -> Term, argument: Type): Code = todo("unary")
+  inline fun unary(f: (x: Term) -> Term, argument: Type): Code = todo
 
   @Suppress("UNUSED_PARAMETER")
-  inline fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo("binary")
+  inline fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo
 }

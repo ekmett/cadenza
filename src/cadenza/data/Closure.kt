@@ -2,6 +2,7 @@ package cadenza.data
 
 import cadenza.jit.ClosureRootNode
 import cadenza.semantics.Type
+import cadenza.semantics.Type.Arr
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.frame.MaterializedFrame
@@ -41,12 +42,7 @@ class Closure (
     val maxArity = type.arity
     val len = arguments.size
     if (len > maxArity) throw ArityException.create(maxArity, len)
-    var currentType = type
-    for (argument in arguments) { // lint foreign arguments for safety
-      val arr = currentType as Type.Arr // safe by arity check
-      arr.argument.validate(argument)
-      currentType = arr.result
-    }
+    arguments.fold(type) { t, it -> (t as Arr).apply { argument.validate(it) }.result }
     @Suppress("UNCHECKED_CAST")
     return call(arguments)
   }

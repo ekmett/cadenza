@@ -23,22 +23,15 @@ fun panic(msg: String): Nothing {
   throw Panic(msg).also { it.stackTrace = it.stackTrace.trim() }
 }
 
-internal class TODO(message: String? = null) : RuntimeException(message) {
-  internal constructor(message: String? = null, cause: Throwable?): this(message) {
-    initCause(cause)
-  }
+internal class TODO private constructor() : RuntimeException() {
   companion object { const val serialVersionUID : Long = 1L }
-  override fun toString(): String = if (message.isNullOrEmpty()) "TODO" else "TODO: $message"
+  override fun toString(): String = stackTrace[0].let {
+    "${it.fileName}:${it.lineNumber}: todo (${it.methodName})"
+  }
 }
 
-@Suppress("unused")
-fun todo(msg: String, base: Throwable?): Nothing {
+val todo: Nothing get() {
   CompilerDirectives.transferToInterpreter()
-  throw RuntimeException(msg, base).also { it.stackTrace = it.stackTrace.trim() }
-}
-
-fun todo(msg: String): Nothing {
-  CompilerDirectives.transferToInterpreter()
-  throw RuntimeException(msg).also { it.stackTrace = it.stackTrace.trim() }
+  throw RuntimeException().also { it.stackTrace = it.stackTrace.trim() }
 }
 

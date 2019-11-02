@@ -55,7 +55,7 @@ abstract class Type protected constructor(@Suppress("unused") val rep: FrameSlot
   @CompilerDirectives.ValueType
   data class IO(val result: Type) : Type(FrameSlotKind.Object) {
     @Throws(UnsupportedTypeException::class)
-    override fun validate(t: Any?) = todo("io")
+    override fun validate(t: Any?) = todo
   }
 
   object Bool : Type(FrameSlotKind.Boolean) {

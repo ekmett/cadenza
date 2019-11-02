@@ -1,6 +1,8 @@
 package cadenza.semantics
 
 import cadenza.jit.Code
+import cadenza.Section
+import cadenza.todo
 import com.oracle.truffle.api.frame.FrameDescriptor
 
 typealias Ctx = Env<Type>
@@ -20,17 +22,16 @@ abstract class Term {
   }
 
   companion object {
-
     @Suppress("unused")
-    fun tvar(name: String): Term = object : Term() {
+    fun tvar(name: String, section: Section = Section.default): Term = object : Term() {
       @Throws(TypeError::class)
       override fun infer(ctx: Ctx): Witness = object : Witness(ctx.lookup(name)) {
-        override fun compile(fd: FrameDescriptor): Code = Code.`var`(fd.findOrAddFrameSlot(name))
+        override fun compile(fd: FrameDescriptor): Code = Code.`var`(fd.findOrAddFrameSlot(name), section)
       }
     }
 
     @Suppress("unused")
-    fun tif(cond: Term, thenTerm: Term, elseTerm: Term): Term = object : Term() {
+    fun tif(cond: Term, thenTerm: Term, elseTerm: Term, section: Section = Section.default): Term = object : Term() {
       @Throws(TypeError::class)
       override fun infer(ctx: Ctx): Witness {
         val condWitness = cond.check(ctx, Type.Bool)
@@ -39,14 +40,14 @@ abstract class Term {
         val elseWitness = elseTerm.check(ctx, actualType)
         return object : Witness(actualType) {
           override fun compile(fd: FrameDescriptor): Code {
-            return Code.If(actualType, condWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd))
+            return Code.If(actualType, condWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd), section)
           }
         }
       }
     }
 
     @Suppress("unused")
-    fun tapp(trator: Term, vararg trands: Term): Term = object : Term() {
+    fun tapp(trator: Term, vararg trands: Term, section: Section = Section.default): Term = object : Term() {
       @Throws(TypeError::class)
       override fun infer(ctx: Ctx): Witness {
         val wrator = trator.infer(ctx)
@@ -61,7 +62,8 @@ abstract class Term {
           override fun compile(fd: FrameDescriptor): Code {
             return Code.App(
               wrator.compile(fd),
-              wrands.map { it.compile(fd) }.toTypedArray()
+              wrands.map { it.compile(fd) }.toTypedArray(),
+              section
             )
           }
         }
@@ -69,8 +71,6 @@ abstract class Term {
     }
 
     @Suppress("UNUSED_PARAMETER","unused")
-    fun tlam(names: Array<Name>, body: Term): Term? {
-      return null
-    }
+    fun tlam(names: Array<Name>, body: Term, section: Section = Section.default): Term = todo
   }
 }

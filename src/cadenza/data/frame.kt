@@ -4,6 +4,7 @@ import cadenza.jit.Code
 import org.intelligence.asm.*
 import cadenza.panic
 import cadenza.todo
+import com.oracle.truffle.api.dsl.TypeSystemReference
 import com.oracle.truffle.api.frame.FrameSlotTypeException
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.Node
@@ -18,34 +19,54 @@ import java.lang.IndexOutOfBoundsException
 
 typealias Slot = Int
 
-// an immutable dataframe
-interface DataFrame {
-  fun getValue(slot: Slot): Any
-  fun getSize() : Int
+// an immutable dataframe modeling the different backing storage types allowed by the jvm
 
-  @Throws(FrameSlotTypeException::class)// , NeutralException::class)
-  fun getBoolean(slot: Slot): Boolean // B
-  fun isBoolean(slot: Slot): Boolean
+// these are all the distinctions the JVM cares about
+abstract class DataFrame {
+  abstract fun getValue(slot: Slot): Any?
+  abstract fun getSize() : Int
 
-  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
-  fun getDouble(slot: Slot): Double // D
-  fun isDouble(slot: Slot): Boolean
+  @Throws(FrameSlotTypeException::class)
+  abstract fun getDouble(slot: Slot): Double // D
+  abstract fun isDouble(slot: Slot): Boolean
 
-  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
-  fun getFloat(slot: Slot): Float // F
-  fun isFloat(slot: Slot): Boolean
+  @Throws(FrameSlotTypeException::class)
+  abstract fun getFloat(slot: Slot): Float // F
+  abstract fun isFloat(slot: Slot): Boolean
 
-  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
-  fun getInteger(slot: Slot): Int // I
-  fun isInteger(slot: Slot): Boolean
+  @Throws(FrameSlotTypeException::class)
+  abstract fun getInteger(slot: Slot): Int // I
+  abstract fun isInteger(slot: Slot): Boolean
 
-  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
-  fun getLong(slot: Slot): Long // L
-  fun isLong(slot: Slot): Boolean
+  @Throws(FrameSlotTypeException::class)
+  abstract fun getLong(slot: Slot): Long // L
+  abstract fun isLong(slot: Slot): Boolean
 
-  @Throws(FrameSlotTypeException::class)//, NeutralException::class)
-  fun getObject(slot: Slot): Any // O
-  fun isObject(slot: Slot): Boolean
+  @Throws(FrameSlotTypeException::class)
+  abstract fun getObject(slot: Slot): Any? // O
+  abstract fun isObject(slot: Slot): Boolean
+}
+
+final class SimpleDataFrame(vararg val data: Any?) {
+  fun getValue(slot: Slot) = data[slot]
+  fun getSize() = data.size
+  @Throws(FrameSlotTypeException::class)
+  fun getDouble(slot: Slot) = data[slot] as? Double ?: throw FrameSlotTypeException()
+  fun isDouble(slot: Slot) = data[slot] is Double
+  @Throws(FrameSlotTypeException::class)
+  fun getFloat(slot: Slot) = data[slot] as? Float ?: throw FrameSlotTypeException()
+  fun isFloat(slot: Slot) = data[slot] is Float
+  @Throws(FrameSlotTypeException::class)
+  fun getInteger(slot: Slot) = data[slot] as? Int ?: throw FrameSlotTypeException()
+  fun isInteger(slot: Slot) = data[slot] is Int
+  @Throws(FrameSlotTypeException::class)
+  fun getLong(slot: Slot) = data[slot] as? Long ?: throw FrameSlotTypeException()
+  @Throws(FrameSlotTypeException::class)
+  fun getObject(slot: Slot) = data[slot]?.takeIf(::isSimpleObject) ?: throw FrameSlotTypeException()
+  fun isObject(slot: Slot) = data[slot].let { it != null && isSimpleObject(it) }
+  companion object {
+    private fun isSimpleObject(it: Any): Boolean = it !is Double && it !is Long && it !is Float && it !is Int
+  }
 }
 
 private sealed class FieldInfo(val sig: Char, val type: Type) {
@@ -54,43 +75,20 @@ private sealed class FieldInfo(val sig: Char, val type: Type) {
   abstract fun box(asm: Block)
   abstract fun ret(asm: Block)
   open val isInteger: Boolean get() = false
-  open val isBoolean: Boolean get() = false
   open val isLong: Boolean get() = false
   open val isFloat: Boolean get() = false
   open val isDouble: Boolean get() = false
   open val isObject: Boolean get() = false
   companion object {
     fun of(c: Char) = when (c) {
-      'B' -> booleanFieldInfo
-      'D' -> doubleFieldInfo
-      'F' -> floatFieldInfo
       'I' -> intFieldInfo
-      'L' -> longFieldInfo
+      'F' -> floatFieldInfo
       'O' -> objectFieldInfo
+      'L' -> longFieldInfo
+      'D' -> doubleFieldInfo
       else -> panic("unknown field type")
     }
   }
-}
-
-private object booleanFieldInfo : FieldInfo('B', boolean) {
-  override fun load(asm: Block, slot: Slot) = asm.iload(slot)
-  override fun box(asm: Block) = asm.invokestatic(+Boolean::class, +Boolean::class, "valueOf", boolean)
-  override fun ret(asm: Block) = asm.ireturn
-  override val isBoolean: Boolean get() = true
-}
-
-private object doubleFieldInfo : FieldInfo('D', double) {
-  override fun load(asm: Block, slot: Slot) = asm.fload(slot)
-  override fun box(asm: Block) = asm.invokestatic(+Double::class, +Double::class, "valueOf", double)
-  override fun ret(asm: Block) = asm.dreturn
-  override val isDouble: Boolean get() = true
-}
-
-private object floatFieldInfo : FieldInfo('F', float) {
-  override fun load(asm: Block, slot: Slot) = asm.fload(slot)
-  override fun box(asm: Block) = asm.invokestatic(+Float::class, +Float::class, "valueOf", float)
-  override fun ret(asm: Block) = asm.freturn
-  override val isFloat: Boolean get() = true
 }
 
 private object intFieldInfo : FieldInfo('I', int) {
@@ -100,11 +98,11 @@ private object intFieldInfo : FieldInfo('I', int) {
   override val isInteger: Boolean get() = true
 }
 
-private object longFieldInfo : FieldInfo('L', long) {
-  override fun load(asm: Block, slot: Slot) = asm.lload(slot)
-  override fun box(asm: Block) = asm.invokestatic(+Long::class, +Long::class, "valueOf", long)
-  override fun ret(asm: Block) = asm.lreturn
-  override val isLong: Boolean get() = true
+private object floatFieldInfo : FieldInfo('F', float) {
+  override fun load(asm: Block, slot: Slot) = asm.fload(slot)
+  override fun box(asm: Block) = asm.invokestatic(+Float::class, +Float::class, "valueOf", float)
+  override fun ret(asm: Block) = asm.freturn
+  override val isFloat: Boolean get() = true
 }
 
 private object objectFieldInfo : FieldInfo('O', `object`) {
@@ -113,6 +111,21 @@ private object objectFieldInfo : FieldInfo('O', `object`) {
   override fun ret(asm: Block) = asm.areturn
   override val signature: String get() = "Ljava/lang/Object;"
   override val isObject: Boolean get() = true
+}
+
+private object longFieldInfo : FieldInfo('L', long) {
+  override fun load(asm: Block, slot: Slot) = asm.lload(slot)
+  override fun box(asm: Block) = asm.invokestatic(+Long::class, +Long::class, "valueOf", long)
+  override fun ret(asm: Block) = asm.lreturn
+  override val isLong: Boolean get() = true
+}
+
+
+private object doubleFieldInfo : FieldInfo('D', double) {
+  override fun load(asm: Block, slot: Slot) = asm.fload(slot)
+  override fun box(asm: Block) = asm.invokestatic(+Double::class, +Double::class, "valueOf", double)
+  override fun ret(asm: Block) = asm.dreturn
+  override val isDouble: Boolean get() = true
 }
 
 // throw an exception type that has a default constructor
@@ -156,19 +169,19 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/$s
     method(public and final, resultType, name, +Slot::class) {
       throws(+FrameSlotTypeException::class)
       asm {
-        val (good, bad) = types.withIndex().partition { predicate(it.value) }
-        if (good.isNotEmpty()) {
-          val defaultLabel = LabelNode()
-          val labels = types.indices.map { LabelNode() }.toTypedArray()
-          tableswitch(0,N-1,defaultLabel,*labels)
-          good.forEach {
-            add(labels[it.index])
-            aload_0
-            getfield(type, members[it.index], it.value.type)
-            it.value.ret(this)
+        types.mapIndexedNotNull { i, v -> if(predicate(v)) i to LabelNode() else null }.toTypedArray().let {
+          if (it.isNotEmpty()) {
+            val defaultLabel = LabelNode()
+            lookupswitch(defaultLabel, *it)
+            it.forEach { (i, label) ->
+              add(label)
+              aload_0
+              val t = types[i]
+              getfield(type, members[i], t.type)
+              t.ret(this)
+            }
+            add(defaultLabel)
           }
-          bad.forEach { add(labels[it.index]) }
-          add(defaultLabel)
         }
         assembleThrow(this, +FrameSlotTypeException::class)
       }
@@ -188,12 +201,10 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/$s
   }
 
   isMethod("isInteger") { it.isInteger }
-  isMethod("isBoolean") { it.isBoolean }
   isMethod("isLong") { it.isLong }
   isMethod("isFloat") { it.isFloat }
   isMethod("isDouble") { it.isDouble }
 
-  getMethod(boolean, "getBoolean") { it.isBoolean }
   getMethod(int, "getInteger") { it.isInteger }
   getMethod(long, "getLong") { it.isLong }
   getMethod(float, "getFloat") { it.isFloat }
@@ -227,37 +238,46 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/$s
   }
 }
 
-fun ClassNode.nodeInfo(
+fun nodeInfo(
   shortName: String = "",
   cost: NodeCost = NodeCost.MONOMORPHIC,
   description: String = "",
   language: String = ""
-)= AnnotationNode(ASM7,type(NodeInfo::class).descriptor).apply {
-  values = listOf("${signature}_Builder", NodeCost.MONOMORPHIC, "", "")
-}
+)= annotationNode(+NodeInfo::class, shortName, cost, description, language)
 
-val FieldNode.child: AnnotationNode get() = AnnotationNode(ASM7, type(Node.Child::class).descriptor)
+val child: AnnotationNode get() = annotationNode(+Node.Child::class)
 
 val code = +Code::class
 
-fun builder(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/${signature}_Builder", superName = code.descriptor) {
+@TypeSystemReference(DataTypes::class)
+@NodeInfo(shortName = "DataFrameBuilder")
+abstract class DataFrameBuilder : Node() {
+  abstract fun execute(frame: VirtualFrame)
+}
+
+fun builder(signature: String) : ByteArray = `class`(
+  public and final and `super`,"cadenza/data/frame/${signature}_Builder", superName = code.internalName
+) {
   val types = signature.map { FieldInfo.of(it) }.toTypedArray()
-  visibleAnnotations = listOf(nodeInfo(shortName="${signature}_Builder"))
-  val N = types.size
   val members = types.indices.map { "_$it" }.toTypedArray()
-  types.indices.forEach {
-    field(public,code,members[it]).apply { visibleAnnotations = listOf(child) }
+
+  visibleAnnotations = listOf(nodeInfo(shortName="${signature}_Builder"))
+
+  members.forEach {
+    field(public,code,it).apply { visibleAnnotations = listOf(child) }
   }
+
   constructor(public,*types.map { it.type }.toTypedArray()) {
     asm {
-      types.forEachIndexed { i, info ->
+      members.forEachIndexed { i, member ->
         aload_0
         aload(i+1)
-        putfield(type,members[i],code)
+        putfield(type,member,code)
       }
+      `return`
     }
   }
   method(public and final, `object`, "execute", +VirtualFrame::class) {
-    todo("execute")
+    todo
   }
 }

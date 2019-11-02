@@ -34,7 +34,9 @@ class InlineCode(
 }
 
 @GenerateWrapper
-open class ClosureBody constructor(@field:Child protected var content: Code) : Node(), InstrumentableNode {
+open class ClosureBody constructor(
+  @field:Child protected var content: Code
+) : Node(), InstrumentableNode {
   constructor(that: ClosureBody) : this(that.content)
 
   open fun execute(frame: VirtualFrame): Any? = content.executeAny(frame)
