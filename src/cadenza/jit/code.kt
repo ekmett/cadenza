@@ -1,7 +1,9 @@
 package cadenza.jit
 
-import cadenza.*
+import cadenza.Loc
 import cadenza.data.*
+import cadenza.panic
+import cadenza.section
 import cadenza.semantics.Type
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
@@ -47,6 +49,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
 
   override fun getSourceSection(): SourceSection? = loc?.let { rootNode?.sourceSection?.source?.section(it) }
   override fun isInstrumentable() = loc !== null
+
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.ExpressionTag::class.java
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = CodeWrapper(this, probe)
 

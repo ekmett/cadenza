@@ -1,8 +1,13 @@
 package cadenza.jit
 
+import cadenza.Loc
+import cadenza.data.DataTypes
 import cadenza.data.NeutralException
 import com.oracle.truffle.api.dsl.Specialization
-import com.oracle.truffle.api.frame.*
+import com.oracle.truffle.api.dsl.TypeSystemReference
+import com.oracle.truffle.api.frame.FrameSlot
+import com.oracle.truffle.api.frame.FrameSlotKind
+import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.instrumentation.*
 import com.oracle.truffle.api.nodes.NodeInfo
 import com.oracle.truffle.api.nodes.UnexpectedResultException
@@ -14,7 +19,8 @@ import com.oracle.truffle.api.nodes.UnexpectedResultException
 
 // these will typically be 'IO' actions
 @GenerateWrapper
-abstract class Stmt : CadenzaNode() {
+@TypeSystemReference(DataTypes::class)
+abstract class Stmt(loc: Loc? = null) : LocatedNode(loc) {
   @GenerateWrapper.OutgoingConverter
   @Suppress("unused")
   internal fun convertOutgoing(@Suppress("UNUSED_PARAMETER") obj: Any): Any? = null
@@ -25,7 +31,10 @@ abstract class Stmt : CadenzaNode() {
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.StatementTag::class.java || super.hasTag(tag)
 
   @NodeInfo(shortName = "Do")
-  class Do internal constructor(@field:Children internal var body: Array<Stmt>) : Stmt() {
+  class Do internal constructor(
+    @field:Children internal var body: Array<Stmt>,
+    loc: Loc? = null
+  ) : Stmt(loc) {
     override fun execute(frame: VirtualFrame) {
       for (stmt in body) stmt.execute(frame)
     }
@@ -33,7 +42,11 @@ abstract class Stmt : CadenzaNode() {
 
   //TODO: use a better internal state management system like the generated code would
   @NodeInfo(shortName = "Def")
-  abstract class Def(private val slot: FrameSlot, @field:Child var arg: Code) : Stmt() {
+  abstract class Def(
+    private val slot: FrameSlot,
+    @field:Child var arg: Code,
+    loc: Loc? = null
+  ) : Stmt(loc) {
 
     override fun execute(frame: VirtualFrame) { executeDef(frame) }
 
@@ -50,7 +63,7 @@ abstract class Stmt : CadenzaNode() {
         throw e
       } catch (e: NeutralException) {
         frame.setObject(slot, e.get())
-        return 0 // this result is never used
+        return 0 // this result is never used, it just exists to trick truffle into letting me specialize
       }
       frame.setInt(slot, result)
       return result
@@ -74,9 +87,8 @@ abstract class Stmt : CadenzaNode() {
     }
 
     @Specialization(replaces = ["defInteger", "defBoolean"])
-    protected fun defObject(frame: VirtualFrame) {
+    protected fun defObject(frame: VirtualFrame) =
       frame.setObject(slot, arg.executeAny(frame))
-    }
 
     private fun allowsSlotKind(frame: VirtualFrame, kind: FrameSlotKind): Boolean {
       val currentKind = frame.frameDescriptor.getFrameSlotKind(slot)
@@ -93,8 +105,8 @@ abstract class Stmt : CadenzaNode() {
 
   companion object {
     @Suppress("NOTHING_TO_INLINE","unused")
-    inline fun def(slot: FrameSlot, body: Code): Def {
-      return StmtFactory.DefNodeGen.create(slot, body)
+    inline fun def(slot: FrameSlot, body: Code, loc: Loc? = null): Def {
+      return StmtFactory.DefNodeGen.create(slot, body, loc)
     }
   }
 }

@@ -9,9 +9,7 @@ import com.oracle.truffle.api.interop.TruffleObject
 import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 
-
-@CompilerDirectives.ValueType
-abstract class Neutral {
+sealed class Neutral {
   open fun apply(args: Array<out Any?>) = NApp(this, args)
 
   data class NIf(val body: Neutral, val thenValue: Any?, val elseValue: Any?) : Neutral()
