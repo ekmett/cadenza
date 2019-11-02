@@ -25,7 +25,7 @@ private inline fun isSuperCombinator(callTarget: RootCallTarget) =
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(DataTypes::class)
-abstract class Code(val section: Section = Section.default) : Node(), InstrumentableNode {
+abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
 
   @Throws(NeutralException::class)
   abstract fun execute(frame: VirtualFrame): Any?
@@ -45,10 +45,8 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
   @Throws(NeutralException::class)
   open fun executeUnit(frame: VirtualFrame) { execute(frame) }
 
-  override fun getSourceSection(): SourceSection? =
-    (if (section.sourceCharIndex == NO_SOURCE) rootNode else null)?.sourceSection?.source?.section(section)
-
-  override fun isInstrumentable() = section.sourceCharIndex != NO_SOURCE
+  override fun getSourceSection(): SourceSection? = loc?.let { rootNode?.sourceSection?.source?.section(it) }
+  override fun isInstrumentable() = loc !== null
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.ExpressionTag::class.java
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = CodeWrapper(this, probe)
 
@@ -56,9 +54,9 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
   @NodeInfo(shortName = "App")
   class App(
     @field:Child var rator: Code,
-    @field:Children val rands: Array<Code>
-    , section: Section = Section.default
-  ) : Code(section) {
+    @field:Children val rands: Array<Code>,
+    loc: Loc? = null
+  ) : Code(loc) {
     @Child private var indirectCallNode: IndirectCallNode = Truffle.getRuntime().createIndirectCallNode()
 
     @ExplodeLoop
@@ -102,8 +100,8 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
     @field:Child private var condNode: Code,
     @field:Child private var thenNode: Code,
     @field:Child private var elseNode: Code,
-    section: Section = Section.default
-  ) : Code(section) {
+    loc: Loc? = null
+  ) : Code(loc) {
     private val conditionProfile = ConditionProfile.createBinaryProfile()
 
     @Throws(NeutralException::class)
@@ -142,8 +140,8 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
     private val arity: Int,
     @field:Child internal var callTarget: RootCallTarget,
     internal val type: Type,
-    section: Section = Section.default
-  ) : Code(section) {
+    loc: Loc? = null
+  ) : Code(loc) {
 
     // do we need to capture an environment?
     private inline fun isSuperCombinator() = closureFrameDescriptor != null
@@ -165,7 +163,7 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
 
 
   @NodeInfo(shortName = "Read")
-  abstract class Var protected constructor(private val slot: FrameSlot, section: Section = Section.default) : Code(section) {
+  abstract class Var protected constructor(private val slot: FrameSlot, loc: Loc? = null) : Code(loc) {
 
     @Specialization(rewriteOn = [FrameSlotTypeException::class])
     @Throws(FrameSlotTypeException::class)
@@ -182,7 +180,7 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
   }
 
   @Suppress("unused")
-  class Ann(@field:Child private var body: Code, val type: Type, section: Section = Section.default) : Code(section) {
+  class Ann(@field:Child private var body: Code, val type: Type, loc: Loc? = null) : Code(loc) {
     @Throws(NeutralException::class)
     override fun execute(frame: VirtualFrame): Any? = body.execute(frame)
     override fun executeAny(frame: VirtualFrame): Any? = body.executeAny(frame)
@@ -201,8 +199,8 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
     val type: Type,
     private val builtin: Builtin,
     @field:Child internal var arg: Code,
-    section: Section = Section.default
-  ) : Code(section) {
+    loc: Loc? = null
+  ) : Code(loc) {
     override fun executeAny(frame: VirtualFrame): Any? =
       try {
         builtin.execute(frame, arg)
@@ -246,7 +244,7 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
 // instrumentation
   @Suppress("NOTHING_TO_INLINE","unused")
   @NodeInfo(shortName = "LitBool")
-  class LitBool(val value: Boolean, section: Section = Section.default): Code(section) {
+  class LitBool(val value: Boolean, loc: Loc? = null): Code(loc) {
     @Suppress("UNUSED_PARAMETER")
     override fun execute(frame: VirtualFrame) = value
     @Suppress("UNUSED_PARAMETER")
@@ -255,7 +253,7 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
 
   @Suppress("NOTHING_TO_INLINE")
   @NodeInfo(shortName = "LitInt")
-  class LitInt(val value: Int, section: Section = Section.default): Code(section) {
+  class LitInt(val value: Int, loc: Loc? = null): Code(loc) {
     @Suppress("UNUSED_PARAMETER")
     override fun execute(frame: VirtualFrame) = value
     @Suppress("UNUSED_PARAMETER")
@@ -264,7 +262,7 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
 
   @Suppress("NOTHING_TO_INLINE","unused")
   @NodeInfo(shortName = "LitBigInt")
-  class LitBigInt(val value: BigInt, section: Section = Section.default): Code(section) {
+  class LitBigInt(val value: BigInt, loc: Loc? = null): Code(loc) {
     @Suppress("UNUSED_PARAMETER")
     override fun execute(frame: VirtualFrame) = value
     @Throws(UnexpectedResultException::class)
@@ -280,31 +278,31 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
 
   companion object {
     @Suppress("NOTHING_TO_INLINE")
-    inline fun `var`(slot: FrameSlot, section: Section = Section.default): Var = CodeFactory.VarNodeGen.create(slot, section)
+    inline fun `var`(slot: FrameSlot, loc: Loc? = null): Var = CodeFactory.VarNodeGen.create(slot, loc)
     // invariant callTarget points to a native function body with known arity
     @Suppress("NOTHING_TO_INLINE","UNUSED")
-    fun lam(callTarget: RootCallTarget, type: Type, section: Section = Section.default): Lam {
+    fun lam(callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       val root = callTarget.rootNode
       assert(root is ClosureRootNode)
-      return lam((root as ClosureRootNode).arity, callTarget, type, section)
+      return lam((root as ClosureRootNode).arity, callTarget, type, loc)
     }
 
     // package a foreign root call target with known arity
     @Suppress("NOTHING_TO_INLINE")
-    fun lam(arity: Int, callTarget: RootCallTarget, type: Type, section: Section = Section.default): Lam {
-      return lam(null, noFrameBuilders, arity, callTarget, type, section)
+    fun lam(arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
+      return lam(null, noFrameBuilders, arity, callTarget, type, loc)
     }
 
     @Suppress("NOTHING_TO_INLINE","unused")
-    fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type, section: Section = Section.default): Lam {
+    fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       val root = callTarget.rootNode
       assert(root is ClosureRootNode)
-      return lam(closureFrameDescriptor, captureSteps, (root as ClosureRootNode).arity, callTarget, type, section)
+      return lam(closureFrameDescriptor, captureSteps, (root as ClosureRootNode).arity, callTarget, type, loc)
     }
 
     // ensures that all the invariants for the constructor are satisfied
     @Suppress("NOTHING_TO_INLINE")
-    fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type, section: Section = Section.default): Lam {
+    fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       assert(arity > 0)
       val hasCaptureSteps = captureSteps.isNotEmpty()
       assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }
@@ -314,7 +312,7 @@ abstract class Code(val section: Section = Section.default) : Node(), Instrument
         arity,
         callTarget,
         type,
-        section
+        loc
       )
     }
   }

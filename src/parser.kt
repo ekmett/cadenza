@@ -6,12 +6,8 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 class ParseError(var pos: Int, message: String? = null) : Exception(message) {
-  constructor(pos: Int, message: String? = null, cause: Throwable): this(pos,message) {
-    initCause(cause)
-  }
   override fun fillInStackTrace() = this // don't record
   companion object { const val serialVersionUID : Long = 1L }
-  override fun toString(): String = message ?: super.toString()
 }
 
 data class Expected(val what: Any, val next: Expected?)

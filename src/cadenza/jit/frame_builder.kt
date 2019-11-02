@@ -37,7 +37,6 @@ abstract class FrameBuilder(
   }
 
   protected fun allowsBooleanSlot(frame: VirtualFrame) = allowsSlotKind(frame, FrameSlotKind.Boolean)
-
   protected fun allowsIntegerSlot(frame: VirtualFrame) = allowsSlotKind(frame, FrameSlotKind.Int)
 
   // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
