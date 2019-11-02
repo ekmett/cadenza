@@ -26,9 +26,7 @@ fun <A> withAnsi(f: () -> A): A {
 }
 
 internal fun PolyglotException.prettyStackTrace(trim: Boolean = true) {
-  val stackTrace = ArrayList<PolyglotException.StackFrame>()
-  for (s in polyglotStackTrace)
-    stackTrace.add(s)
+  val stackTrace = polyglotStackTrace.toMutableList()
   if (trim) {
     val iterator = stackTrace.listIterator(stackTrace.size)
     while (iterator.hasPrevious()) {
@@ -40,8 +38,8 @@ internal fun PolyglotException.prettyStackTrace(trim: Boolean = true) {
   if (isHostException) out.fgRed().a(asHostException().toString())
   else out.fgBrightYellow().a(message)
   out.reset().a('\n').fgBrightBlack()
-  for (s in stackTrace) {
-    out.a(Attribute.ITALIC).a("  at ").a(Attribute.ITALIC_OFF).a(s).a('\n')
+  stackTrace.forEach {
+    out.a(Attribute.ITALIC).a("  at ").a(Attribute.ITALIC_OFF).a(it).a('\n')
   }
   out.reset()
   println(out.toString())
