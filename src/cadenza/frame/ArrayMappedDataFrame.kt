@@ -13,33 +13,38 @@ infix fun PowerMask.prefix(other: Mask) = bitCount((this-1L) and other)
 
 // if we're not concerned with mutation like
 // {@link org.graalvm.compiler.truffle.runtime.FrameWithoutBoxing}
-// then we could use popcount-based indexing like this, reducing the memory pressure by ~2-4
-// the custom loader can let us shave the array overheads
+// then we could use popcount-based indexing like this, reducing the memory pressure by
+// and then shaving a bit more by using ints rather than longs in the idata array. saving
+// 2-6x. Moving on from here, custom classloader may let us shave the array overheads
 
-// TODO: extend this to the entire DataFrame API
-abstract class ArrayMappedDataFrame(
+// implements the portions of the DataFrame API that I'd need for now
+class ArrayMappedDataFrame(
   val adata: Array<Any?>,
   val idata: Array<Int>,
-  val obj : Mask // set for Object
-) {
-  fun isInteger(slot: Slot) = slot.mask isa obj.inv()
-  fun isObject(slot: Slot) = slot.mask isa obj
-
-  fun getValue(slot: Slot): Any? = slot.mask.let {
+  val obj : Mask // anything in adata
+) : DataFrame() {
+  val int: Mask get() = obj.inv()
+  override fun isInteger(slot: Slot) = slot.mask isa int
+  override fun isObject(slot: Slot) = slot.mask isa obj
+  override fun getValue(slot: Slot): Any? = slot.mask.let {
     if (it isa obj) adata[it prefix obj]
-    else idata[it prefix obj.inv()]
+    else idata[it prefix int]
   }
-
   @Throws(FrameSlotTypeException::class)
-  fun getInteger(slot: Slot): Int = slot.mask.let {
+  override fun getInteger(slot: Slot): Int = slot.mask.let {
     if (it isa obj) throw FrameSlotTypeException()
-    idata[it prefix obj.inv()]
+    idata[it prefix int]
   }
-
   @Throws(FrameSlotTypeException::class)
-  fun getObject(slot: Slot): Any? = slot.mask.let {
-    if (it isa obj.inv()) throw FrameSlotTypeException()
+  override fun getObject(slot: Slot): Any? = slot.mask.let {
+    if (it isa int) throw FrameSlotTypeException()
     idata[it prefix obj]
   }
 
+  override fun getDouble(slot: Slot) = throw FrameSlotTypeException()
+  override fun isDouble(slot: Slot): Boolean = false
+  override fun getFloat(slot: Slot): Float = throw FrameSlotTypeException()
+  override fun isFloat(slot: Slot): Boolean = false
+  override fun getLong(slot: Slot): Long = throw FrameSlotTypeException()
+  override fun isLong(slot: Slot): Boolean = false
 }

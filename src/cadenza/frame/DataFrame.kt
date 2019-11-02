@@ -7,7 +7,6 @@ typealias Slot = Int
 // these are all the distinctions the JVM cares about
 abstract class DataFrame {
   abstract fun getValue(slot: Slot): Any?
-  abstract fun getSize() : Int
 
   @Throws(FrameSlotTypeException::class)
   abstract fun getDouble(slot: Slot): Double // D

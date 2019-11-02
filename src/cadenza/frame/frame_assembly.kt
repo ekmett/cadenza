@@ -14,7 +14,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.LabelNode
 
-// manufacture cadenza.frame.frame.IIO, OIO, etc.
+// manufacture cadenza.frame.dynamic.IIO, OIO, etc.
 
 // an immutable dataframe modeling the different backing storage types allowed by the jvm
 
@@ -27,7 +27,7 @@ private fun assembleThrow(asm: Block, exceptionType: Type) = asm.run {
 }
 
 // we should also build a fallback version for holding neutrals as a subclass?
-fun frame(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/$signature") {
+fun frame(signature: String) : ByteArray = `class`(public,"cadenza/frame/dynamic/$signature") {
   interfaces = mutableListOf(type(DataFrame::class).internalName)
   val types = signature.map { FieldInfo.of(it) }.toTypedArray()
   val N = types.size
@@ -140,7 +140,7 @@ val child: AnnotationNode get() = annotationNode(+Node.Child::class)
 val code = +Code::class
 
 fun builder(signature: String) : ByteArray = `class`(
-  public and final and `super`,"cadenza/jit/${signature}_Builder", superName = code.internalName
+  public and final and `super`,"cadenza/jit/dynamic/${signature}_Builder", superName = code.internalName
 ) {
   val types = signature.map { FieldInfo.of(it) }.toTypedArray()
   val members = types.indices.map { "_$it" }.toTypedArray()
