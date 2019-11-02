@@ -277,10 +277,10 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
   }
 
   companion object {
-    @Suppress("NOTHING_TO_INLINE")
-    inline fun `var`(slot: FrameSlot, loc: Loc? = null): Var = CodeFactory.VarNodeGen.create(slot, loc)
+    fun `var`(slot: FrameSlot, loc: Loc? = null): Var = CodeFactory.VarNodeGen.create(slot, loc)
+
     // invariant callTarget points to a native function body with known arity
-    @Suppress("NOTHING_TO_INLINE","UNUSED")
+    @Suppress("UNUSED")
     fun lam(callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       val root = callTarget.rootNode
       assert(root is ClosureRootNode)
@@ -288,12 +288,11 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     }
 
     // package a foreign root call target with known arity
-    @Suppress("NOTHING_TO_INLINE")
     fun lam(arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       return lam(null, noFrameBuilders, arity, callTarget, type, loc)
     }
 
-    @Suppress("NOTHING_TO_INLINE","unused")
+    //@Suppress("unused")
     fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       val root = callTarget.rootNode
       assert(root is ClosureRootNode)
@@ -301,7 +300,6 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     }
 
     // ensures that all the invariants for the constructor are satisfied
-    @Suppress("NOTHING_TO_INLINE")
     fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       assert(arity > 0)
       val hasCaptureSteps = captureSteps.isNotEmpty()

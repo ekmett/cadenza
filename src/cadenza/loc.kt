@@ -3,7 +3,7 @@ package cadenza
 import com.oracle.truffle.api.source.Source
 import com.oracle.truffle.api.source.SourceSection
 
-sealed class Loc() {
+sealed class Loc {
   abstract fun section(source: Source): SourceSection
   object Unavailable : Loc() {
     override fun section(source: Source): SourceSection = source.createUnavailableSection()

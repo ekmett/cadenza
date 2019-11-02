@@ -1,19 +1,18 @@
 package cadenza
 
 import org.fusesource.jansi.Ansi
-import org.fusesource.jansi.Ansi.*
+import org.fusesource.jansi.Ansi.Attribute
+import org.fusesource.jansi.Ansi.ansi
 import org.fusesource.jansi.AnsiConsole
-import org.graalvm.launcher.*
+import org.graalvm.launcher.AbstractLanguageLauncher
 import org.graalvm.options.OptionCategory
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.PolyglotException
 import org.graalvm.polyglot.Source
-
 import java.io.File
 import java.io.IOException
 import java.nio.file.Paths
 import java.util.*
-import kotlin.io.*
 import kotlin.system.exitProcess
 
 fun <A> withAnsi(f: () -> A): A {
@@ -94,16 +93,11 @@ class Launcher : AbstractLanguageLauncher() {
         "--show-version" -> versionAction = VersionAction.PrintAndContinue
         "--version" -> versionAction = VersionAction.PrintAndExit
         else -> {
-          //var optionName = option
-          val argument: String?
           val equalsIndex = option.indexOf('=')
-          when {
-            equalsIndex > 0 -> {
-              argument = option.substring(equalsIndex + 1)
-              //optionName = option.substring(0, equalsIndex)
-            }
-            iterator.hasNext() -> argument = iterator.next()
-            else -> argument = null
+          val argument = when {
+            equalsIndex > 0 -> option.substring(equalsIndex + 1)
+            iterator.hasNext() -> iterator.next()
+            else -> null
           }
           unrecognizedOptions.add(option)
           if (equalsIndex < 0 && argument != null) iterator.previous()
@@ -132,7 +126,7 @@ class Launcher : AbstractLanguageLauncher() {
   }
 
   override fun printHelp(_maxCategory: OptionCategory) {
-    Ansi.ansi().run {
+    ansi().run {
       newline()
       render("Usage: @|italic,blue cadenza|@ @|bold [OPTION]|@... @|bold [FILE]|@ @|bold [PROGRAM ARGS]|@\n\n")
       a("Run cadenza programs on GraalVM\n\n")

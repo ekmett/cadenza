@@ -114,7 +114,7 @@ class Language : TruffleLanguage<Language.Context>() {
 
   class Context(
     @Suppress("unused") val language: Language,
-    var env: TruffleLanguage.Env
+    var env: Env
   ) {
     val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")!!
     fun shutdown() {}

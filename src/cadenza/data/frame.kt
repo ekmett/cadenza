@@ -1,7 +1,6 @@
 package cadenza.data // cadenza.aot?
 
 import cadenza.jit.Code
-import org.intelligence.asm.*
 import cadenza.panic
 import cadenza.todo
 import com.oracle.truffle.api.dsl.TypeSystemReference
@@ -10,10 +9,10 @@ import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.Node
 import com.oracle.truffle.api.nodes.NodeCost
 import com.oracle.truffle.api.nodes.NodeInfo
-import org.objectweb.asm.Opcodes.ASM7
-import org.objectweb.asm.tree.*
+import org.intelligence.asm.*
 import org.objectweb.asm.Type
-import java.lang.IndexOutOfBoundsException
+import org.objectweb.asm.tree.AnnotationNode
+import org.objectweb.asm.tree.LabelNode
 
 // manufacture cadenza.data.frame.IIO, OIO, etc.
 
@@ -47,7 +46,7 @@ abstract class DataFrame {
   abstract fun isObject(slot: Slot): Boolean
 }
 
-final class SimpleDataFrame(vararg val data: Any?) {
+class SimpleDataFrame(vararg val data: Any?) {
   fun getValue(slot: Slot) = data[slot]
   fun getSize() = data.size
   @Throws(FrameSlotTypeException::class)
