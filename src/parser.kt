@@ -1,23 +1,15 @@
 package org.intelligence.parser
 
-import com.oracle.truffle.api.source.Source
-import org.intelligence.diagnostics.Severity
-import org.intelligence.diagnostics.error
-import org.intelligence.pretty.Pretty
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class Parse(val source: Source) {
+open class Parse(val characters: CharSequence) {
   class Error(var pos: Int, message: String? = null) : Exception(message) {
     override fun fillInStackTrace() = this // don't record
     companion object { const val serialVersionUID : Long = 1L }
   }
-
   data class Expected(val what: Any, val next: Expected?)
-
-  val characters: CharSequence = source.characters
   var expects: Expected? = null // var is intended, we swap it out regularly
-
   var pos: Int = 0
     set(value) {
       if (field != value) {
@@ -25,7 +17,6 @@ class Parse(val source: Source) {
         expects = null
       }
     }
-
   val expected: List<Any> get() = expects.toList()
 }
 
@@ -39,27 +30,6 @@ fun Parse.Expected?.toList() : List<Any> {
   return out
 }
 
-// these would nested classes but for KT-1395 screwing up my namespaces
-sealed class ParseResult<out T>
-data class ParseSuccess<T>(val value: T): ParseResult<T>()
-data class ParseFailure(
-  val source: Source,
-  val pos: Int,
-  val message: String? = null,
-  val expected: List<Any> = emptyList()
-): ParseResult<Nothing>() {
-  val line: Int get() = source.getLineNumber(pos)
-  val col: Int get() = source.getColumnNumber(pos)
-  val loc : String get() = "${source.name}:$line:$col"
-  override fun toString(): String = Pretty.ppString {
-    error(Severity.error, source, pos, message, *expected.toTypedArray())
-  }
-}
-
-val Parse.name: String get() = source.name
-val Parse.path: String get() = source.path
-val Parse.line: Int get() = source.getLineNumber(pos)
-val Parse.col: Int get() = source.getColumnNumber(pos)
 
 // parsers consume parsestate as this and throw Parsing.Errors on failure
 typealias Parser<T> = Parse.() -> T
@@ -117,7 +87,7 @@ val Parse.next: Char
     return characters[pos++]
   }
 
-inline fun <T> Parse.trying(what: Any, action: Parser<T>): T = pos.let {
+inline fun <P,T> P.trying(what: Any, action: P.() -> T): T where P : Parse = pos.let {
   val oldExpected = expects
   expects = null
   try { action(this) }
@@ -128,7 +98,7 @@ inline fun <T> Parse.trying(what: Any, action: Parser<T>): T = pos.let {
   }
 }
 
-fun <T> Parse.named(what: Any, action: Parser<T>): T = pos.let {
+inline fun <P,T> P.named(what: Any, action: P.() -> T): T where P : Parse = pos.let {
   val oldExpected = expects
   expects = null
   try { return action(this)
@@ -148,7 +118,7 @@ fun Parse.match(pattern: Pattern) : Matcher =
   }
 
 @Suppress("NOTHING_TO_INLINE") // really?
-inline fun <T> Parse.choice(vararg alts: Parser<T>): T {
+inline fun <P,T> P.choice(vararg alts: P.() -> T): T where P : Parse {
   val old = pos
   alts.forEach {
     try {
@@ -161,7 +131,7 @@ inline fun <T> Parse.choice(vararg alts: Parser<T>): T {
 }
 
 @Throws(Parse.Error::class)
-inline fun <T> Parse.many(item: Parser<T>): List<T> {
+inline fun <P,T> P.many(item: P.() -> T): List<T> where P : Parse {
   val result = mutableListOf<T>()
   while (true) {
     val old = pos
@@ -175,7 +145,7 @@ inline fun <T> Parse.many(item: Parser<T>): List<T> {
 }
 
 @Throws(Parse.Error::class)
-inline fun <T> Parse.some(item: Parser<T>): List<T> {
+inline fun <P,T> P.some(item: P.() -> T): List<T> where P : Parse {
   val result = mutableListOf<T>()
   result.add(item(this))
   while (true) {
@@ -190,7 +160,7 @@ inline fun <T> Parse.some(item: Parser<T>): List<T> {
 }
 
 @Throws(Parse.Error::class)
-inline fun <T> Parse.optional(item: Parser<T>): T? {
+inline fun <P,T> P.optional(item: P.() -> T): T? where P : Parse {
   val old = pos
   return try {
     item(this)
@@ -204,7 +174,7 @@ inline fun <T> Parse.optional(item: Parser<T>): T? {
 fun <T> Parse.parse(p: Parser<T>): T = p(this)
 
 @Throws(Parse.Error::class)
-inline fun <A,B> Parse.manyTillPair(p: Parser<A>, q: Parser<B>): Pair<List<A>,B> {
+inline fun <P,A,B> P.manyTillPair(p: P.() -> A, q: P.() -> B): Pair<List<A>,B> where P : Parse {
   val result = mutableListOf<A>()
   while (true) {
     val last = optional(q)
@@ -214,7 +184,7 @@ inline fun <A,B> Parse.manyTillPair(p: Parser<A>, q: Parser<B>): Pair<List<A>,B>
 }
 
 @Throws(Parse.Error::class)
-inline fun <A> Parse.manyTill(p: Parser<A>, q: Parser<*>): List<A> {
+inline fun <P,A> P.manyTill(p: P.() -> A, q: P.() -> Any): List<A> where P : Parse {
   val result = mutableListOf<A>()
   while (true) {
     val last = optional(q)
@@ -222,12 +192,3 @@ inline fun <A> Parse.manyTill(p: Parser<A>, q: Parser<*>): List<A> {
     result.add(p(this))
   }
 }
-
-fun <T> Source.parse(parser: Parser<T>) : ParseResult<T> =
-  Parse(this).let {
-    try {
-      ParseSuccess(parser(it))
-    } catch (e: Parse.Error) {
-      ParseFailure(this, it.pos, e.message, it.expects.toList())
-    }
-  }
