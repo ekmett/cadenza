@@ -1,18 +1,35 @@
 package org.intelligence.parser
 
-import org.intelligence.pretty.*
 import com.oracle.truffle.api.source.Source
+import org.intelligence.diagnostics.Severity
+import org.intelligence.diagnostics.error
+import org.intelligence.pretty.Pretty
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-class ParseError(var pos: Int, message: String? = null) : Exception(message) {
-  override fun fillInStackTrace() = this // don't record
-  companion object { const val serialVersionUID : Long = 1L }
+class Parse(val source: Source) {
+  class Error(var pos: Int, message: String? = null) : Exception(message) {
+    override fun fillInStackTrace() = this // don't record
+    companion object { const val serialVersionUID : Long = 1L }
+  }
+
+  data class Expected(val what: Any, val next: Expected?)
+
+  val characters: CharSequence = source.characters
+  var expects: Expected? = null // var is intended, we swap it out regularly
+
+  var pos: Int = 0
+    set(value) {
+      if (field != value) {
+        field = value
+        expects = null
+      }
+    }
+
+  val expected: List<Any> get() = expects.toList()
 }
 
-data class Expected(val what: Any, val next: Expected?)
-
-fun Expected?.toList() : List<Any> {
+fun Parse.Expected?.toList() : List<Any> {
   val out = mutableListOf<Any>()
   var current = this
   while (current != null) {
@@ -22,223 +39,10 @@ fun Expected?.toList() : List<Any> {
   return out
 }
 
-class ParseState(val source: Source) {
-  val characters: CharSequence = source.characters
-  var expected: Expected? = null // var is intended, we swap it out regularly
-  var pos: Int = 0
-    set(value) {
-      if (field != value) {
-        field = value
-        expected = null
-      }
-    }
-}
-
-val ParseState.name: String get() = source.name
-val ParseState.path: String get() = source.path
-val ParseState.line: Int get() = source.getLineNumber(pos)
-val ParseState.col: Int get() = source.getColumnNumber(pos)
-
-// parsers consume parsestate as this and throw ParseErrors on failure
-typealias Parser<T> = ParseState.() -> T
-
-// mark/release support
-inline class Mark(val pos: Int)
-val ParseState.mark: Mark get() = Mark(pos)
-fun ParseState.release(mark: Mark) { pos = mark.pos }
-
-@Throws(ParseError::class)
-fun ParseState.fail(message: String? = null): Nothing = throw ParseError(pos, message)
-
-@Throws(ParseError::class)
-fun ParseState.expected(what: Any): Nothing {
-  expected = Expected(what, expected)
-  throw ParseError(pos)
-}
-
-fun <A> parser(p: Parser<A>): Parser<A> = p
-
-@Throws(ParseError::class)
-fun expected2(what: Any): Parser<Nothing> = parser {
-  expected = Expected(what, expected)
-  throw ParseError(pos)
-}
-
-val ParseState.eof: Unit
-  @Throws(ParseError::class)
-  get() {
-    if (!atEof) expected("EOF")
-  }
-
-val ParseState.atEof: Boolean get() = pos == characters.length
-
-@Throws(ParseError::class)
-fun ParseState.char(c: Char): Char {
-  if (pos >= characters.length || c != characters[pos]) expected(c)
-  ++pos
-  return c
-}
-
-@Throws(ParseError::class)
-fun ParseState.satisfy(predicate : (Char) -> Boolean): Char {
-  if (pos >= characters.length) fail()
-  val c = characters[pos]
-  if (!predicate(c)) fail()
-  ++pos
-  return c
-}
-
-val ParseState.next: Char
-  @Throws(ParseError::class)
-  get() {
-    if (pos >= characters.length) expected("any character")
-    return characters[pos++]
-  }
-
-inline fun <T> ParseState.trying(what: Any, action: Parser<T>): T = pos.let {
-  val oldExpected = expected
-  expected = null
-  try { action(this) }
-  catch (e: ParseError) {
-    pos = it
-    expected = Expected(what, oldExpected)
-    throw ParseError(it) // with no expectations or message
-  }
-}
-
-fun <T> ParseState.named(what: Any, action: Parser<T>): T = pos.let {
-  val oldExpected = expected
-  expected = null
-  try { return action(this)
-  } catch (e: ParseError) {
-    if (e.pos == it) expected = Expected(what, oldExpected)
-    throw e
-  }
-}
-
-@Throws(ParseError::class)
-fun ParseState.match(pattern: Pattern) : Matcher =
-  pattern.matcher(characters).also {
-    it.useTransparentBounds(true)
-    it.region(pos,characters.length)
-    if (!it.lookingAt()) expected(pattern)
-    pos = it.end()
-  }
-
-@Suppress("NOTHING_TO_INLINE") // really?
-inline fun <T> ParseState.choice(vararg alts: Parser<T>): T {
-  val old = pos
-  alts.forEach {
-    try {
-      return it(this)
-    } catch (e: ParseError) {
-      if (e.pos != old) throw e //  position didn't change, try next alternative
-    }
-  }
-  throw ParseError(old)
-}
-
-@Throws(ParseError::class)
-inline fun <T> ParseState.many(item: Parser<T>): List<T> {
-  val result = mutableListOf<T>()
-  while (true) {
-    val old = pos
-    try {
-      result.add(item(this))
-    } catch (e: ParseError) {
-      if (e.pos == old) return result // failed without consuming, success
-      throw e
-    }
-  }
-}
-
-@Throws(ParseError::class)
-inline fun <T> ParseState.some(item: Parser<T>): List<T> {
-  val result = mutableListOf<T>()
-  result.add(item(this))
-  while (true) {
-    val old = pos
-    try {
-      result.add(item(this))
-    } catch (e: ParseError) {
-      if (e.pos == old) return result
-      throw e
-    }
-  }
-}
-
-@Throws(ParseError::class)
-inline fun <T> ParseState.optional(item: Parser<T>): T? {
-  val old = pos
-  return try {
-    item(this)
-  } catch (e: ParseError) {
-    if (pos == old) null
-    else throw e
-  }
-}
-
-@Throws(ParseError::class)
-fun <T> ParseState.parse(p: Parser<T>): T = p(this)
-
-@Throws(ParseError::class)
-inline fun <A,B> ParseState.manyTillPair(p: Parser<A>, q: Parser<B>): Pair<List<A>,B> {
-  val result = mutableListOf<A>()
-  while (true) {
-    val last = optional(q)
-    if (last != null) return Pair(result,last)
-    result.add(p(this))
-  }
-}
-
-@Throws(ParseError::class)
-inline fun <A> ParseState.manyTill(p: Parser<A>, q: Parser<*>): List<A> {
-  val result = mutableListOf<A>()
-  while (true) {
-    val last = optional(q)
-    if (last != null) return result
-    result.add(p(this))
-  }
-}
-
+// these would nested classes but for KT-1395 screwing up my namespaces
 sealed class ParseResult<out T>
-data class Success<T>(val value: T): ParseResult<T>()
-
-enum class Severity { info, warning, error }
-
-// convenient pretty printer
-fun Pretty.error(source: Source, severity: Severity = Severity.error, pos: Int, message: String? = null, vararg expected: Any) {
-  val l = source.getLineNumber(pos)
-  val c = source.getColumnNumber(pos)
-  bold {
-    text(source.name); char(':'); simple(l); char(':'); simple(c); space
-    when (severity) {
-      Severity.error -> red { text("error:") }
-      Severity.warning -> magenta { text("warning:") }
-      Severity.info -> blue { text("info:") }
-    }
-    space
-    nest(2) {
-      if (expected.isEmpty()) text(message ?: "expected nothing")
-      else {
-        if (message != null) {
-          text(message);text(",");space
-        }
-        text("expected")
-        space
-        oxfordBy(by = Pretty::simple, conjunction = "or", docs = *expected)
-      }
-    }
-  }
-  hardLine
-  val ls = source.getLineStartOffset(l)
-  val ll = source.getLineLength(l)
-  text(source.characters.subSequence(ls, ls+ll))
-  nest(c-1) { newline; cyan { char('^') } }
-  hardLine
-}
-
-data class Failure(
+data class ParseSuccess<T>(val value: T): ParseResult<T>()
+data class ParseFailure(
   val source: Source,
   val pos: Int,
   val message: String? = null,
@@ -247,14 +51,183 @@ data class Failure(
   val line: Int get() = source.getLineNumber(pos)
   val col: Int get() = source.getColumnNumber(pos)
   val loc : String get() = "${source.name}:$line:$col"
-  override fun toString(): String = Pretty.ppString { error(source, Severity.error, pos, message, *expected.toTypedArray()) }
+  override fun toString(): String = Pretty.ppString {
+    error(Severity.error, source, pos, message, *expected.toTypedArray())
+  }
+}
+
+val Parse.name: String get() = source.name
+val Parse.path: String get() = source.path
+val Parse.line: Int get() = source.getLineNumber(pos)
+val Parse.col: Int get() = source.getColumnNumber(pos)
+
+// parsers consume parsestate as this and throw Parsing.Errors on failure
+typealias Parser<T> = Parse.() -> T
+
+// mark/release support
+inline class Mark(val pos: Int)
+val Parse.mark: Mark get() = Mark(pos)
+fun Parse.release(mark: Mark) { pos = mark.pos }
+
+@Throws(Parse.Error::class)
+fun Parse.fail(message: String? = null): Nothing = throw Parse.Error(pos, message)
+
+@Throws(Parse.Error::class)
+fun Parse.expected(what: Any): Nothing {
+  expects = Parse.Expected(what, expects)
+  throw Parse.Error(pos)
+}
+
+fun <A> parser(p: Parser<A>): Parser<A> = p
+
+@Throws(Parse.Error::class)
+fun expected2(what: Any): Parser<Nothing> = parser {
+  expects = Parse.Expected(what, expects)
+  throw Parse.Error(pos)
+}
+
+val Parse.eof: Unit
+  @Throws(Parse.Error::class)
+  get() {
+    if (!atEof) expected("EOF")
+  }
+
+val Parse.atEof: Boolean get() = pos == characters.length
+
+@Throws(Parse.Error::class)
+fun Parse.char(c: Char): Char {
+  if (pos >= characters.length || c != characters[pos]) expected(c)
+  ++pos
+  return c
+}
+
+@Throws(Parse.Error::class)
+fun Parse.satisfy(predicate : (Char) -> Boolean): Char {
+  if (pos >= characters.length) fail()
+  val c = characters[pos]
+  if (!predicate(c)) fail()
+  ++pos
+  return c
+}
+
+val Parse.next: Char
+  @Throws(Parse.Error::class)
+  get() {
+    if (pos >= characters.length) expected("any character")
+    return characters[pos++]
+  }
+
+inline fun <T> Parse.trying(what: Any, action: Parser<T>): T = pos.let {
+  val oldExpected = expects
+  expects = null
+  try { action(this) }
+  catch (e: Parse.Error) {
+    pos = it
+    expects = Parse.Expected(what, oldExpected)
+    throw Parse.Error(it) // with no expectations or message
+  }
+}
+
+fun <T> Parse.named(what: Any, action: Parser<T>): T = pos.let {
+  val oldExpected = expects
+  expects = null
+  try { return action(this)
+  } catch (e: Parse.Error) {
+    if (e.pos == it) expects = Parse.Expected(what, oldExpected)
+    throw e
+  }
+}
+
+@Throws(Parse.Error::class)
+fun Parse.match(pattern: Pattern) : Matcher =
+  pattern.matcher(characters).also {
+    it.useTransparentBounds(true)
+    it.region(pos,characters.length)
+    if (!it.lookingAt()) expected(pattern)
+    pos = it.end()
+  }
+
+@Suppress("NOTHING_TO_INLINE") // really?
+inline fun <T> Parse.choice(vararg alts: Parser<T>): T {
+  val old = pos
+  alts.forEach {
+    try {
+      return it(this)
+    } catch (e: Parse.Error) {
+      if (e.pos != old) throw e //  position didn't change, try next alternative
+    }
+  }
+  throw Parse.Error(old)
+}
+
+@Throws(Parse.Error::class)
+inline fun <T> Parse.many(item: Parser<T>): List<T> {
+  val result = mutableListOf<T>()
+  while (true) {
+    val old = pos
+    try {
+      result.add(item(this))
+    } catch (e: Parse.Error) {
+      if (e.pos == old) return result // failed without consuming, success
+      throw e
+    }
+  }
+}
+
+@Throws(Parse.Error::class)
+inline fun <T> Parse.some(item: Parser<T>): List<T> {
+  val result = mutableListOf<T>()
+  result.add(item(this))
+  while (true) {
+    val old = pos
+    try {
+      result.add(item(this))
+    } catch (e: Parse.Error) {
+      if (e.pos == old) return result
+      throw e
+    }
+  }
+}
+
+@Throws(Parse.Error::class)
+inline fun <T> Parse.optional(item: Parser<T>): T? {
+  val old = pos
+  return try {
+    item(this)
+  } catch (e: Parse.Error) {
+    if (pos == old) null
+    else throw e
+  }
+}
+
+@Throws(Parse.Error::class)
+fun <T> Parse.parse(p: Parser<T>): T = p(this)
+
+@Throws(Parse.Error::class)
+inline fun <A,B> Parse.manyTillPair(p: Parser<A>, q: Parser<B>): Pair<List<A>,B> {
+  val result = mutableListOf<A>()
+  while (true) {
+    val last = optional(q)
+    if (last != null) return Pair(result,last)
+    result.add(p(this))
+  }
+}
+
+@Throws(Parse.Error::class)
+inline fun <A> Parse.manyTill(p: Parser<A>, q: Parser<*>): List<A> {
+  val result = mutableListOf<A>()
+  while (true) {
+    val last = optional(q)
+    if (last != null) return result
+    result.add(p(this))
+  }
 }
 
 fun <T> Source.parse(parser: Parser<T>) : ParseResult<T> =
-  ParseState(this).let {
+  Parse(this).let {
     try {
-      Success(parser(it))
-    } catch (e: ParseError) {
-      Failure(this, it.pos, e.message, it.expected.toList())
+      ParseSuccess(parser(it))
+    } catch (e: Parse.Error) {
+      ParseFailure(this, it.pos, e.message, it.expects.toList())
     }
   }

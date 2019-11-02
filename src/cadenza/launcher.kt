@@ -34,8 +34,9 @@ internal fun PolyglotException.prettyStackTrace(trim: Boolean = true) {
     }
   }
   val out = ansi()
-  if (isHostException) out.fgRed().a(asHostException().toString())
-  else out.fgBrightYellow().a(message)
+  //if (isHostException) out.fgRed().a(asHostException().toString())
+  //else out.fgBrightYellow().a(message)
+  out.a(if (isHostException) asHostException().toString() else message)
   out.reset().a('\n').fgBrightBlack()
   stackTrace.forEach {
     out.a(Attribute.ITALIC).a("  at ").a(Attribute.ITALIC_OFF).a(it).a('\n')

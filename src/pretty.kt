@@ -1,6 +1,6 @@
 package org.intelligence.pretty
 
-import org.fusesource.jansi.*
+import org.fusesource.jansi.Ansi
 
 // assumptions
 typealias W = Int // characters
@@ -107,8 +107,8 @@ class Pretty(
 ) {
   fun tell(a: Out) = output.add(a)
 
-  internal class Fail : RuntimeException() { override fun fillInStackTrace() = this }
-  internal val fail: Nothing get() { throw Fail() }
+  internal object Bad : RuntimeException() { override fun fillInStackTrace() = this }
+  internal val bad: Nothing get() { assert(canFail); throw Bad }
 
   companion object {
     const val DEFAULT_MAX_WIDTH: Int = 80
@@ -140,7 +140,7 @@ class Pretty(
   val newline: Unit get() { hardLine; space(nesting) }
   internal fun chunk(c: Chunk) {
     val newLineLen = curLineLen + c.len()
-    if (canFail && (nesting + newLineLen > maxWidth || newLineLen > maxRibbon)) fail
+    if (canFail && (nesting + newLineLen > maxWidth || newLineLen > maxRibbon)) bad
     tell(c)
     curLineLen = newLineLen
   }
@@ -163,7 +163,7 @@ inline fun <A> Pretty.grouped(body: D<A>): A {
     isFlat = true
     try {
       return body(this)
-    } catch(e: Pretty.Fail) {
+    } catch(e: Pretty.Bad) {
     } finally {
       canFail = oldCanFail
       isFlat = false
@@ -384,3 +384,4 @@ fun<A> Pretty.italic(f: D<A>): A =
     }
     annotate(ann, f)
   }
+
