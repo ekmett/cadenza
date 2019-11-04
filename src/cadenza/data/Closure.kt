@@ -22,8 +22,6 @@ class Closure (
   val type: Type,
   val callTarget: RootCallTarget
 ) : TruffleObject {
-  @Suppress("NOTHING_TO_INLINE")
-  private inline fun isSuperCombinator() = env != null
 
   init {
     assert(callTarget.rootNode is ClosureRootNode) { "not a function body" }
@@ -52,9 +50,14 @@ class Closure (
     return when {
       len < arity -> pap(arguments)
       len == arity ->
-        if (isSuperCombinator()) callTarget.call(cons(env, arguments))
+        if (env != null) callTarget.call(cons(env, arguments))
         else callTarget.call(arguments)
-      else -> (callTarget.call(consTake(env, arity, arguments)) as Closure).call(drop(arity, arguments))
+      else -> {
+        val g =
+          if (env != null) callTarget.call(consTake(env, arity, arguments))
+          else callTarget.call(arguments.take(arity))
+        (g as Closure).call(drop(arity, arguments))
+      }
     }
   }
 
@@ -67,28 +70,25 @@ class Closure (
 
 // TODO: incompatible, pick one
 @ExplodeLoop
-@Suppress("NOTHING_TO_INLINE")
-private inline fun <reified T> cons(x: T, xs: Array<out T>): Array<T> {
-  val ys = arrayOfNulls<T>(xs.size + 1)
+private fun cons(x: Any, xs: Array<out Any?>): Array<Any?> {
+  val ys = arrayOfNulls<Any>(xs.size + 1)
   ys[0] = x
   System.arraycopy(xs, 0, ys, 1, xs.size)
   @Suppress("UNCHECKED_CAST")
-  return ys as Array<T>
+  return ys
 }
 
 @ExplodeLoop
-@Suppress("NOTHING_TO_INLINE")
-private inline fun <reified T> consTake(x: T, n: Int, xs: Array<out T>): Array<T> {
-  val ys = arrayOfNulls<T>(n + 1)
+private fun consTake(x: Any, n: Int, xs: Array<out Any?>): Array<Any?> {
+  val ys = arrayOfNulls<Any>(n + 1)
   ys[0] = x
   System.arraycopy(xs, 0, ys, 1, n)
   @Suppress("UNCHECKED_CAST")
-  return ys as Array<T>
+  return ys
 }
 
 @ExplodeLoop
-@Suppress("NOTHING_TO_INLINE")
-private inline fun <T> drop(k: Int, xs: Array<out T>): Array<T> {
+private fun drop(k: Int, xs: Array<out Any?>): Array<Any?> {
   @Suppress("UNCHECKED_CAST")
-  return (xs as Array<T>).copyOfRange(k, xs.size) // kotlin operator requires an Array<T> not an Array<out T>, grr.
+  return (xs as Array<Any?>).copyOfRange(k, xs.size) // kotlin operator requires an Array<T> not an Array<out T>, grr.
 }

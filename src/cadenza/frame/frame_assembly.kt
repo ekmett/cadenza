@@ -82,7 +82,7 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/frame/dynamic
     field(public and final,types[i].type,members[i])
 
   constructor(public and final, parameterTypes = *types.map{it.type}.toTypedArray()) {
-    asm {
+    asm.`return` {
       for (i in types.indices) {
         types[i].load(this, i+1)
         putfield(type, members[i], types[i].type)
@@ -105,11 +105,11 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/frame/dynamic
     asm {
       val defaultLabel = LabelNode()
       val labels = members.map { LabelNode() }.toTypedArray()
+      aload_0
       iload_1
       tableswitch(0,N-1,defaultLabel,*labels)
       for (i in labels.indices) {
         add(labels[i])
-        aload_0
         getfield(type,members[i],types[i].type)
         types[i].box(this)
         areturn
@@ -121,9 +121,8 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/frame/dynamic
 
   // purely for debugging
   method(public and final, int, "getSize") {
-    asm {
+    asm.ireturn {
       push(types.size)
-      ireturn
     }
   }
 }
