@@ -1,0 +1,37 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>org.intelligence.diagnostics - cadenza</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">org.intelligence.diagnostics</a><br/>
+<br/>
+<h2>Package org.intelligence.diagnostics</h2>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-severity/index.html">Severity</a></h4>
+</td>
+<td>
+<code><span class="keyword">enum</span> <span class="keyword">class </span><span class="identifier">Severity</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="error.html">error</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../org.intelligence.pretty/-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">error</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, kotlin.String, kotlin.Int, kotlin.Int, kotlin.CharSequence, kotlin.String, kotlin.Array((kotlin.Any)))/severity">severity</span><span class="symbol">:</span>&nbsp;<a href="-severity/index.html"><span class="identifier">Severity</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Severity.error<span class="symbol">, </span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, kotlin.String, kotlin.Int, kotlin.Int, kotlin.CharSequence, kotlin.String, kotlin.Array((kotlin.Any)))/file">file</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, kotlin.String, kotlin.Int, kotlin.Int, kotlin.CharSequence, kotlin.String, kotlin.Array((kotlin.Any)))/line">line</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, kotlin.String, kotlin.Int, kotlin.Int, kotlin.CharSequence, kotlin.String, kotlin.Array((kotlin.Any)))/col">col</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, kotlin.String, kotlin.Int, kotlin.Int, kotlin.CharSequence, kotlin.String, kotlin.Array((kotlin.Any)))/sourceLine">sourceLine</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char-sequence/index.html"><span class="identifier">CharSequence</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, kotlin.String, kotlin.Int, kotlin.Int, kotlin.CharSequence, kotlin.String, kotlin.Array((kotlin.Any)))/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, kotlin.String, kotlin.Int, kotlin.Int, kotlin.CharSequence, kotlin.String, kotlin.Array((kotlin.Any)))/expected">expected</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code><br/>
+<code><span class="keyword">fun </span><a href="../org.intelligence.pretty/-pretty/index.html"><span class="identifier">Pretty</span></a><span class="symbol">.</span><span class="identifier">error</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, com.oracle.truffle.api.source.Source, kotlin.Int, kotlin.String, kotlin.Array((kotlin.Any)))/severity">severity</span><span class="symbol">:</span>&nbsp;<a href="-severity/index.html"><span class="identifier">Severity</span></a>&nbsp;<span class="symbol">=</span>&nbsp;Severity.error<span class="symbol">, </span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, com.oracle.truffle.api.source.Source, kotlin.Int, kotlin.String, kotlin.Array((kotlin.Any)))/source">source</span><span class="symbol">:</span>&nbsp;<span class="identifier">Source</span><span class="symbol">, </span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, com.oracle.truffle.api.source.Source, kotlin.Int, kotlin.String, kotlin.Array((kotlin.Any)))/pos">pos</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, com.oracle.truffle.api.source.Source, kotlin.Int, kotlin.String, kotlin.Array((kotlin.Any)))/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">, </span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.diagnostics$error(org.intelligence.pretty.Pretty, org.intelligence.diagnostics.Severity, com.oracle.truffle.api.source.Source, kotlin.Int, kotlin.String, kotlin.Array((kotlin.Any)))/expected">expected</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

@@ -1,0 +1,123 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>cadenza.frame - cadenza</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">cadenza</a>&nbsp;/&nbsp;<a href="./index.html">cadenza.frame</a><br/>
+<br/>
+<h2>Package cadenza.frame</h2>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-array-mapped-data-frame/index.html">ArrayMappedDataFrame</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">ArrayMappedDataFrame</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-data-frame/index.html"><span class="identifier">DataFrame</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-data-frame/index.html">DataFrame</a></h4>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">DataFrame</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-mask.html">Mask</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">Mask</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-power-mask.html">PowerMask</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">PowerMask</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-simple-data-frame/index.html">SimpleDataFrame</a></h4>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">SimpleDataFrame</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="-slot.html">Slot</a></h4>
+</td>
+<td>
+<code><span class="keyword">typealias </span><span class="identifier">Slot</span>&nbsp;<span class="symbol">=</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Extensions for External Classes</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="kotlin.-int/index.html">kotlin.Int</a></h4>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
+<h4><a href="kotlin.-long/index.html">kotlin.Long</a></h4>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="child.html">child</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">child</span><span class="symbol">: </span><span class="identifier">AnnotationNode</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="code.html">code</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">code</span><span class="symbol">: </span><span class="identifier">Type</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="builder.html">builder</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">builder</span><span class="symbol">(</span><span class="identifier" id="cadenza.frame$builder(kotlin.String)/signature">signature</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="frame.html">frame</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">frame</span><span class="symbol">(</span><span class="identifier" id="cadenza.frame$frame(kotlin.String)/signature">signature</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html"><span class="identifier">ByteArray</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="node-info.html">nodeInfo</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">nodeInfo</span><span class="symbol">(</span><span class="identifier" id="cadenza.frame$nodeInfo(kotlin.String, com.oracle.truffle.api.nodes.NodeCost, kotlin.String, kotlin.String)/shortName">shortName</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;""<span class="symbol">, </span><span class="identifier" id="cadenza.frame$nodeInfo(kotlin.String, com.oracle.truffle.api.nodes.NodeCost, kotlin.String, kotlin.String)/cost">cost</span><span class="symbol">:</span>&nbsp;<span class="identifier">NodeCost</span>&nbsp;<span class="symbol">=</span>&nbsp;NodeCost.MONOMORPHIC<span class="symbol">, </span><span class="identifier" id="cadenza.frame$nodeInfo(kotlin.String, com.oracle.truffle.api.nodes.NodeCost, kotlin.String, kotlin.String)/description">description</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;""<span class="symbol">, </span><span class="identifier" id="cadenza.frame$nodeInfo(kotlin.String, com.oracle.truffle.api.nodes.NodeCost, kotlin.String, kotlin.String)/language">language</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a>&nbsp;<span class="symbol">=</span>&nbsp;""<span class="symbol">)</span><span class="symbol">: </span><span class="identifier">AnnotationNode</span></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

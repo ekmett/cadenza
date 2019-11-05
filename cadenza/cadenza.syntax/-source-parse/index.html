@@ -1,0 +1,208 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>SourceParse - cadenza</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">cadenza</a>&nbsp;/&nbsp;<a href="../index.html">cadenza.syntax</a>&nbsp;/&nbsp;<a href="./index.html">SourceParse</a><br/>
+<br/>
+<h1>SourceParse</h1>
+<code><span class="keyword">class </span><span class="identifier">SourceParse</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a></code> <a href="https://github.com/ekmett/cadenza/blob/master/src/cadenza/syntax/source.kt#L6">(source)</a>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="-init-.html">&lt;init&gt;</a></h4>
+</td>
+<td>
+<code><span class="identifier">SourceParse</span><span class="symbol">(</span><span class="identifier" id="cadenza.syntax.SourceParse$<init>(com.oracle.truffle.api.source.Source)/source">source</span><span class="symbol">:</span>&nbsp;<span class="identifier">Source</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="source.html">source</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">source</span><span class="symbol">: </span><span class="identifier">Source</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Extension Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/at-eof.html">atEof</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">atEof</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../col.html">col</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">SourceParse</span></a><span class="symbol">.</span><span class="identifier">col</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/eof.html">eof</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">eof</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../line.html">line</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">SourceParse</span></a><span class="symbol">.</span><span class="identifier">line</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html"><span class="identifier">Int</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/mark.html">mark</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">mark</span><span class="symbol">: </span><a href="../../org.intelligence.parser/-mark/index.html"><span class="identifier">Mark</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../name.html">name</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">SourceParse</span></a><span class="symbol">.</span><span class="identifier">name</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/next.html">next</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">next</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char/index.html"><span class="identifier">Char</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../path.html">path</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="./index.html"><span class="identifier">SourceParse</span></a><span class="symbol">.</span><span class="identifier">path</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Extension Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/char.html">char</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">char</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$char(org.intelligence.parser.Parse, kotlin.Char)/c">c</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char/index.html"><span class="identifier">Char</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char/index.html"><span class="identifier">Char</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/choice.html">choice</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">choice</span><span class="symbol">(</span><span class="keyword">vararg</span> <span class="identifier" id="org.intelligence.parser$choice(org.intelligence.parser.choice.P, kotlin.Array((kotlin.Function1((org.intelligence.parser.choice.P, org.intelligence.parser.choice.T)))))/alts">alts</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">T</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/expected.html">expected</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">expected</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$expected(org.intelligence.parser.Parse, kotlin.Any)/what">what</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/fail.html">fail</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">fail</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$fail(org.intelligence.parser.Parse, kotlin.String)/message">message</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">?</span>&nbsp;<span class="symbol">=</span>&nbsp;null<span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html"><span class="identifier">Nothing</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/many.html">many</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">many</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$many(org.intelligence.parser.many.P, kotlin.Function1((org.intelligence.parser.many.P, org.intelligence.parser.many.T)))/item">item</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/many-till.html">manyTill</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">A</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">manyTill</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$manyTill(org.intelligence.parser.manyTill.P, kotlin.Function1((org.intelligence.parser.manyTill.P, org.intelligence.parser.manyTill.A)), kotlin.Function1((org.intelligence.parser.manyTill.P, kotlin.Any)))/p">p</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">A</span><span class="symbol">, </span><span class="identifier" id="org.intelligence.parser$manyTill(org.intelligence.parser.manyTill.P, kotlin.Function1((org.intelligence.parser.manyTill.P, org.intelligence.parser.manyTill.A)), kotlin.Function1((org.intelligence.parser.manyTill.P, kotlin.Any)))/q">q</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/many-till-pair.html">manyTillPair</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">A</span><span class="symbol">, </span><span class="identifier">B</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">manyTillPair</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$manyTillPair(org.intelligence.parser.manyTillPair.P, kotlin.Function1((org.intelligence.parser.manyTillPair.P, org.intelligence.parser.manyTillPair.A)), kotlin.Function1((org.intelligence.parser.manyTillPair.P, org.intelligence.parser.manyTillPair.B)))/p">p</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">A</span><span class="symbol">, </span><span class="identifier" id="org.intelligence.parser$manyTillPair(org.intelligence.parser.manyTillPair.P, kotlin.Function1((org.intelligence.parser.manyTillPair.P, org.intelligence.parser.manyTillPair.A)), kotlin.Function1((org.intelligence.parser.manyTillPair.P, org.intelligence.parser.manyTillPair.B)))/q">q</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">B</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html"><span class="identifier">Pair</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">&gt;</span><span class="symbol">,</span>&nbsp;<span class="identifier">B</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/match.html">match</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">match</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$match(org.intelligence.parser.Parse, java.util.regex.Pattern)/pattern">pattern</span><span class="symbol">:</span>&nbsp;<a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html"><span class="identifier">Pattern</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/regex/Matcher.html"><span class="identifier">Matcher</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/named.html">named</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">named</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$named(org.intelligence.parser.named.P, kotlin.Any, kotlin.Function1((org.intelligence.parser.named.P, org.intelligence.parser.named.T)))/what">what</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.parser$named(org.intelligence.parser.named.P, kotlin.Any, kotlin.Function1((org.intelligence.parser.named.P, org.intelligence.parser.named.T)))/action">action</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">T</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/optional.html">optional</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">optional</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$optional(org.intelligence.parser.optional.P, kotlin.Function1((org.intelligence.parser.optional.P, org.intelligence.parser.optional.T)))/item">item</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">T</span><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/parse.html">parse</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span> <a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">parse</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$parse(org.intelligence.parser.Parse, kotlin.Function1((org.intelligence.parser.Parse, org.intelligence.parser.parse.T)))/p">p</span><span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parser.html"><span class="identifier">Parser</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">T</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/release.html">release</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">release</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$release(org.intelligence.parser.Parse, org.intelligence.parser.Mark)/mark">mark</span><span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-mark/index.html"><span class="identifier">Mark</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/satisfy.html">satisfy</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">satisfy</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$satisfy(org.intelligence.parser.Parse, kotlin.Function1((kotlin.Char, kotlin.Boolean)))/predicate">predicate</span><span class="symbol">:</span>&nbsp;<span class="symbol">(</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char/index.html"><span class="identifier">Char</span></a><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char/index.html"><span class="identifier">Char</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/some.html">some</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">some</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$some(org.intelligence.parser.some.P, kotlin.Function1((org.intelligence.parser.some.P, org.intelligence.parser.some.T)))/item">item</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/trying.html">trying</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">trying</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$trying(org.intelligence.parser.trying.P, kotlin.Any, kotlin.Function1((org.intelligence.parser.trying.P, org.intelligence.parser.trying.T)))/what">what</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">, </span><span class="identifier" id="org.intelligence.parser$trying(org.intelligence.parser.trying.P, kotlin.Any, kotlin.Function1((org.intelligence.parser.trying.P, org.intelligence.parser.trying.T)))/action">action</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">T</span></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>
