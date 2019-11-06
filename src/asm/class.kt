@@ -62,6 +62,9 @@ fun ClassNode.constructor(
 
 val ClassNode.type: Type get() = getType("L$name;")
 
+fun annotationNode(type: Type, vararg parameters: Any) =
+  AnnotationNode(ASM7,type.descriptor).apply { values = parameters.toList() }
+
 // construct a field and add it to the class
 fun ClassNode.field(
   access: Mod,
@@ -138,19 +141,20 @@ class GuardedAssembly internal constructor(base: Assembly) : Assembly by base {
     fallthrough: Boolean = false,
     f: Assembly.() -> Unit
   ): GuardedAssembly {
-    val handlerNode = LabelNode()
+    val label = LabelNode()
     val handler = SimpleAssembly(InsnList(), tryCatchBlocks).apply {
-      add(handlerNode)
+      add(label)
       add(FrameNode(F_SAME1, 0, null, 1, arrayOf(exceptionType.internalName)))
       f(this)
       if (!fallthrough) goto(exitNode)
     }
     instructions.insertBefore(exitNode, handler.instructions)
-    tryCatchBlocks.add(TryCatchBlockNode(startNode, endNode, handlerNode, exceptionType.internalName))
+    tryCatchBlocks.add(TryCatchBlockNode(startNode, endNode, label, exceptionType.internalName))
     return this
   }
 }
 
 fun <A> MethodNode.asm(f: Assembly.() -> A) = f(SimpleAssembly(instructions, tryCatchBlocks))
+val MethodNode.asm : Assembly get() = SimpleAssembly(instructions, tryCatchBlocks)
 fun Assembly.guard(f: GuardedAssembly.() -> Unit) = GuardedAssembly(this).also { it.create(f) }
 fun MethodNode.guard(f: GuardedAssembly.() -> Unit) = asm { guard(f) }

@@ -20,8 +20,7 @@ abstract class FrameBuilder(
   @field:Child protected var rhs: Code
 ) : Node() {
 
-  @Suppress("NOTHING_TO_INLINE")
-  inline fun build(frame: VirtualFrame, oldFrame: VirtualFrame) {
+  fun build(frame: VirtualFrame, oldFrame: VirtualFrame) {
     execute(frame, 0, oldFrame)
   }
 
@@ -37,7 +36,6 @@ abstract class FrameBuilder(
   }
 
   protected fun allowsBooleanSlot(frame: VirtualFrame) = allowsSlotKind(frame, FrameSlotKind.Boolean)
-
   protected fun allowsIntegerSlot(frame: VirtualFrame) = allowsSlotKind(frame, FrameSlotKind.Int)
 
   // UnexpectedResultException lets us "accept" an answer on the slow path, but it forces me to give back an Object. small price to pay
@@ -90,5 +88,4 @@ abstract class FrameBuilder(
   override fun isAdoptable() = false
 }
 
-@Suppress("NOTHING_TO_INLINE","unused")
-inline fun put(slot: FrameSlot, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)
+fun put(slot: FrameSlot, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)

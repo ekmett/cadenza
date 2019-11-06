@@ -1,12 +1,13 @@
 package cadenza
 
-import cadenza.semantics.Type.*
 import cadenza.data.Closure
 import cadenza.jit.Code
 import cadenza.jit.InlineCode
 import cadenza.jit.ProgramRootNode
 import cadenza.semantics.Term
 import cadenza.semantics.Type
+import cadenza.semantics.Type.Arr
+import cadenza.semantics.Type.Nat
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
 import com.oracle.truffle.api.debug.DebuggerTags
@@ -18,7 +19,8 @@ import com.oracle.truffle.api.interop.TruffleObject
 import com.oracle.truffle.api.interop.UnsupportedMessageException
 import com.oracle.truffle.api.nodes.NodeInfo
 import com.oracle.truffle.api.source.SourceSection
-import org.graalvm.options.*
+import org.graalvm.options.OptionDescriptors
+import org.graalvm.options.OptionValues
 import org.graalvm.polyglot.Source
 import java.io.IOException
 import java.nio.charset.Charset
@@ -114,14 +116,11 @@ class Language : TruffleLanguage<Language.Context>() {
 
   class Context(
     @Suppress("unused") val language: Language,
-    var env: TruffleLanguage.Env
+    var env: Env
   ) {
     val singleThreadedAssumption = Truffle.getRuntime().createAssumption("context is single threaded")!!
     fun shutdown() {}
   }
-
-
-
 
   private val singleContextAssumption = Truffle.getRuntime().createAssumption("Only a single context is active")!!
   override fun createContext(env: Env) = Context(this, env)
@@ -153,7 +152,7 @@ class Language : TruffleLanguage<Language.Context>() {
   // stubbed: returns a calculation that adds two numbers
   override fun parse(request: ParsingRequest): CallTarget {
     val rootNode = ProgramRootNode(this, Code.LitInt(0), FrameDescriptor())
-    //panic("at the disco")
+    // todo
     return Truffle.getRuntime().createCallTarget(rootNode)
   }
 
@@ -172,13 +171,13 @@ class Language : TruffleLanguage<Language.Context>() {
     }
 
   @Suppress("UNUSED_PARAMETER")
-  private fun s(tx: Type, ty: Type, tz: Type): Code = todo("S")
+  private fun s(tx: Type, ty: Type, tz: Type): Code = todo
   private fun k(tx: Type, ty: Type) = binary({ x, _ -> x }, tx, ty)
   private fun i(tx: Type) = unary({ x -> x }, tx)
 
   @Suppress("UNUSED_PARAMETER")
-  inline fun unary(f: (x: Term) -> Term, argument: Type): Code = todo("unary")
+  inline fun unary(f: (x: Term) -> Term, argument: Type): Code = todo
 
   @Suppress("UNUSED_PARAMETER")
-  inline fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo("binary")
+  inline fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo
 }

@@ -1,19 +1,32 @@
 package cadenza.jit
 
 import cadenza.Language
+import cadenza.Loc
 import cadenza.data.DataTypes
+import cadenza.section
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.TruffleLanguage
 import com.oracle.truffle.api.dsl.TypeSystemReference
-import com.oracle.truffle.api.frame.*
+import com.oracle.truffle.api.frame.FrameDescriptor
+import com.oracle.truffle.api.frame.MaterializedFrame
+import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.instrumentation.*
 import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.source.SourceSection
 
 internal val noArguments = arrayOf<Any>()
 
+// code and statements, and other things with source locations that aren't root or root-like
+abstract class LocatedNode(val loc: Loc? = null) : Node(), InstrumentableNode {
+  override fun getSourceSection(): SourceSection? = loc?.let { rootNode?.sourceSection?.source?.section(it) }
+  override fun isInstrumentable() = loc !== null
+}
+
 @TypeSystemReference(DataTypes::class)
-abstract class CadenzaNode : Node(), InstrumentableNode
+@NodeInfo(shortName = "DataFrameBuilder")
+abstract class DataFrameBuilder : Node() {
+  abstract fun execute(frame: VirtualFrame)
+}
 
 @NodeInfo(language = "core", description = "A root of a core tree.")
 @TypeSystemReference(DataTypes::class)
@@ -34,7 +47,9 @@ class InlineCode(
 }
 
 @GenerateWrapper
-open class ClosureBody constructor(@field:Child protected var content: Code) : Node(), InstrumentableNode {
+open class ClosureBody constructor(
+  @field:Child protected var content: Code
+) : Node(), InstrumentableNode {
   constructor(that: ClosureBody) : this(that.content)
 
   open fun execute(frame: VirtualFrame): Any? = content.executeAny(frame)

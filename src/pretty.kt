@@ -1,6 +1,6 @@
 package org.intelligence.pretty
 
-import org.fusesource.jansi.*
+import org.fusesource.jansi.Ansi
 
 // assumptions
 typealias W = Int // characters
@@ -27,7 +27,7 @@ data class Seq(val children: List<Out>) : Out() {
 internal sealed class Atom : Out()
 
 internal object Newline : Atom() {
-  override fun emit(s: Ansi) { s.a(System.getProperty("line.separator")) };
+  override fun emit(s: Ansi) { s.a(System.getProperty("line.separator")) }
 }
 
 internal sealed class Chunk : Atom() {
@@ -107,26 +107,26 @@ class Pretty(
 ) {
   fun tell(a: Out) = output.add(a)
 
-  internal class Fail : RuntimeException() { override fun fillInStackTrace() = this }
-  internal val fail: Nothing get() { throw Fail() }
+  internal object Bad : RuntimeException() { override fun fillInStackTrace() = this }
+  internal val bad: Nothing get() { assert(canFail); throw Bad }
 
   companion object {
     const val DEFAULT_MAX_WIDTH: Int = 80
     const val DEFAULT_MAX_RIBBON: Int = 60
 
-    fun prep(maxWidth: W = Pretty.DEFAULT_MAX_WIDTH, maxRibbon: W = Pretty.DEFAULT_MAX_RIBBON, doc: Doc): Out {
+    fun prep(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc): Out {
       val printer = Pretty(maxWidth,maxRibbon)
       doc(printer)
       return Seq(printer.output)
     }
 
-    fun ppString(maxWidth: W = Pretty.DEFAULT_MAX_WIDTH, maxRibbon: W = Pretty.DEFAULT_MAX_RIBBON, doc: Doc): String {
+    fun ppString(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc): String {
       val builder = Ansi.ansi()
       prep(maxWidth, maxRibbon, doc).emit(builder)
       return builder.toString()
     }
 
-    fun pp(maxWidth: W = Pretty.DEFAULT_MAX_WIDTH, maxRibbon: W = Pretty.DEFAULT_MAX_RIBBON, doc: Doc) = println(ppString(maxWidth, maxRibbon, doc))
+    fun pp(maxWidth: W = DEFAULT_MAX_WIDTH, maxRibbon: W = DEFAULT_MAX_RIBBON, doc: Doc) = println(ppString(maxWidth, maxRibbon, doc))
     fun doc(x: Doc): Doc = x
 
     fun Ansi.out(s: Out): Ansi = this.also { s.emit(this) }
@@ -140,7 +140,7 @@ class Pretty(
   val newline: Unit get() { hardLine; space(nesting) }
   internal fun chunk(c: Chunk) {
     val newLineLen = curLineLen + c.len()
-    if (canFail && (nesting + newLineLen > maxWidth || newLineLen > maxRibbon)) fail
+    if (canFail && (nesting + newLineLen > maxWidth || newLineLen > maxRibbon)) bad
     tell(c)
     curLineLen = newLineLen
   }
@@ -163,7 +163,7 @@ inline fun <A> Pretty.grouped(body: D<A>): A {
     isFlat = true
     try {
       return body(this)
-    } catch(e: Pretty.Fail) {
+    } catch(e: Pretty.Bad) {
     } finally {
       canFail = oldCanFail
       isFlat = false
@@ -332,7 +332,7 @@ inline fun <A> Pretty.expr(d: D<A>): A = align { grouped(d) }
 
 fun <A> Pretty.fg(color: Ansi.Color, bright: Boolean = true, f: D<A>): A {
   val old: Format = format
-  val new: Color = Color(color, bright)
+  val new = Color(color, bright)
   val ann = object : Ann {
     override val delta: Format.Delta get() = Format.Delta(fg = new)
     override fun set(ansi: Ansi) = new.fg(ansi)
@@ -354,7 +354,7 @@ fun <A> Pretty.yellow(bright: Boolean = true, f: D<A>): A = fg(Ansi.Color.YELLOW
 
 fun <A> Pretty.bg(color: Ansi.Color, bright: Boolean = false, f: D<A>): A {
   val old: Format = format
-  val new: Color = Color(color, bright)
+  val new = Color(color, bright)
   val ann = object : Ann {
     override val delta: Format.Delta get() = Format.Delta(bg = new)
     override fun set(ansi: Ansi) = new.bg(ansi)
@@ -384,3 +384,4 @@ fun<A> Pretty.italic(f: D<A>): A =
     }
     annotate(ann, f)
   }
+
