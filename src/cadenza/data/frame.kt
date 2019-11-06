@@ -233,7 +233,7 @@ fun ClassNode.nodeInfo(
   description: String = "",
   language: String = ""
 )= AnnotationNode(ASM7,type(NodeInfo::class).descriptor).apply {
-  values = listOf("${signature}_Builder", NodeCost.MONOMORPHIC, "", "")
+  values = listOf("${signature}_Builder", NodeCost.MONOMORPHIC, description, language)
 }
 
 val FieldNode.child: AnnotationNode get() = AnnotationNode(ASM7, type(Node.Child::class).descriptor)
@@ -243,21 +243,20 @@ val code = +Code::class
 fun builder(signature: String) : ByteArray = `class`(public,"cadenza/data/frame/${signature}_Builder", superName = code.descriptor) {
   val types = signature.map { FieldInfo.of(it) }.toTypedArray()
   visibleAnnotations = listOf(nodeInfo(shortName="${signature}_Builder"))
-  val N = types.size
   val members = types.indices.map { "_$it" }.toTypedArray()
   types.indices.forEach {
     field(public,code,members[it]).apply { visibleAnnotations = listOf(child) }
   }
   constructor(public,*types.map { it.type }.toTypedArray()) {
     asm {
-      types.forEachIndexed { i, info ->
+      members.forEachIndexed { i, member ->
         aload_0
         aload(i+1)
-        putfield(type,members[i],code)
+        putfield(type,member,code)
       }
     }
   }
   method(public and final, `object`, "execute", +VirtualFrame::class) {
-    todo("execute")
+    todo
   }
 }

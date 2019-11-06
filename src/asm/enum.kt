@@ -50,7 +50,7 @@ fun enumNode(access: Mod = public, name: String, vararg members: String): ClassN
         dup
         ldc(members[i])
         push(i)
-        invokespecial(type,void,"<init>",string, int)
+        invokespecial(type, void, "<init>", string, int)
         putstatic(type, members[i], type)
       }
       push(members.size)

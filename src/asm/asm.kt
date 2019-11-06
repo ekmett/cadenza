@@ -78,8 +78,7 @@ val Block.sastore: Unit get() = add(InsnNode(SASTORE))
 val Block.arraylength: Unit get() = add(InsnNode(ARRAYLENGTH))
 fun Block.anewarray(type: Type) = add(TypeInsnNode(ANEWARRAY, type.internalName))
 fun Block.multianewarray(type: Type, dimensions: Int) = add(MultiANewArrayInsnNode(type.descriptor, dimensions))
-fun Block.newarray(type: Type) {
-  add(IntInsnNode(NEWARRAY, when (type.sort) {
+fun Block.newarray(type: Type) = add(IntInsnNode(NEWARRAY, when (type.sort) {
     Type.BOOLEAN -> T_BOOLEAN
     Type.CHAR -> T_CHAR
     Type.BYTE -> T_BYTE
@@ -90,7 +89,7 @@ fun Block.newarray(type: Type) {
     Type.DOUBLE -> T_DOUBLE
     else -> error("Invalid type for primitive array creation")
   }))
-}
+
 
 fun Block.getstatic(owner: Type, name: String, type: Type) = add(FieldInsnNode(GETSTATIC, owner.internalName, name, type.descriptor))
 fun Block.getfield(owner: Type, name: String, type: Type) = add(FieldInsnNode(GETFIELD, owner.internalName, name, type.descriptor))
@@ -133,8 +132,7 @@ val Block.dconst_0: Unit get() = add(InsnNode(DCONST_0))
 val Block.dconst_1: Unit get() = add(InsnNode(DCONST_1))
 fun Block.bipush(v: Int) = add(IntInsnNode(BIPUSH, v))
 fun Block.sipush(v: Int) = add(IntInsnNode(SIPUSH, v))
-fun Block.push(i: Int) {
-  when (i) {
+fun Block.push(i: Int) = when (i) {
     -1 -> iconst_m1
     0 -> iconst_0
     1 -> iconst_1
@@ -146,7 +144,7 @@ fun Block.push(i: Int) {
     in Short.MIN_VALUE..Short.MAX_VALUE -> sipush(i)
     else -> ldc(i)
   }
-}
+
 
 fun Block.ldc(v: Any) = add(LdcInsnNode(v))
 fun Block.invokevirtual(owner: Type, returnType: Type, name: String, vararg parameterTypes: Type) =
