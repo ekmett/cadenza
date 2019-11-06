@@ -233,7 +233,7 @@ fun ClassNode.nodeInfo(
   description: String = "",
   language: String = ""
 )= AnnotationNode(ASM7,type(NodeInfo::class).descriptor).apply {
-  values = listOf("${signature}_Builder", NodeCost.MONOMORPHIC, description, language)
+  values = listOf(shortName, cost, description, language)
 }
 
 val FieldNode.child: AnnotationNode get() = AnnotationNode(ASM7, type(Node.Child::class).descriptor)
