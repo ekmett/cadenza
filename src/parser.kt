@@ -24,7 +24,7 @@ fun Parse.Expected?.toList() : List<Any> {
   val out = mutableListOf<Any>()
   var current = this
   while (current != null) {
-    out.add(current.what)
+    out.add(0,current.what)
     current = current.next
   }
   return out
