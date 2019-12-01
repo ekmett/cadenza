@@ -1,5 +1,6 @@
 package org.intelligence.parser
 
+import cadenza.Loc
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -69,6 +70,13 @@ fun Parse.char(c: Char): Char {
   if (pos >= characters.length || c != characters[pos]) expected(c)
   ++pos
   return c
+}
+
+@Throws(Parse.Error::class)
+fun Parse.string(s: String): String {
+  if (characters.subSequence(pos, pos + s.length) != s) expected(s)
+  pos += s.length
+  return s
 }
 
 @Throws(Parse.Error::class)
@@ -191,4 +199,12 @@ inline fun <P,A> P.manyTill(p: P.() -> A, q: P.() -> Any): List<A> where P : Par
     if (last != null) return result
     result.add(p(this))
   }
+}
+
+@Throws(Parse.Error::class)
+inline fun <P,A,R> P.spanned(p: P.() -> A): Pair<A,Loc> where P : Parse {
+  val a = pos
+  val x = p()
+  val b = pos
+  return Pair(x, Loc.Range(a,b))
 }

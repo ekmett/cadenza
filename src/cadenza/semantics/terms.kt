@@ -70,6 +70,10 @@ abstract class Term {
     }
 
     @Suppress("UNUSED_PARAMETER","unused")
-    fun tlam(names: Array<Name>, body: Term, loc: Loc? = null): Term = todo
+    fun tlam(names: Array<Pair<Name,Type>>, body: Term, loc: Loc? = null): Term = object : Term() {
+      override fun infer(ctx: Ctx): Witness {
+        todo
+      }
+    }
   }
 }
