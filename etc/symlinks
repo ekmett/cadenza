@@ -1,2 +1,1 @@
-bin/cadenza = ../jre/bin/cadenza
-jre/bin/cadenza = ../languages/cadenza/bin/cadenza
+bin/cadenza = languages/cadenza/bin/cadenza
