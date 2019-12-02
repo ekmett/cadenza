@@ -1,3 +1,5 @@
+// import com.palantir.gradle.graal.ExtractGraalTask
+// import com.palantir.gradle.graal.NativeImageTask
 import java.net.URL
 import java.util.Properties
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -24,6 +26,7 @@ repositories {
   jcenter()
   mavenCentral()
   maven { url = uri("https://jitpack.io") }
+  maven { url = uri("http://palantir.bintray.com/releases") }
 }
 
 
@@ -34,6 +37,7 @@ plugins {
   application
   `build-scan`
   idea
+// id("com.palantir.graal") version "0.6.0"
   id("org.jetbrains.dokka") version "0.9.17"
   id("org.ajoberstar.git-publish") version "2.1.1"
 }
@@ -66,6 +70,13 @@ tasks.withType<KotlinCompile> {
 
 val SourceSet.kotlin: SourceDirectorySet
   get() = (this as HasConvention).convention.getPlugin(KotlinSourceSet::class.java).kotlin
+
+//graal {
+//  graalVersion("19.3.0")
+//  mainClass("cadenza.Launcher")
+//  outputName("cadenza-native")
+//  option("--language:cadenza")
+//}
 
 sourceSets {
   main {
@@ -135,9 +146,9 @@ tasks.register("componentJar", Jar::class) {
   from(tasks.getByPath(":processResources"))
   description = "Build the cadenza component for graal"
   from("LICENSE.txt") { rename("LICENSE.txt","LICENSE_cadenza.txt") }
-  from("LICENSE.txt") { rename("LICENSE.txt","jre/languages/cadenza/LICENSE.txt") }
+  from("LICENSE.txt") { rename("LICENSE.txt","languages/cadenza/LICENSE.txt") }
   from(tasks.getByPath(":startScripts")) {
-    rename("(.*)","jre/languages/cadenza/bin/$1")
+    rename("(.*)","languages/cadenza/bin/$1")
     filesMatching("**/cadenza") {
       filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "\$APP_HOME"))
     }
@@ -150,7 +161,7 @@ tasks.register("componentJar", Jar::class) {
     tasks.getByPath(":jar"),
     configurations.getByName("runtimeClasspath")
   )) {
-    rename("(.*).jar","jre/languages/cadenza/lib/\$1.jar")
+    rename("(.*).jar","languages/cadenza/lib/\$1.jar")
     exclude("graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar") //, "annotations*.jar")
   }
 
@@ -167,18 +178,18 @@ tasks.register("componentJar", Jar::class) {
 
 val componentJar = tasks.getByName<Jar>("componentJar")
 
-tasks.register("register", Exec::class) {
-  group = "installation"
-  dependsOn(componentJar)
-  description = "Register cadenza with graal"
-  commandLine = listOf(
-    "$graalBinDir/gu",
-    "install",
-    "-f",
-    "-L",
-    "build/libs/cadenza-component-${project.version}.jar"
-  )
-}
+//tasks.register("register", Exec::class) {
+//  group = "installation"
+//  dependsOn(componentJar)
+//  description = "Register cadenza with graal"
+//  commandLine = listOf(
+//    "$graalBinDir/gu",
+//    "install",
+//    "-f",
+//    "-L",
+//    "build/libs/cadenza-component-${project.version}.jar"
+//  )
+//}
 
 distributions.main {
   baseName = "cadenza"
@@ -200,7 +211,7 @@ tasks.withType<ProcessResources> {
   from("etc/native-image.properties") {
     // TODO: expand more properties
     expand(project.properties)
-    rename("native-image.properties","jre/languages/cadenza/native-image.properties")
+    rename("native-image.properties","languages/cadenza/native-image.properties")
   }
   from(files("etc/symlinks","etc/permissions")) {
     rename("(.*)","META-INF/$1")
@@ -233,7 +244,29 @@ tasks.register("pages") {
 val os : String? = System.getProperty("os.name")
 logger.info("os = {}",os)
 
-val graalHome : String = System.getenv("JAVA_HOME")
+var graalHome0 : String? = System.getenv("GRAALVM_HOME")
+
+if (graalHome0 == null) {
+  val javaHome = System.getenv("JAVA_HOME")
+  if (javaHome != null) {
+    logger.info("checking JAVA_HOME {} for Graal install", javaHome)
+    val releaseFile = file("${javaHome}/release")
+    if (releaseFile.exists()) {
+      val releaseProps = Properties()
+      releaseProps.load(releaseFile.inputStream())
+      val ver = releaseProps.getProperty("GRAALVM_VERSION")
+      if (ver != null) {
+        logger.info("graal version {} detected in JAVA_HOME", ver)
+        graalHome0 = javaHome
+      }
+    }
+  }
+}
+
+val needsExtract = graalHome0 == null
+// val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").outputDirectory.get().asFile.toString()!!
+// val graalHome : String = graalHome0 ?: if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
+val graalHome = graalHome0 ?: System.getenv("JAVA_HOME") // placeholder
 val graalBinDir : String = if (os == "Linux") graalHome else "$graalHome/bin"
 
 logger.info("graalHome = {}", graalHome)
@@ -242,8 +275,10 @@ logger.info("graalBinDir = {}", graalBinDir)
 // can i just tweak this one now?
 tasks.replace("run", JavaExec::class.java).run {
   description = "Run cadenza directly from the working directory"
+  // if (needsExtract) dependsOn(":extractGraalTooling") // TODO: if (needsExtract && jdk < 11)
   dependsOn(":jar")
   classpath = sourceSets["main"].runtimeClasspath
+  // executable = "$graalBinDir/java" // use jdk11 bin dir
   val args = mutableListOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
@@ -253,7 +288,7 @@ tasks.replace("run", JavaExec::class.java).run {
     "-Djansi.force=true"
   )
   jvmArgs = args
-  environment("JAVA_HOME", graalHome)
+  // environment("JAVA_HOME", graalHome)
   main = "cadenza.Launcher"
 }
 
@@ -263,26 +298,32 @@ tasks.register("runInstalled", Exec::class) {
   description = "Run a version of cadenza from the distribution dir"
   dependsOn(":installDist")
   executable = "$buildDir/install/cadenza/bin/cadenza"
-  environment("JAVA_HOME", graalHome)
+  // environment("JAVA_HOME", graalHome)
   outputs.upToDateWhen { false }
 }
 
 // assumes we are building on graal
-tasks.register("runRegistered", Exec::class) {
-  group = "application"
-  description = "Run a registered version of cadenza"
-  dependsOn(":register")
-  executable = "$graalBinDir/cadenza"
-  environment("JAVA_HOME", graalHome)
-  outputs.upToDateWhen { false }
-}
+//tasks.register("runRegistered", Exec::class) {
+//  group = "application"
+//  description = "Run a registered version of cadenza"
+//  dependsOn(":register")
+//  executable = "$graalBinDir/cadenza"
+//  environment("JAVA_HOME", graalHome)
+//  outputs.upToDateWhen { false }
+//}
 
-tasks.register("unregister", Exec::class) {
-  group = "installation"
-  description = "Unregister cadenza with graal"
-  commandLine = listOf(
-    "$graalBinDir/gu",
-    "remove",
-    "cadenza"
-  )
-}
+//tasks.register("unregister", Exec::class) {
+//  group = "installation"
+//  description = "Unregister cadenza with graal"
+//  commandLine = listOf(
+//    "$graalBinDir/gu",
+//    "remove",
+//    "cadenza"
+//  )
+//}
+
+//tasks.getByName<NativeImageTask>("nativeImage") {
+//  group="build"
+//  dependsOn(":register")
+//}
+
