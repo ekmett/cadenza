@@ -8,6 +8,14 @@ class ParserTests {
     Source.newBuilder("cadenza", "xxx", "xxx.za").build()
   }
 
+  val source2 : Source by lazy {
+    Source.newBuilder("cadenza", "(\\(x : Nat) (y : Nat) -> plus x y) w z", "lam.za").build()
+  }
+
+  @Test fun lam() {
+    val result = source2.parse { grammar } as Success<*>
+  }
+
   @Test fun many() {
     val result = source.parse {
       many { char('x') }

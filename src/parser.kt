@@ -51,12 +51,6 @@ fun Parse.expected(what: Any): Nothing {
 
 fun <A> parser(p: Parser<A>): Parser<A> = p
 
-@Throws(Parse.Error::class)
-fun expected2(what: Any): Parser<Nothing> = parser {
-  expects = Parse.Expected(what, expects)
-  throw Parse.Error(pos)
-}
-
 val Parse.eof: Unit
   @Throws(Parse.Error::class)
   get() {

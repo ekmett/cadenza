@@ -117,7 +117,10 @@ var rootBuildDir = project.buildDir
 
 tasks.test {
   useJUnitPlatform()
-  testLogging { events("passed","skipped","failed") }
+  testLogging {
+    events("passed","skipped","failed")
+    showStandardStreams = true
+  }
   jvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
