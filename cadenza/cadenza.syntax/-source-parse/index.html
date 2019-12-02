@@ -59,6 +59,20 @@
 </tr>
 <tr>
 <td>
+<h4><a href="../grammar.html">grammar</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">grammar</span><span class="symbol">: </span><a href="../../cadenza.semantics/-term/index.html"><span class="identifier">Term</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../ident.html">ident</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">ident</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="../line.html">line</a></h4>
 </td>
 <td>
@@ -91,6 +105,27 @@
 </td>
 <td>
 <code><span class="keyword">val </span><a href="./index.html"><span class="identifier">SourceParse</span></a><span class="symbol">.</span><span class="identifier">path</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../space.html">space</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">space</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../tele.html">tele</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">tele</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html"><span class="identifier">Array</span></a><span class="symbol">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html"><span class="identifier">Pair</span></a><span class="symbol">&lt;</span><a href="../../cadenza.semantics/-name.html"><span class="identifier">Name</span></a><span class="symbol">,</span>&nbsp;<a href="../../cadenza.semantics/-type/index.html"><span class="identifier">Type</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../type.html">type</a></h4>
+</td>
+<td>
+<code><span class="keyword">val </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">type</span><span class="symbol">: </span><a href="../../cadenza.semantics/-type/index.html"><span class="identifier">Type</span></a></code></td>
 </tr>
 </tbody>
 </table>
@@ -169,6 +204,13 @@
 </tr>
 <tr>
 <td>
+<h4><a href="../parens.html">parens</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">A</span><span class="symbol">&gt;</span> <span class="identifier">T</span><span class="symbol">.</span><span class="identifier">parens</span><span class="symbol">(</span><span class="identifier" id="cadenza.syntax$parens(cadenza.syntax.parens.T, kotlin.Function1((cadenza.syntax.parens.T, cadenza.syntax.parens.A)))/f">f</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">A</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
+</tr>
+<tr>
+<td>
 <h4><a href="../../org.intelligence.parser/parse.html">parse</a></h4>
 </td>
 <td>
@@ -194,6 +236,27 @@
 </td>
 <td>
 <code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">T</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">some</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$some(org.intelligence.parser.some.P, kotlin.Function1((org.intelligence.parser.some.P, org.intelligence.parser.some.T)))/item">item</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">T</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><span class="identifier">T</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/spanned.html">spanned</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">P</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">A</span><span class="symbol">, </span><span class="identifier">R</span><span class="symbol">&gt;</span> <span class="identifier">P</span><span class="symbol">.</span><span class="identifier">spanned</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$spanned(org.intelligence.parser.spanned.P, kotlin.Function1((org.intelligence.parser.spanned.P, org.intelligence.parser.spanned.A)))/p">p</span><span class="symbol">:</span>&nbsp;<span class="identifier">P</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">A</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html"><span class="identifier">Pair</span></a><span class="symbol">&lt;</span><span class="identifier">A</span><span class="symbol">,</span>&nbsp;<a href="../../cadenza/-loc/index.html"><span class="identifier">Loc</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../../org.intelligence.parser/string.html">string</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">.</span><span class="identifier">string</span><span class="symbol">(</span><span class="identifier" id="org.intelligence.parser$string(org.intelligence.parser.Parse, kotlin.String)/s">s</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html"><span class="identifier">String</span></a></code></td>
+</tr>
+<tr>
+<td>
+<h4><a href="../token.html">token</a></h4>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">T</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="../../org.intelligence.parser/-parse/index.html"><span class="identifier">Parse</span></a><span class="symbol">, </span><span class="identifier">A</span><span class="symbol">&gt;</span> <span class="identifier">T</span><span class="symbol">.</span><span class="identifier">token</span><span class="symbol">(</span><span class="identifier" id="cadenza.syntax$token(cadenza.syntax.token.T, kotlin.Function1((cadenza.syntax.token.T, cadenza.syntax.token.A)))/f">f</span><span class="symbol">:</span>&nbsp;<span class="identifier">T</span><span class="symbol">.</span><span class="symbol">(</span><span class="symbol">)</span>&nbsp;<span class="symbol">-&gt;</span>&nbsp;<span class="identifier">A</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">A</span></code></td>
 </tr>
 <tr>
 <td>
