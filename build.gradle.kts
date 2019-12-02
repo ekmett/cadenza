@@ -1,5 +1,3 @@
-import com.palantir.gradle.graal.ExtractGraalTask
-import com.palantir.gradle.graal.NativeImageTask
 import java.net.URL
 import java.util.Properties
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -26,7 +24,6 @@ repositories {
   jcenter()
   mavenCentral()
   maven { url = uri("https://jitpack.io") }
-  maven { url = uri("http://palantir.bintray.com/releases") }
 }
 
 
@@ -37,21 +34,24 @@ plugins {
   application
   `build-scan`
   idea
-  id("com.palantir.graal") version "0.6.0"
   id("org.jetbrains.dokka") version "0.9.17"
   id("org.ajoberstar.git-publish") version "2.1.1"
 }
+
+val compiler by configurations.creating
 
 dependencies {
   implementation(kotlin("stdlib"))
   implementation(kotlin("stdlib-jdk8"))
   arrayOf("asm","asm-tree","asm-commons").forEach { implementation("org.ow2.asm:$it:7.1") }
   implementation("org.fusesource.jansi:jansi:1.18")
-  implementation("org.graalvm.sdk:graal-sdk:19.2.0.1")
-  implementation("org.graalvm.sdk:launcher-common:19.2.0.1")
-  implementation("org.graalvm.truffle:truffle-api:19.2.0.1")
-  "kapt"("org.graalvm.truffle:truffle-api:19.2.0.1")
-  "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.2.0.1")
+  compiler("org.graalvm.compiler:compiler:19.3.0")
+  implementation("org.graalvm.compiler:compiler:19.3.0")
+  implementation("org.graalvm.sdk:graal-sdk:19.3.0")
+  implementation("org.graalvm.sdk:launcher-common:19.3.0")
+  implementation("org.graalvm.truffle:truffle-api:19.3.0")
+  "kapt"("org.graalvm.truffle:truffle-api:19.3.0")
+  "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.3.0")
   testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
 }
 
@@ -100,18 +100,13 @@ gitPublish {
 
 tasks.getByName("gitPublishCommit").dependsOn(":dokka")
 
-graal {
-  graalVersion("19.2.0.1")
-  mainClass("cadenza.Launcher")
-  outputName("cadenza-native")
-  option("--language:cadenza")
-}
-
 application {
   mainClassName = "cadenza.Launcher"
   applicationDefaultJvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
+    "--module-path=${compiler.asPath}",
+    "--upgrade-module-path=${compiler.asPath}",
     "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-${project.version}.jar"
   )
 }
@@ -165,7 +160,7 @@ tasks.register("componentJar", Jar::class) {
     attributes["Bundle-DocURL"] = "https://github.com/ekmett/cadenza"
     attributes["Bundle-Symbolic-Name"] = "cadenza"
     attributes["Bundle-Version"] = "0.0-SNAPSHOT"
-    attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=19.2.0)(os_arch=amd64))\""
+    attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=19.3.0)(os_arch=amd64))\""
     attributes["x-GraalVM-Polyglot-Part"] = "True"
   }
 }
@@ -174,7 +169,6 @@ val componentJar = tasks.getByName<Jar>("componentJar")
 
 tasks.register("register", Exec::class) {
   group = "installation"
-  if (needsExtract) dependsOn(":extractGraalTooling")
   dependsOn(componentJar)
   description = "Register cadenza with graal"
   commandLine = listOf(
@@ -190,7 +184,7 @@ distributions.main {
   baseName = "cadenza"
   contents {
     from(componentJar)
-    exclude( "graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar")
+    exclude( "graal-sdk*.jar", "truffle-api*.jar", "launcher-common*.jar", "compiler.jar")
     filesMatching("**/cadenza") {
       filter(ReplaceTokens::class, "tokens" to mapOf("CADENZA_APP_HOME" to "\$APP_HOME"))
     }
@@ -239,28 +233,7 @@ tasks.register("pages") {
 val os : String? = System.getProperty("os.name")
 logger.info("os = {}",os)
 
-var graalHome0 : String? = System.getenv("GRAAL_HOME")
-
-if (graalHome0 == null) {
-  val javaHome = System.getenv("JAVA_HOME")
-  if (javaHome != null) {
-    logger.info("checking JAVA_HOME {} for Graal install", javaHome)
-    val releaseFile = file("${javaHome}/release")
-    if (releaseFile.exists()) {
-      val releaseProps = Properties()
-      releaseProps.load(releaseFile.inputStream())
-      val ver = releaseProps.getProperty("GRAALVM_VERSION")
-      if (ver != null) {
-        logger.info("graal version {} detected in JAVA_HOME", ver)
-        graalHome0 = javaHome
-      }
-    }
-  }
-}
-
-val needsExtract = graalHome0 == null
-val graalToolingDir = tasks.getByName<ExtractGraalTask>("extractGraalTooling").outputDirectory.get().asFile.toString()!!
-val graalHome : String = graalHome0 ?: if (os == "Mac OS X") "$graalToolingDir/Contents/Home" else graalToolingDir
+val graalHome : String = System.getenv("JAVA_HOME")
 val graalBinDir : String = if (os == "Linux") graalHome else "$graalHome/bin"
 
 logger.info("graalHome = {}", graalHome)
@@ -268,26 +241,25 @@ logger.info("graalBinDir = {}", graalBinDir)
 
 // can i just tweak this one now?
 tasks.replace("run", JavaExec::class.java).run {
-  if (needsExtract) dependsOn(":extractGraalTooling")
   description = "Run cadenza directly from the working directory"
   dependsOn(":jar")
-  executable = "$graalBinDir/java"
   classpath = sourceSets["main"].runtimeClasspath
   val args = mutableListOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
+    "--module-path=${compiler.asPath}",
+    "--upgrade-module-path=${compiler.asPath}",
     "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar",
     "-Djansi.force=true"
   )
-
   jvmArgs = args
+  environment("JAVA_HOME", graalHome)
   main = "cadenza.Launcher"
 }
 
 // assumes we are building on graal
 tasks.register("runInstalled", Exec::class) {
   group = "application"
-  if (needsExtract) dependsOn(":extractGraalTooling")
   description = "Run a version of cadenza from the distribution dir"
   dependsOn(":installDist")
   executable = "$buildDir/install/cadenza/bin/cadenza"
@@ -298,7 +270,6 @@ tasks.register("runInstalled", Exec::class) {
 // assumes we are building on graal
 tasks.register("runRegistered", Exec::class) {
   group = "application"
-  if (needsExtract) dependsOn(":extractGraalTooling")
   description = "Run a registered version of cadenza"
   dependsOn(":register")
   executable = "$graalBinDir/cadenza"
@@ -306,14 +277,8 @@ tasks.register("runRegistered", Exec::class) {
   outputs.upToDateWhen { false }
 }
 
-tasks.getByName<NativeImageTask>("nativeImage") {
-  group="build"
-  dependsOn(":register")
-}
-
 tasks.register("unregister", Exec::class) {
   group = "installation"
-  if (needsExtract) dependsOn(":extractGraalTooling")
   description = "Unregister cadenza with graal"
   commandLine = listOf(
     "$graalBinDir/gu",

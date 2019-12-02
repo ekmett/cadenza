@@ -141,7 +141,8 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     private val closureFrameDescriptor: FrameDescriptor?,
     @field:Children internal val captureSteps: Array<FrameBuilder>,
     private val arity: Int,
-    @field:Child internal var callTarget: RootCallTarget,
+    // @field:Child
+    internal var callTarget: RootCallTarget,
     internal val type: Type,
     loc: Loc? = null
   ) : Code(loc) {
