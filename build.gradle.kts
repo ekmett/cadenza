@@ -51,6 +51,7 @@ dependencies {
   implementation("org.graalvm.sdk:graal-sdk:19.3.0")
   implementation("org.graalvm.sdk:launcher-common:19.3.0")
   implementation("org.graalvm.truffle:truffle-api:19.3.0")
+  testImplementation("org.graalvm.compiler:compiler:19.3.0")
   "kapt"("org.graalvm.truffle:truffle-api:19.3.0")
   "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.3.0")
   testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
@@ -117,6 +118,13 @@ var rootBuildDir = project.buildDir
 tasks.test {
   useJUnitPlatform()
   testLogging { events("passed","skipped","failed") }
+  jvmArgs = listOf(
+    "-XX:+UnlockExperimentalVMOptions",
+    "-XX:+EnableJVMCI",
+    "--module-path=${compiler.asPath}",
+    "--upgrade-module-path=${compiler.asPath}",
+    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-${project.version}.jar"
+  )
 }
 
 tasks.getByName<Jar>("jar") {

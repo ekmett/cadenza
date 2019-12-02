@@ -1,6 +1,6 @@
 import org.intelligence.parser.*
 import cadenza.syntax.*
-import com.oracle.truffle.api.source.*
+import com.oracle.truffle.api.source.Source
 import org.junit.jupiter.api.Test
 
 class ParserTests {
