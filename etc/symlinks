@@ -1,1 +1,1 @@
-bin/cadenza = languages/cadenza/bin/cadenza
+bin/cadenza = ../languages/cadenza/bin/cadenza
