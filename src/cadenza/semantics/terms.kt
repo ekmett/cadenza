@@ -92,9 +92,9 @@ abstract class Term {
             val bodyCode = bodyw.compile(bodyFd)
             // used as spec for materialized frame in closure
             val closureFd = FrameDescriptor()
-            var closureCaptures: Array<FrameBuilder> = arrayOf();
-            var envPreamble: Array<FrameBuilder> = arrayOf();
-            var argPreamble: Array<FrameBuilder> = arrayOf();
+            val closureCaptures: ArrayList<FrameBuilder> = ArrayList();
+            val envPreamble: ArrayList<FrameBuilder> = ArrayList();
+            val argPreamble: ArrayList<FrameBuilder> = ArrayList();
 
             val captures = bodyFd.identifiers.any { n -> names.find { it.first == n } == null }
 
@@ -119,12 +119,13 @@ abstract class Term {
 
             // TODO: does this need to use a builder?
             // is this the right way to get the TruffleLanguage?
-            val rootNode = ClosureRootNode(Language(), bodyFd, arity, envPreamble, argPreamble, bodyBody)
+            val rootNode = ClosureRootNode(Language(), bodyFd, arity,
+              envPreamble.toTypedArray(), argPreamble.toTypedArray(), bodyBody)
 
             // TODO: is this right?
             val callTarget: RootCallTarget = Truffle.getRuntime().createCallTarget(rootNode)
 
-            return Code.lam(closureFd, closureCaptures, callTarget, aty)
+            return Code.lam(closureFd, closureCaptures.toTypedArray(), callTarget, aty)
           }
         }
       }
