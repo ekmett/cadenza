@@ -4,10 +4,12 @@ import cadenza.data.Closure
 import cadenza.jit.Code
 import cadenza.jit.InlineCode
 import cadenza.jit.ProgramRootNode
+import cadenza.semantics.CompileInfo
 import cadenza.semantics.Term
 import cadenza.semantics.Type
 import cadenza.semantics.Type.Arr
 import cadenza.semantics.Type.Nat
+import cadenza.syntax.*
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
 import com.oracle.truffle.api.debug.DebuggerTags
@@ -149,11 +151,20 @@ class Language : TruffleLanguage<Language.Context>() {
     return InlineCode(this, body)
   }
 
-  // stubbed: returns a calculation that adds two numbers
   override fun parse(request: ParsingRequest): CallTarget {
-    val rootNode = ProgramRootNode(this, Code.LitInt(0), FrameDescriptor())
-    // todo
-    return Truffle.getRuntime().createCallTarget(rootNode)
+    // todo: request.argumentNames
+    // todo: parse decls here instead of expressions?
+    val result = request.source.parse { grammar }
+    when (result) {
+      is Failure -> throw SyntaxError(result)
+      is Success -> {
+        val ci = CompileInfo(request.source, this)
+        val fd = FrameDescriptor()
+        val witness = result.value.infer(null)
+        val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd)
+        return Truffle.getRuntime().createCallTarget(rootNode)
+      }
+    }
   }
 
   @Suppress("unused")
