@@ -1,6 +1,7 @@
 package cadenza.syntax
 
 import com.oracle.truffle.api.source.Source
+import com.oracle.truffle.api.source.SourceSection
 import org.intelligence.diagnostics.Severity
 import org.intelligence.diagnostics.error
 import org.intelligence.pretty.Pretty
@@ -19,4 +20,5 @@ data class Failure(
   override fun toString(): String = Pretty.ppString {
     error(Severity.error, source, pos, message, *expected.toTypedArray())
   }
+  val sourceSection: SourceSection? get() = source.createSection(pos,0)
 }
