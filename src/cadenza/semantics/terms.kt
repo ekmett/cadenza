@@ -82,7 +82,7 @@ abstract class Term {
       override fun infer(ctx: Ctx): Witness {
         var ctx2 = ctx;
         for ((n,ty) in names) {
-          ctx2 = ConsEnv(n, ty, ctx)
+          ctx2 = ConsEnv(n, ty, ctx2)
         }
         val bodyw = body.infer(ctx2)
         var aty = bodyw.type
