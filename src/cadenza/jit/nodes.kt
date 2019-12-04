@@ -12,6 +12,7 @@ import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.instrumentation.*
 import com.oracle.truffle.api.nodes.*
+import com.oracle.truffle.api.source.Source
 import com.oracle.truffle.api.source.SourceSection
 
 internal val noArguments = arrayOf<Any>()
@@ -67,9 +68,23 @@ open class ClosureRootNode(
   val arity: Int,
   @Children val envPreamble: Array<FrameBuilder> = noFrameBuilders,
   @Children val argPreamble: Array<FrameBuilder>,
-  @Child var body: ClosureBody
+  @Child var body: ClosureBody,
+  val source: Source,
+  val loc: Loc? = null
 ) : RootNode(language, frameDescriptor), InstrumentableNode {
-  constructor(other: ClosureRootNode) : this(other.language,FrameDescriptor(),other.arity,other.envPreamble,other.argPreamble,other.body)
+
+  constructor(
+    other: ClosureRootNode
+  ) : this(
+    other.language,
+    other.frameDescriptor,
+    other.arity,
+    other.envPreamble,
+    other.argPreamble,
+    other.body,
+    other.source,
+    other.loc
+  )
 
   @Suppress("NOTHING_TO_INLINE")
   inline fun isSuperCombinator() = envPreamble.isNotEmpty()
@@ -87,6 +102,8 @@ open class ClosureRootNode(
 
   override fun execute(frame: VirtualFrame) = body.execute(preamble(frame))
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java
-  override fun isInstrumentable() = super.isInstrumentable()
   override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode = ClosureRootNodeWrapper(this, this, probeNode)
+  override fun getSourceSection(): SourceSection? = loc?.let { source.section(it) }
+  override fun isInstrumentable() = loc !== null
 }
+

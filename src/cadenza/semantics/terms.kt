@@ -5,8 +5,14 @@ import cadenza.jit.*
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.FrameDescriptor
+import com.oracle.truffle.api.source.Source
 
 typealias Ctx = Env<Type>
+
+data class CompileInfo(
+  val source: Source,
+  val language: Language
+)
 
 // terms can be checked and inferred. The result is an expression.
 abstract class Term {
@@ -15,7 +21,7 @@ abstract class Term {
 
   // provides an expression with a given type in a given frame
   abstract class Witness internal constructor(val type: Type) {
-    abstract fun compile(fd: FrameDescriptor): Code
+    abstract fun compile(ci: CompileInfo, fd: FrameDescriptor): Code
     @Throws(TypeError::class)
     fun match(expectedType: Type): Witness =
       if (type == expectedType) this
@@ -27,7 +33,7 @@ abstract class Term {
     fun tvar(name: String, loc: Loc? = null): Term = object : Term() {
       @Throws(TypeError::class)
       override fun infer(ctx: Ctx): Witness = object : Witness(ctx.lookup(name)) {
-        override fun compile(fd: FrameDescriptor): Code = Code.`var`(fd.findOrAddFrameSlot(name), loc)
+        override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code = Code.`var`(fd.findOrAddFrameSlot(name), loc)
       }
     }
 
@@ -40,8 +46,8 @@ abstract class Term {
         val actualType = thenWitness.type
         val elseWitness = elseTerm.check(ctx, actualType)
         return object : Witness(actualType) {
-          override fun compile(fd: FrameDescriptor): Code {
-            return Code.If(actualType, condWitness.compile(fd), thenWitness.compile(fd), elseWitness.compile(fd), loc)
+          override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
+            return Code.If(actualType, condWitness.compile(ci,fd), thenWitness.compile(ci,fd), elseWitness.compile(ci,fd), loc)
           }
         }
       }
@@ -60,10 +66,10 @@ abstract class Term {
           return out
         }.toTypedArray<Witness>()
         return object : Witness(currentType) {
-          override fun compile(fd: FrameDescriptor): Code {
+          override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
             return Code.App(
-              wrator.compile(fd),
-              wrands.map { it.compile(fd) }.toTypedArray(),
+              wrator.compile(ci,fd),
+              wrands.map { it.compile(ci,fd) }.toTypedArray(),
               loc
             )
           }
@@ -87,9 +93,9 @@ abstract class Term {
         return object : Witness(aty) {
           // looks at what vars the body adds to it's FrameDescriptor to decide what to capture
           // TODO: maybe should calculate fvs instead?
-          override fun compile(fd: FrameDescriptor): Code {
+          override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
             val bodyFd = FrameDescriptor()
-            val bodyCode = bodyw.compile(bodyFd)
+            val bodyCode = bodyw.compile(ci, bodyFd)
             // used as spec for materialized frame in closure
             val closureFd = FrameDescriptor()
             val closureCaptures: ArrayList<FrameBuilder> = ArrayList();
@@ -117,12 +123,10 @@ abstract class Term {
 
             val bodyBody = ClosureBody(bodyCode)
 
-            // TODO: does this need to use a builder?
             // is this the right way to get the TruffleLanguage?
-            val rootNode = ClosureRootNode(Language(), bodyFd, arity,
-              envPreamble.toTypedArray(), argPreamble.toTypedArray(), bodyBody)
+            val rootNode = ClosureRootNode(ci.language, bodyFd, arity,
+              envPreamble.toTypedArray(), argPreamble.toTypedArray(), bodyBody, ci.source)
 
-            // TODO: is this right?
             val callTarget: RootCallTarget = Truffle.getRuntime().createCallTarget(rootNode)
 
             return Code.lam(closureFd, closureCaptures.toTypedArray(), callTarget, aty)
