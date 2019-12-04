@@ -134,5 +134,17 @@ abstract class Term {
         }
       }
     }
+
+    fun tlitNat(it: Int, loc: Loc? = null)  = object : Term () {
+      override fun infer(ctx: Ctx): Witness {
+        val ty = Type.Nat
+        ty.validate(it)
+        return object : Witness(ty) {
+          override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
+            return Code.LitInt(it, loc)
+          }
+        }
+      }
+    }
   }
 }

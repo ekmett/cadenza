@@ -1,2 +1,1 @@
-idInt (x : Int) = x 
-constInt (x : Int) (y : Int) = x
+42
