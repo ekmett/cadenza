@@ -63,7 +63,7 @@ abstract class Term {
           val arr = currentType as Type.Arr? ?: throw TypeError("not a fun type")
           val out = it.check(ctx, arr.argument)
           currentType = arr.result
-          return out
+          out
         }.toTypedArray<Witness>()
         return object : Witness(currentType) {
           override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
