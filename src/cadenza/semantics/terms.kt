@@ -96,7 +96,6 @@ abstract class Term {
           override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
             val bodyFd = FrameDescriptor()
             val bodyCode = bodyw.compile(ci, bodyFd)
-            // used as spec for materialized frame in closure
             val closureFd = FrameDescriptor()
             val closureCaptures: ArrayList<FrameBuilder> = ArrayList();
             val envPreamble: ArrayList<FrameBuilder> = ArrayList();
@@ -104,32 +103,37 @@ abstract class Term {
 
             val captures = bodyFd.identifiers.any { n -> names.find { it.first == n } == null }
 
-            for (name in bodyFd.identifiers) {
-              val bodySlot = bodyFd.findFrameSlot(name)
-
-              val ix = names.indexOfLast {it.first == name}
-              if (ix != -1) {
-                argPreamble += put(bodySlot,Code.Arg(if (captures) (ix + 1) else ix))
-              } else {
+            for (slot in bodyFd.slots) {
+              val name = slot.identifier
+              val ix = names.indexOfLast { it.first == name }
+              if (ix == -1) {
                 val closureSlot = closureFd.addFrameSlot(name)
-                val parentSlot = fd.findOrAddFrameSlot(name)
-
-                closureCaptures += put(closureSlot,Code.`var`(parentSlot))
-                envPreamble += put(bodySlot,Code.`var`(closureSlot))
+                val parentSlot = fd.findFrameSlot(name)
+                closureCaptures += put(closureSlot, Code.`var`(parentSlot))
+                envPreamble += put(slot, Code.`var`(closureSlot))
+              } else {
+                argPreamble += put(slot, Code.Arg(if (captures) (ix + 1) else ix))
               }
             }
 
             assert((!captures) || envPreamble.isNotEmpty())
 
-            val bodyBody = ClosureBody(bodyCode)
+            val rootNode = ClosureRootNode(
+              ci.language,
+              bodyFd,
+              arity,
+              envPreamble.toTypedArray(),
+              argPreamble.toTypedArray(),
+              ClosureBody(bodyCode),
+              ci.source
+            )
 
-            // is this the right way to get the TruffleLanguage?
-            val rootNode = ClosureRootNode(ci.language, bodyFd, arity,
-              envPreamble.toTypedArray(), argPreamble.toTypedArray(), bodyBody, ci.source)
-
-            val callTarget: RootCallTarget = Truffle.getRuntime().createCallTarget(rootNode)
-
-            return Code.lam(closureFd, closureCaptures.toTypedArray(), callTarget, aty)
+            return Code.lam(
+              closureFd,
+              closureCaptures.toTypedArray(),
+              Truffle.getRuntime().createCallTarget(rootNode),
+              aty
+            )
           }
         }
       }
