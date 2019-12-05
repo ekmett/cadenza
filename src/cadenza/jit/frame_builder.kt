@@ -47,7 +47,7 @@ abstract class FrameBuilder(
     try {
       result = rhs.executeBoolean(oldFrame)
     } catch (e: UnexpectedResultException) {
-      frame.setObject(slot, e)
+      frame.setObject(slot, e.result)
       throw e
     } catch (e: NeutralException) {
       frame.setObject(slot, e.get())
@@ -66,7 +66,7 @@ abstract class FrameBuilder(
     try {
       result = rhs.executeInteger(oldFrame)
     } catch (e: UnexpectedResultException) {
-      frame.setObject(slot, e)
+      frame.setObject(slot, e.result)
       throw e
     } catch (e: NeutralException) {
       frame.setObject(slot, e.get())

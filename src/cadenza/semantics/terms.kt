@@ -97,41 +97,39 @@ abstract class Term {
             val bodyFd = FrameDescriptor()
             val bodyCode = bodyw.compile(ci, bodyFd)
             val closureFd = FrameDescriptor()
-            val closureCaptures: ArrayList<FrameBuilder> = ArrayList();
-            val envPreamble: ArrayList<FrameBuilder> = ArrayList();
-            val argPreamble: ArrayList<FrameBuilder> = ArrayList();
-
-            val captures = bodyFd.identifiers.any { n -> names.find { it.first == n } == null }
-
+            val closureCaptures = arrayListOf<FrameBuilder>();
+            val envPreamble = arrayListOf<FrameBuilder>();
+            val argPreamble = arrayListOf<FrameBuilder>();
+            val captures = bodyFd.slots.any { slot -> names.find { it.first == slot.identifier } == null }
             for (slot in bodyFd.slots) {
               val name = slot.identifier
               val ix = names.indexOfLast { it.first == name }
               if (ix == -1) {
                 val closureSlot = closureFd.addFrameSlot(name)
-                val parentSlot = fd.findFrameSlot(name)
+                val parentSlot = fd.findOrAddFrameSlot(name)
                 closureCaptures += put(closureSlot, Code.`var`(parentSlot))
                 envPreamble += put(slot, Code.`var`(closureSlot))
               } else {
-                argPreamble += put(slot, Code.Arg(if (captures) (ix + 1) else ix))
+                argPreamble += put(slot, Code.Arg(if (captures) ix+1 else ix))
               }
             }
 
             assert((!captures) || envPreamble.isNotEmpty())
 
-            val rootNode = ClosureRootNode(
-              ci.language,
-              bodyFd,
-              arity,
-              envPreamble.toTypedArray(),
-              argPreamble.toTypedArray(),
-              ClosureBody(bodyCode),
-              ci.source
-            )
-
             return Code.lam(
               closureFd,
               closureCaptures.toTypedArray(),
-              Truffle.getRuntime().createCallTarget(rootNode),
+              Truffle.getRuntime().createCallTarget(
+                ClosureRootNode(
+                  ci.language,
+                  bodyFd,
+                  arity,
+                  envPreamble.toTypedArray(),
+                  argPreamble.toTypedArray(),
+                  ClosureBody(bodyCode),
+                  ci.source
+                )
+              ),
               aty
             )
           }
