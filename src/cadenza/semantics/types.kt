@@ -47,6 +47,7 @@ abstract class Type protected constructor(@Suppress("unused") val rep: FrameSlot
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) {
       if (t !is Closure) unsupported("expected closure", t)
+      // todo: huh?
       if (this.argument != t.type) unsupported("wrong closure type")
     }
   }

@@ -3,6 +3,7 @@ package cadenza.data
 import cadenza.jit.ClosureRootNode
 import cadenza.semantics.Type
 import cadenza.semantics.Type.Arr
+import cadenza.semantics.after
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.frame.MaterializedFrame
@@ -18,7 +19,9 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 @ExportLibrary(InteropLibrary::class)
 class Closure (
   private val env: MaterializedFrame? = null,
+  val papArgs: Array<Any?>,
   val arity: Int,
+  // type of callTarget after papArgs.size args
   val type: Type,
   val callTarget: RootCallTarget
 ) : TruffleObject {
@@ -27,6 +30,7 @@ class Closure (
     assert(callTarget.rootNode is ClosureRootNode) { "not a function body" }
     assert(env != null == (callTarget.rootNode as ClosureRootNode).isSuperCombinator()) { "calling convention mismatch" }
     assert(arity <= type.arity)
+    assert(arity + papArgs.size == (callTarget.rootNode as ClosureRootNode).arity)
   }
 
   @ExportMessage
@@ -46,17 +50,18 @@ class Closure (
   }
 
   fun call(arguments: Array<out Any?>): Any? {
+    val args = append(papArgs, arguments)
     val len = arguments.size
     return when {
-      len < arity -> pap(arguments)
+      len < arity -> Closure(env, args, arity - len, type.after(len), callTarget)
       len == arity ->
-        if (env != null) callTarget.call(cons(env, arguments))
-        else callTarget.call(arguments)
+        if (env != null) callTarget.call(cons(env, args))
+        else callTarget.call(args)
       else -> {
         val g =
-          if (env != null) callTarget.call(consTake(env, arity, arguments))
-          else callTarget.call(arguments.take(arity))
-        (g as Closure).call(drop(arity, arguments))
+          if (env != null) callTarget.call(consTake(env, arity, args))
+          else callTarget.call(args.take(arity))
+        (g as Closure).call(drop(arity, args))
       }
     }
   }
@@ -64,8 +69,16 @@ class Closure (
   // construct a partial application node, which should check that it is a PAP itself
   @ExplodeLoop
   fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<out Any?>): Closure? {
-    return null // TODO
+    val len = arguments.size
+    return Closure(env, append(papArgs, arguments), arity - len, type.after(len), callTarget)
   }
+}
+
+@ExplodeLoop
+private fun append(xs: Array<Any?>, ys: Array<out Any?>): Array<Any?> {
+  val zs = xs.copyOf(xs.size + ys.size)
+  System.arraycopy(ys, 0, zs, xs.size, ys.size)
+  return zs
 }
 
 // TODO: incompatible, pick one

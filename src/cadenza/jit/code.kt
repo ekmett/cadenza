@@ -150,8 +150,8 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     // do we need to capture an environment?
     private inline fun isSuperCombinator() = closureFrameDescriptor != null
 
-    override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), arity, type, callTarget)
-    override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), arity, type, callTarget)
+    override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), arrayOf(), arity, type, callTarget)
+    override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), arrayOf(), arity, type, callTarget)
 
     @ExplodeLoop
     private fun captureEnv(frame: VirtualFrame): MaterializedFrame? {
