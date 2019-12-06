@@ -68,7 +68,7 @@ fun Parse.char(c: Char): Char {
 
 @Throws(Parse.Error::class)
 fun Parse.string(s: String): String {
-  if (characters.subSequence(pos, pos + s.length) != s) expected(s)
+  if (pos + s.length >= characters.length || characters.subSequence(pos, pos + s.length) != s) expected(s)
   pos += s.length
   return s
 }
