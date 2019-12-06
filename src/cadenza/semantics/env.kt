@@ -13,5 +13,5 @@ fun <T> Env<T>.lookup(name: String): T {
     if (name == current.name) return current.value
     current = current.next
   }
-  throw TypeError("unknown variable")
+  throw TypeError("unknown variable $name")
 }
