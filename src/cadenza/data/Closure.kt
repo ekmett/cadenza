@@ -27,10 +27,16 @@ class Closure (
 ) : TruffleObject {
 
   init {
-    assert(callTarget.rootNode is ClosureRootNode) { "not a function body" }
-    assert(env != null == (callTarget.rootNode as ClosureRootNode).isSuperCombinator()) { "calling convention mismatch" }
+    // TODO: disabling for now, to support other calltargets
+    // should we have a different Lam or like expectCallTarget for them?
+//    assert(callTarget.rootNode is ClosureRootNode) { "not a function body" }
+    if (callTarget.rootNode is ClosureRootNode) {
+      assert(env != null == (callTarget.rootNode as ClosureRootNode).isSuperCombinator()) { "calling convention mismatch" }
+      assert(arity + papArgs.size == (callTarget.rootNode as ClosureRootNode).arity)
+    } else {
+      assert(env == null)
+    }
     assert(arity <= type.arity)
-    assert(arity + papArgs.size == (callTarget.rootNode as ClosureRootNode).arity)
   }
 
   @ExportMessage
@@ -55,12 +61,12 @@ class Closure (
     return when {
       len < arity -> Closure(env, args, arity - len, type.after(len), callTarget)
       len == arity ->
-        if (env != null) callTarget.call(cons(env, args))
-        else callTarget.call(args)
+        if (env != null) callTarget.call(*cons(env, args))
+        else callTarget.call(*args)
       else -> {
         val g =
-          if (env != null) callTarget.call(consTake(env, arity, args))
-          else callTarget.call(args.take(arity))
+          if (env != null) callTarget.call(*consTake(env, arity, args))
+          else callTarget.call(*(args.take(arity).toTypedArray()))
         (g as Closure).call(drop(arity, args))
       }
     }
@@ -68,7 +74,7 @@ class Closure (
 
   // construct a partial application node, which should check that it is a PAP itself
   @ExplodeLoop
-  fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<out Any?>): Closure? {
+  fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<out Any?>): Closure {
     val len = arguments.size
     return Closure(env, append(papArgs, arguments), arity - len, type.after(len), callTarget)
   }

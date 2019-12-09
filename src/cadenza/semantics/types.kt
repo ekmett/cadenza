@@ -17,6 +17,10 @@ class TypeError(
   constructor(message: String, cause: Exception?, actual: Type? = null, expected: Type? = null) : this(message, actual, expected) {
     initCause(cause)
   }
+
+  override fun toString(): String = "$message, got $actual but expected $expected"
+
+
   companion object {
     const val serialVersionUID: Long = 212674730538525189L
   }
@@ -45,6 +49,8 @@ abstract class Type protected constructor(@Suppress("unused") val rep: FrameSlot
   data class Arr(val argument: Type, val result: Type) : Type(FrameSlotKind.Object) {
     override val arity: Int = result.arity + 1
     @Throws(UnsupportedTypeException::class)
+    // TODO: support for builtins? or native functions?
+    // or other RootCallTargets?
     override fun validate(t: Any?) {
       if (t !is Closure) unsupported("expected closure", t)
       if (this != t.type) unsupported("expected type $this", t)

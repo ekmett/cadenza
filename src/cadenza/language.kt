@@ -1,9 +1,7 @@
 package cadenza
 
 import cadenza.data.Closure
-import cadenza.jit.Code
-import cadenza.jit.InlineCode
-import cadenza.jit.ProgramRootNode
+import cadenza.jit.*
 import cadenza.semantics.CompileInfo
 import cadenza.semantics.Term
 import cadenza.semantics.Type
@@ -156,11 +154,14 @@ class Language : TruffleLanguage<Language.Context>() {
     // todo: parse decls here instead of expressions?
     val result = request.source.parse { grammar }
     when (result) {
-      is Failure -> throw SyntaxError(result)
+      is Failure -> {
+        print(result)
+        throw SyntaxError(result)
+      }
       is Success -> {
         val ci = CompileInfo(request.source, this)
         val fd = FrameDescriptor()
-        val witness = result.value.infer(null)
+        val witness = result.value.infer(initialCtx)
         val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd)
         return Truffle.getRuntime().createCallTarget(rootNode)
       }

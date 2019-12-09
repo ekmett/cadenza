@@ -55,6 +55,7 @@ dependencies {
   "kapt"("org.graalvm.truffle:truffle-api:19.3.0")
   "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.3.0")
   testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
+  compile(kotlin("reflect"))
 }
 
 java {
@@ -234,6 +235,7 @@ logger.info("os = {}",os)
 
 // can i just tweak this one now?
 tasks.replace("run", JavaExec::class.java).run {
+  enableAssertions = true
   description = "Run cadenza directly from the working directory"
   dependsOn(":jar")
   classpath = sourceSets["main"].runtimeClasspath

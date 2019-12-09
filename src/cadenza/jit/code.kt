@@ -70,12 +70,15 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       val fn = try {
         rator.executeClosure(frame)
       } catch (e: UnexpectedResultException) {
-        panic("closure expected", e)
+        panic("closure expected, got ${e.result}", e)
       } catch (e: NeutralException) {
         e.apply(executeRands(frame))
       }
+      // TODO: support foreign CallTargets with nbe
       return when {
-        fn.arity == rands.size -> indirectCallNode.call(fn.callTarget, *executeRands(frame))
+        // TODO: broken for paps
+//        fn.arity == rands.size -> indirectCallNode.call(fn.callTarget, *executeRands(frame))
+        fn.arity == rands.size -> fn.call(executeRands(frame))
         fn.arity > rands.size -> fn.pap(executeRands(frame)) // not enough arguments, pap node
         else -> {
           CompilerDirectives.transferToInterpreterAndInvalidate()
@@ -200,49 +203,75 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
 // invariant: builtins themselves do not return neutral values, other than through evaluating their argument
   @Suppress("unused")
   abstract class CallBuiltin(
+    // type of whole application
     val type: Type,
     private val builtin: Builtin,
-    @field:Child internal var arg: Code,
+    @field:Children internal var args: Array<Code>,
     loc: Loc? = null
   ) : Code(loc) {
-    override fun executeAny(frame: VirtualFrame): Any? =
-      try {
-        builtin.execute(frame, arg)
-      } catch (n: NeutralException) {
-        NeutralValue(type, Neutral.NCallBuiltin(builtin, n.term))
+    // TODO: could inline this?
+    private fun executeArgs(frame: VirtualFrame): Pair<Array<Any?>,Boolean> {
+      var neutral = false
+      val vals: ArrayList<Any?> = ArrayList()
+      for (x in args) {
+        vals.add(try {
+          x.execute(frame)
+        } catch (n: NeutralException) {
+          neutral = true
+          n.get()
+        })
       }
+      return Pair(vals.toTypedArray(), neutral)
+    }
+
+    override fun executeAny(frame: VirtualFrame): Any? {
+      val (vals,neutral) = executeArgs(frame)
+      if (neutral) {
+        return NeutralValue(type, Neutral.NCallBuiltin(builtin, vals))
+      } else {
+        return builtin.execute(vals)
+      }
+    }
 
     @Throws(NeutralException::class)
-    override fun execute(frame: VirtualFrame): Any? =
-      try {
-        builtin.execute(frame, arg)
-      } catch (n: NeutralException) {
-        neutral(type, Neutral.NCallBuiltin(builtin, n.term))
+    override fun execute(frame: VirtualFrame): Any? {
+      val (vals,neutral) = executeArgs(frame)
+      if (neutral) {
+        neutral(type, Neutral.NCallBuiltin(builtin, vals))
+      } else {
+        return builtin.execute(vals)
       }
-
-    @Throws(UnexpectedResultException::class, NeutralException::class)
-    override fun executeInteger(frame: VirtualFrame): Int =
-      try {
-        builtin.executeInteger(frame, arg)
-      } catch (n: NeutralException) {
-        neutral(type, Neutral.NCallBuiltin(builtin, n.term))
-      }
+    }
 
     @Throws(NeutralException::class)
-    override fun executeUnit(frame: VirtualFrame): Unit =
-      try {
-        builtin.executeUnit(frame, arg)
-      } catch (n: NeutralException) {
-        neutral(type, Neutral.NCallBuiltin(builtin, n.term))
+    override fun executeInteger(frame: VirtualFrame): Int {
+      val (vals,neutral) = executeArgs(frame)
+      if (neutral) {
+        neutral(type, Neutral.NCallBuiltin(builtin, vals))
+      } else {
+        return builtin.executeInteger(vals)
       }
+    }
 
-    @Throws(UnexpectedResultException::class, NeutralException::class)
-    override fun executeBoolean(frame: VirtualFrame): Boolean =
-      try {
-        builtin.executeBoolean(frame, arg)
-      } catch (n: NeutralException) {
-        neutral(type, Neutral.NCallBuiltin(builtin, n.term))
+    @Throws(NeutralException::class)
+    override fun executeUnit(frame: VirtualFrame) {
+      val (vals,neutral) = executeArgs(frame)
+      if (neutral) {
+        neutral(type, Neutral.NCallBuiltin(builtin, vals))
+      } else {
+        return builtin.executeUnit(vals)
       }
+    }
+
+    @Throws(NeutralException::class)
+    override fun executeBoolean(frame: VirtualFrame): Boolean {
+      val (vals,neutral) = executeArgs(frame)
+      if (neutral) {
+        neutral(type, Neutral.NCallBuiltin(builtin, vals))
+      } else {
+        return builtin.executeBoolean(vals)
+      }
+    }
   }
 
 // instrumentation
@@ -280,6 +309,10 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       }
   }
 
+  class Lit(val value: Any, loc: Loc? = null): Code(loc) {
+    override fun execute(frame: VirtualFrame) = value
+  }
+
   companion object {
     fun `var`(slot: FrameSlot, loc: Loc? = null): Var = CodeFactory.VarNodeGen.create(slot, loc)
 
@@ -309,7 +342,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       val hasCaptureSteps = captureSteps.isNotEmpty()
       assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }
       return Lam(
-        if (hasCaptureSteps) null else closureFrameDescriptor ?: FrameDescriptor(),
+        if (!hasCaptureSteps) null else closureFrameDescriptor ?: FrameDescriptor(),
         captureSteps,
         arity,
         callTarget,

@@ -14,7 +14,7 @@ sealed class Neutral {
 
   data class NIf(val body: Neutral, val thenValue: Any?, val elseValue: Any?) : Neutral()
 
-  data class NCallBuiltin(val builtin: Builtin, val arg: Neutral) : Neutral()
+  data class NCallBuiltin(val builtin: Builtin, val args: Array<Any?>) : Neutral()
 
   data class NApp(val rator: Neutral, val rands: Array<out Any?>) : Neutral() {
     override fun apply(args: Array<out Any?>) = NApp(rator, arrayOf(*rands, *args))

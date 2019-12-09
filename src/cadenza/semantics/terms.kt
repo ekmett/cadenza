@@ -2,12 +2,17 @@ package cadenza.semantics
 
 import cadenza.*
 import cadenza.jit.*
+import cadenza.jit.Code.Companion.lam
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.FrameDescriptor
 import com.oracle.truffle.api.source.Source
 
-typealias Ctx = Env<Type>
+// TODO: should be data NameInfo = Local | Global GlobalNameInfo | Builtin Builtin
+// (builtin a case of GlobalNameInfo)
+data class NameInfo(val type: Type, val builtin: Builtin?)
+
+typealias Ctx = Env<NameInfo>
 
 data class CompileInfo(
   val source: Source,
@@ -32,8 +37,22 @@ abstract class Term {
     @Suppress("unused")
     fun tvar(name: String, loc: Loc? = null): Term = object : Term() {
       @Throws(TypeError::class)
-      override fun infer(ctx: Ctx): Witness = object : Witness(ctx.lookup(name)) {
-        override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code = Code.`var`(fd.findOrAddFrameSlot(name), loc)
+      override fun infer(ctx: Ctx): Witness {
+        val info = ctx.lookup(name)
+        return object : Witness(info.type) {
+          override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
+            if (info.builtin != null) {
+              val builtin = info.builtin
+              // TODO: statically cook this?
+              val target = Truffle.getRuntime().createCallTarget(
+                BuiltinRootNode(ci.language, builtin)
+              )
+              return lam(builtin.arity, target, builtin.type, loc)
+            } else {
+              return Code.`var`(fd.findOrAddFrameSlot(name), loc)
+            }
+          }
+        }
       }
     }
 
@@ -82,7 +101,7 @@ abstract class Term {
       override fun infer(ctx: Ctx): Witness {
         var ctx2 = ctx;
         for ((n,ty) in names) {
-          ctx2 = ConsEnv(n, ty, ctx2)
+          ctx2 = ConsEnv(n, NameInfo(ty, null), ctx2)
         }
         val bodyw = body.infer(ctx2)
         var aty = bodyw.type
@@ -117,8 +136,9 @@ abstract class Term {
             assert((!captures) || envPreamble.isNotEmpty())
 
             return Code.lam(
-              closureFd,
+              if (captures) closureFd else null,
               closureCaptures.toTypedArray(),
+              names.size,
               Truffle.getRuntime().createCallTarget(
                 ClosureRootNode(
                   ci.language,

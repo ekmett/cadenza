@@ -60,6 +60,18 @@ open class ClosureBody constructor(
   override fun getSourceSection(): SourceSection? = parent.sourceSection
 }
 
+// todo: should this get removed & always inline?
+// might still be good to use this, since we could use this e.g. at gc time to do selector forwarding
+open class BuiltinRootNode(
+  private val language: TruffleLanguage<*>,
+  @Child var builtin: Builtin
+) : RootNode(language, FrameDescriptor()) {
+  override fun execute(frame: VirtualFrame): Any? {
+    assert(frame.arguments.size == builtin.arity) { "bad builtin application $builtin" }
+    return builtin.execute(frame.arguments)
+  }
+}
+
 @GenerateWrapper
 @TypeSystemReference(DataTypes::class)
 open class ClosureRootNode(
@@ -100,6 +112,7 @@ open class ClosureRootNode(
     return local
   }
 
+  // TODO: call right execute* based on type of body?
   override fun execute(frame: VirtualFrame) = body.execute(preamble(frame))
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java
   override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode = ClosureRootNodeWrapper(this, this, probeNode)

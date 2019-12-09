@@ -62,8 +62,9 @@ class Launcher : AbstractLanguageLauncher() {
       contextBuilder.build().use { ctx ->
         runVersionAction(versionAction, ctx.engine)
         val v = ctx.eval(Source.newBuilder(languageId, file).build())
-        return if (v.canExecute()) v.execute().asInt()
-        else v.asInt()
+        val r = if (v.canExecute()) v.execute().asInt() else v.asInt()
+        println("Result: $r")
+        return 0
       }
     } catch (e: PolyglotException) {
       if (e.isExit) return e.exitStatus
