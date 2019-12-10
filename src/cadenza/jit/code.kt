@@ -76,7 +76,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       }
       // TODO: support foreign CallTargets with nbe
       return when {
-        // TODO: broken for paps
+        // TODO: broken when fn is a pap
 //        fn.arity == rands.size -> indirectCallNode.call(fn.callTarget, *executeRands(frame))
         fn.arity == rands.size -> fn.call(executeRands(frame))
         fn.arity > rands.size -> fn.pap(executeRands(frame)) // not enough arguments, pap node

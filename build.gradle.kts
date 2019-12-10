@@ -244,7 +244,11 @@ tasks.replace("run", JavaExec::class.java).run {
     "--module-path=${compiler.asPath}",
     "--upgrade-module-path=${compiler.asPath}",
     "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar",
-    "-Djansi.force=true"
+    "-Djansi.force=true",
+//    "-Dgraal.Dump=:1",
+//    "-Dgraal.PrintGraph=Network",
+//    "-Dgraal.CompilationFailureAction=ExitVM",
+//    "-Dgraal.TraceTruffleCompilation=true"
   )
   jvmArgs = args
   main = "cadenza.Launcher"

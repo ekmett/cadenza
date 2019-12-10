@@ -196,7 +196,7 @@ inline fun <P,A> P.manyTill(p: P.() -> A, q: P.() -> Any): List<A> where P : Par
 }
 
 @Throws(Parse.Error::class)
-inline fun <P,A,R> P.spanned(p: P.() -> A): Pair<A,Loc> where P : Parse {
+inline fun <P,A> P.spanned(p: P.() -> A): Pair<A,Loc> where P : Parse {
   val a = pos
   val x = p()
   val b = pos

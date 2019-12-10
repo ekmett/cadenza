@@ -38,12 +38,16 @@ val Parse.tele: Array<Pair<Name,Type>> get() = some {
   parens {val x = token { ident }; tok(":"); val t = type; Pair(x, t)}
 }.toTypedArray()
 
-val Parse.grammar: Term get() = choice({
-  char('\\')
-  val t = tele
-  tok("->")
-  tlam(t, grammar)
-},{
+val Parse.grammar: Term get() = choice(
+  {
+    val (a, loc) = spanned {
+      char('\\')
+      val t = tele
+      tok("->")
+      Pair(t, grammar)
+    }
+    tlam(a.first, a.second, loc)
+  },{
   tok("if")
   val cond = grammar
   tok("then")

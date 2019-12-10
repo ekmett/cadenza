@@ -7,6 +7,7 @@ import cadenza.semantics.ConsEnv
 import cadenza.semantics.Ctx
 import cadenza.semantics.NameInfo
 import cadenza.semantics.Type
+import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.dsl.Specialization
 import com.oracle.truffle.api.dsl.TypeSystemReference
 import com.oracle.truffle.api.nodes.Node
@@ -50,6 +51,8 @@ object Print : Builtin(Type.Action, 1) {
 }
 
 // TODO: remove this
+// name the execute in Builtin something else to be able to remove this
+// (@Specialization looks for things named execute* & wants them to all have the same shape)
 class Builtin2B(val builtin2: Builtin2) : Builtin(builtin2.type, 2) {
   override fun execute(args: Array<Any?>): Any {
     return builtin2.execute(args[0], args[1])
@@ -96,6 +99,7 @@ val natFF = Type.Arr(natF, natF)
 
 // fixNatF f x = f (fixNatF f) x
 object FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
+  @CompilerDirectives.TruffleBoundary
   override fun execute(args: Array<Any?>): Any? {
     val root = (this.rootNode as BuiltinRootNode).callTarget
     val f = expectClosure(args[0])
