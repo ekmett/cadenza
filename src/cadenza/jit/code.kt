@@ -60,10 +60,28 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     @field:Children val rands: Array<Code>,
     loc: Loc? = null
   ) : Code(loc) {
+    // TODO: use DirectCallNode when possible, IndirectCallNode doesn't do inlining
+    // mb use an inline cache + DirectCallNode?
     @Child private var indirectCallNode: IndirectCallNode = Truffle.getRuntime().createIndirectCallNode()
 
     @ExplodeLoop
     private fun executeRands(frame: VirtualFrame): Array<out Any?> = rands.map { it.executeAny(frame) }.toTypedArray()
+
+    private fun executeFn(frame: VirtualFrame, fn: Closure): Any? {
+      // TODO: does this work with foreign CallTargets with nbe?
+      return when {
+        fn.arity == rands.size ->
+          if (fn.env != null) indirectCallNode.call(fn.callTarget, fn.env, *fn.papArgs, *executeRands(frame))
+            else indirectCallNode.call(fn.callTarget, *fn.papArgs, *executeRands(frame))
+        fn.arity > rands.size -> fn.pap(executeRands(frame)) // not enough arguments, pap node
+        else -> {
+          CompilerDirectives.transferToInterpreterAndInvalidate()
+          @Suppress("UNCHECKED_CAST")
+          val new = this.replace(App(App(rator, rands.copyOf(fn.arity) as Array<Code>), rands.copyOfRange(fn.arity, rands.size)))
+          new.executeFn(frame, fn)
+        }
+      }
+    }
 
     @Throws(NeutralException::class)
     override fun execute(frame: VirtualFrame): Any? {
@@ -74,19 +92,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       } catch (e: NeutralException) {
         e.apply(executeRands(frame))
       }
-      // TODO: support foreign CallTargets with nbe
-      return when {
-        // TODO: broken when fn is a pap
-//        fn.arity == rands.size -> indirectCallNode.call(fn.callTarget, *executeRands(frame))
-        fn.arity == rands.size -> fn.call(executeRands(frame))
-        fn.arity > rands.size -> fn.pap(executeRands(frame)) // not enough arguments, pap node
-        else -> {
-          CompilerDirectives.transferToInterpreterAndInvalidate()
-          @Suppress("UNCHECKED_CAST")
-          this.replace(App(App(rator, rands.copyOf(fn.arity) as Array<Code>), rands.copyOfRange(fn.arity, rands.size)))
-          fn.call(executeRands(frame))
-        }
-      }
+      return executeFn(frame, fn)
     }
 
     override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.CallTag::class.java || super.hasTag(tag)
@@ -144,7 +150,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     private val closureFrameDescriptor: FrameDescriptor?,
     @field:Children internal val captureSteps: Array<FrameBuilder>,
     private val arity: Int,
-    // @field:Child
+    @field:CompilerDirectives.CompilationFinal
     internal var callTarget: RootCallTarget,
     internal val type: Type,
     loc: Loc? = null
@@ -153,6 +159,8 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     // do we need to capture an environment?
     private inline fun isSuperCombinator() = closureFrameDescriptor != null
 
+    // TODO: statically allocate the Closure when possible (when no env)
+    // split between capturing Lam and not?
     override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), arrayOf(), arity, type, callTarget)
     override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), arrayOf(), arity, type, callTarget)
 

@@ -15,13 +15,16 @@ import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 import com.oracle.truffle.api.nodes.ExplodeLoop
 
+
+// TODO: consider splitting Closure(callTarget, arity, type) from env & pap & statically allocate that part
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class Closure (
-  private val env: MaterializedFrame? = null,
+  val env: MaterializedFrame? = null,
   val papArgs: Array<Any?>,
   val arity: Int,
   // type of callTarget after papArgs.size args
+  // TODO: make this be just type of callTarget, to avoid needing to call after
   val type: Type,
   val callTarget: RootCallTarget
 ) : TruffleObject {
@@ -55,13 +58,14 @@ class Closure (
     return call(arguments)
   }
 
+  // only used for InteropLibrary execute
   fun call(arguments: Array<out Any?>): Any? {
     val args = append(papArgs, arguments)
     val len = arguments.size
     return when {
       len < arity -> Closure(env, args, arity - len, type.after(len), callTarget)
       len == arity ->
-        if (env != null) callTarget.call(*cons(env, args))
+        if (env != null) callTarget.call(env, *args)
         else callTarget.call(*args)
       else -> {
         val g =
