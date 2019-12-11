@@ -20,14 +20,13 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class Closure (
-  val env: MaterializedFrame? = null,
+  @field:CompilerDirectives.CompilationFinal val env: MaterializedFrame? = null,
   val papArgs: Array<Any?>,
   val arity: Int,
-  // type of callTarget after papArgs.size args
-  // TODO: make this be just type of callTarget, to avoid needing to call after
-  val type: Type,
+  private val targetType: Type,
   val callTarget: RootCallTarget
 ) : TruffleObject {
+  val type get() = targetType.after(papArgs.size)
 
   init {
     // TODO: disabling for now, to support other calltargets
@@ -63,7 +62,7 @@ class Closure (
     val args = append(papArgs, arguments)
     val len = arguments.size
     return when {
-      len < arity -> Closure(env, args, arity - len, type.after(len), callTarget)
+      len < arity -> Closure(env, args, arity - len, targetType, callTarget)
       len == arity ->
         if (env != null) callTarget.call(env, *args)
         else callTarget.call(*args)
@@ -77,10 +76,11 @@ class Closure (
   }
 
   // construct a partial application node, which should check that it is a PAP itself
-  @ExplodeLoop
+//  @ExplodeLoop
+  @CompilerDirectives.TruffleBoundary
   fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<out Any?>): Closure {
     val len = arguments.size
-    return Closure(env, append(papArgs, arguments), arity - len, type.after(len), callTarget)
+    return Closure(env, append(papArgs, arguments), arity - len, targetType, callTarget)
   }
 }
 
