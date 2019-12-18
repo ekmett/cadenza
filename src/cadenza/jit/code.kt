@@ -60,7 +60,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     @field:Children val rands: Array<Code>,
     loc: Loc? = null
   ) : Code(loc) {
-    // TODO: use DirectCallNode when possible, IndirectCallNode doesn't do inlining
+    // TODO: use DirectCallNode when possible, IndirectCallNode doesn't do inlining or splitting
     // mb use an inline cache + DirectCallNode?
     @Child private var indirectCallNode: IndirectCallNode = Truffle.getRuntime().createIndirectCallNode()
 
@@ -161,6 +161,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
 
     // TODO: statically allocate the Closure when possible (when no env)
     // split between capturing Lam and not?
+    // might help escape analysis w/ App
     override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), arrayOf(), arity, type, callTarget)
     override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), arrayOf(), arity, type, callTarget)
 
@@ -237,7 +238,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       if (neutral) {
         return NeutralValue(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.execute(vals)
+        return builtin.run(vals)
       }
     }
 
@@ -247,7 +248,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       if (neutral) {
         neutral(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.execute(vals)
+        return builtin.run(vals)
       }
     }
 
@@ -257,7 +258,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       if (neutral) {
         neutral(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.executeInteger(vals)
+        return builtin.runInteger(vals)
       }
     }
 
@@ -267,7 +268,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       if (neutral) {
         neutral(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.executeUnit(vals)
+        return builtin.runUnit(vals)
       }
     }
 
@@ -277,7 +278,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
       if (neutral) {
         neutral(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.executeBoolean(vals)
+        return builtin.runBoolean(vals)
       }
     }
   }

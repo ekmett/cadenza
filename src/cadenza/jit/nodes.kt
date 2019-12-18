@@ -68,7 +68,7 @@ open class BuiltinRootNode(
 ) : RootNode(language, FrameDescriptor()) {
   override fun execute(frame: VirtualFrame): Any? {
 //    assert(frame.arguments.size == builtin.arity) { "bad builtin application $builtin" }
-    return builtin.execute(frame.arguments)
+    return builtin.run(frame.arguments)
   }
 }
 

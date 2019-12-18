@@ -18,53 +18,55 @@ import java.io.Serializable
 @TypeSystemReference(DataTypes::class)
 abstract class Builtin(@Suppress("unused") open val type: Type, val arity: Int) : Node(), Serializable {
   @Throws(NeutralException::class)
-  abstract fun execute(args: Array<Any?>): Any?
+  abstract fun run(args: Array<Any?>): Any?
+  @Throws(NeutralException::class)
+  abstract fun runUnit(args: Array<Any?>)
+  @Throws(NeutralException::class)
+  abstract fun runClosure(args: Array<Any?>): Closure
+  @Throws(NeutralException::class)
+  abstract fun runBoolean(args: Array<Any?>): Boolean
+  @Throws(NeutralException::class)
+  abstract fun runInteger(args: Array<Any?>): Int
+}
+
+
+abstract class Builtin2(type: Type) : Builtin(type, 2) {
+  @Throws(NeutralException::class)
+  abstract fun execute(left: Any?, right: Any?): Any?
+  @Throws(NeutralException::class)
+  open fun executeBoolean(left: Any?, right: Any?): Boolean = DataTypesGen.expectBoolean(execute(left, right))
+  @Throws(NeutralException::class)
+  open fun executeClosure(left: Any?, right: Any?): Closure = DataTypesGen.expectClosure(execute(left, right))
+  @Throws(NeutralException::class)
+  open fun executeInteger(left: Any?, right: Any?): Int = DataTypesGen.expectInteger(execute(left, right))
 
   @Throws(NeutralException::class)
-  open fun executeUnit(args: Array<Any?>) {
-    execute(args)
-  }
-
-  @Throws(UnexpectedResultException::class, NeutralException::class)
-  @Suppress("unused")
-  open fun executeClosure(args: Array<Any?>): Closure =
-    DataTypesGen.expectClosure(execute(args))
-
-  @Throws(UnexpectedResultException::class, NeutralException::class)
-  open fun executeBoolean(args: Array<Any?>): Boolean =
-    DataTypesGen.expectBoolean(execute(args))
-
-  @Throws(UnexpectedResultException::class, NeutralException::class)
-  open fun executeInteger(args: Array<Any?>): Int =
-    DataTypesGen.expectInteger(execute(args))
-}
-
-@NodeInfo(shortName = "Print")
-object Print : Builtin(Type.Action, 1) {
+  override fun run(args: Array<Any?>): Any? { return execute(args[0], args[1]) }
   @Throws(NeutralException::class)
-  override fun execute(args: Array<Any?>) = executeUnit(args)
-
+  override fun runUnit(args: Array<Any?>) { execute(args[0], args[1]) }
   @Throws(NeutralException::class)
-  override fun executeUnit(args: Array<Any?>) {
-    println(args[0])
-  }
+  override fun runBoolean(args: Array<Any?>): Boolean { return executeBoolean(args[0], args[1]) }
+  @Throws(NeutralException::class)
+  override fun runClosure(args: Array<Any?>): Closure { return executeClosure(args[0], args[1]) }
+  @Throws(NeutralException::class)
+  override fun runInteger(args: Array<Any?>): Int { return executeInteger(args[0], args[1]) }
 }
 
-// TODO: remove this
-// name the execute in Builtin something else to be able to remove this
-// (@Specialization looks for things named execute* & wants them to all have the same shape)
-class Builtin2B(val builtin2: Builtin2) : Builtin(builtin2.type, 2) {
-  override fun execute(args: Array<Any?>): Any {
-    return builtin2.execute(args[0], args[1])
-  }
-}
 
-abstract class Builtin2(val type: Type) : Node() {
-  abstract fun execute(left: Any?, right: Any?): Any
-}
+//
+////@NodeInfo(shortName = "Print")
+////object Print : Builtin(Type.Action, 1) {
+////  @Throws(NeutralException::class)
+////  override fun execute(args: Array<Any?>) = executeUnit(args)
+////
+////  @Throws(NeutralException::class)
+////  override fun executeUnit(args: Array<Any?>) {
+////    println(args[0])
+////  }
+////}
 
 object Le : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Bool))) {
-  override fun execute(left: Any?, right: Any?): Boolean {
+  override fun execute(left: Any?, right: Any?): Any? {
     return expectInteger(left) <= expectInteger(right)
   }
 }
@@ -98,23 +100,23 @@ val natF = Type.Arr(Type.Nat, Type.Nat)
 val natFF = Type.Arr(natF, natF)
 
 // fixNatF f x = f (fixNatF f) x
-object FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
+object FixNatF : Builtin2(Type.Arr(natFF, natF)) {
   @CompilerDirectives.TruffleBoundary
-  override fun execute(args: Array<Any?>): Any? {
+  override fun execute(left: Any?, right: Any?): Any? {
     val root = (this.rootNode as BuiltinRootNode).callTarget
-    val f = expectClosure(args[0])
+    val f = expectClosure(left)
     val selfApp = Closure(null, arrayOf(f), 1, type, root)
-    val x = expectInteger(args[1])
+    val x = expectInteger(right)
     return f.call(arrayOf(selfApp, x))
   }
 }
 
 
 val initialCtx: Ctx = arrayOf(
-  Pair("le", Builtin2B(Le)),
+  Pair("le", Le),
   Pair("fixNatF", FixNatF),
-  Pair("plus", Builtin2B(PlusNodeGen.create())),
-  Pair("minus", Builtin2B(MinusNodeGen.create()))
+  Pair("plus", PlusNodeGen.create()),
+  Pair("minus", MinusNodeGen.create())
 ).fold(null as Ctx) { c, x ->
   ConsEnv(x.first, NameInfo(x.second.type, x.second), c)
 }

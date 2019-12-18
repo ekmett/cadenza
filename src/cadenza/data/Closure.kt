@@ -38,7 +38,7 @@ class Closure (
     } else {
       assert(env == null)
     }
-    assert(arity <= type.arity)
+    assert(arity <= targetType.arity - papArgs.size)
   }
 
   @ExportMessage
@@ -85,7 +85,7 @@ class Closure (
 }
 
 @ExplodeLoop
-private fun append(xs: Array<Any?>, ys: Array<out Any?>): Array<Any?> {
+fun append(xs: Array<Any?>, ys: Array<out Any?>): Array<Any?> {
   val zs = xs.copyOf(xs.size + ys.size)
   System.arraycopy(ys, 0, zs, xs.size, ys.size)
   return zs
@@ -96,6 +96,7 @@ private fun append(xs: Array<Any?>, ys: Array<out Any?>): Array<Any?> {
 private fun cons(x: Any, xs: Array<out Any?>): Array<Any?> {
   val ys = arrayOfNulls<Any>(xs.size + 1)
   ys[0] = x
+
   System.arraycopy(xs, 0, ys, 1, xs.size)
   @Suppress("UNCHECKED_CAST")
   return ys
