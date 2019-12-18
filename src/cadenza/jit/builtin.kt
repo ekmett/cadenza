@@ -101,6 +101,7 @@ val natFF = Type.Arr(natF, natF)
 
 // fixNatF f x = f (fixNatF f) x
 object FixNatF : Builtin2(Type.Arr(natFF, natF)) {
+  // TODO: use a DirectCallNode here & remove TruffleBoundary
   @CompilerDirectives.TruffleBoundary
   override fun execute(left: Any?, right: Any?): Any? {
     val root = (this.rootNode as BuiltinRootNode).callTarget

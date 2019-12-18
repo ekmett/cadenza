@@ -76,7 +76,6 @@ class Closure (
   }
 
   // construct a partial application node, which should check that it is a PAP itself
-//  @ExplodeLoop
   @CompilerDirectives.TruffleBoundary
   fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<out Any?>): Closure {
     val len = arguments.size
@@ -84,21 +83,27 @@ class Closure (
   }
 }
 
-@ExplodeLoop
-fun append(xs: Array<Any?>, ys: Array<out Any?>): Array<Any?> {
-  val zs = xs.copyOf(xs.size + ys.size)
+inline fun append(xs: Array<out Any?>, ys: Array<out Any?>): Array<Any?> {
+  val zs = arrayOfNulls<Any>(xs.size + ys.size)
+  System.arraycopy(xs, 0, zs, 0, xs.size)
   System.arraycopy(ys, 0, zs, xs.size, ys.size)
   return zs
 }
 
-// TODO: incompatible, pick one
+inline fun consAppend(x: Any, xs: Array<out Any?>, ys: Array<out Any?>): Array<Any?> {
+  val zs = arrayOfNulls<Any>(1 + xs.size + ys.size)
+  zs[0] = x
+  System.arraycopy(xs, 0, zs, 1, xs.size)
+  System.arraycopy(ys, 0, zs, 1 + xs.size, ys.size)
+  return zs
+}
+
 @ExplodeLoop
 private fun cons(x: Any, xs: Array<out Any?>): Array<Any?> {
   val ys = arrayOfNulls<Any>(xs.size + 1)
   ys[0] = x
 
   System.arraycopy(xs, 0, ys, 1, xs.size)
-  @Suppress("UNCHECKED_CAST")
   return ys
 }
 
@@ -107,12 +112,12 @@ private fun consTake(x: Any, n: Int, xs: Array<out Any?>): Array<Any?> {
   val ys = arrayOfNulls<Any>(n + 1)
   ys[0] = x
   System.arraycopy(xs, 0, ys, 1, n)
-  @Suppress("UNCHECKED_CAST")
   return ys
 }
 
 @ExplodeLoop
 private fun drop(k: Int, xs: Array<out Any?>): Array<Any?> {
-  @Suppress("UNCHECKED_CAST")
-  return (xs as Array<Any?>).copyOfRange(k, xs.size) // kotlin operator requires an Array<T> not an Array<out T>, grr.
+  val ys = arrayOfNulls<Any>(xs.size - k)
+  System.arraycopy(xs, k, ys, 0, xs.size - k)
+  return ys
 }

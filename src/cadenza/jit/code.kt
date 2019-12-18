@@ -69,17 +69,21 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
 
     private fun executeFn(frame: VirtualFrame, fn: Closure): Any? {
       // TODO: does this work with foreign CallTargets with nbe?
-      return when {
-        fn.arity == rands.size ->
-          if (fn.env != null) indirectCallNode.call(fn.callTarget, fn.env, *fn.papArgs, *executeRands(frame))
-            else indirectCallNode.call(fn.callTarget, *fn.papArgs, *executeRands(frame))
-        fn.arity > rands.size -> fn.pap(executeRands(frame)) // not enough arguments, pap node
-        else -> {
-          CompilerDirectives.transferToInterpreterAndInvalidate()
-          @Suppress("UNCHECKED_CAST")
-          val new = this.replace(App(App(rator, rands.copyOf(fn.arity) as Array<Code>), rands.copyOfRange(fn.arity, rands.size)))
-          new.executeFn(frame, fn)
+      if (fn.arity >= rands.size) {
+        val ys = executeRands(frame)
+        return if (fn.arity == rands.size) {
+          val args = if (fn.env != null) consAppend(fn.env, fn.papArgs, ys) else append(fn.papArgs, ys)
+          // TODO: kotlin always does an Array.copyOf even for a single spread
+          // https://discuss.kotlinlang.org/t/hidden-allocations-when-using-vararg-and-spread-operator/1640/3
+          indirectCallNode.call(fn.callTarget, *args)
+        } else {
+          fn.pap(ys) // not enough arguments, pap node
         }
+      } else {
+        CompilerDirectives.transferToInterpreterAndInvalidate()
+        @Suppress("UNCHECKED_CAST")
+        val new = this.replace(App(App(rator, rands.copyOf(fn.arity) as Array<Code>), rands.copyOfRange(fn.arity, rands.size)))
+        return new.executeFn(frame, fn)
       }
     }
 
