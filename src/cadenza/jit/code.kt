@@ -5,6 +5,8 @@ import cadenza.data.*
 import cadenza.panic
 import cadenza.section
 import cadenza.semantics.Type
+import cadenza.todo
+import com.oracle.truffle.api.CallTarget
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
@@ -53,6 +55,64 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.ExpressionTag::class.java
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = CodeWrapper(this, probe)
 
+
+  abstract class DispatchNode(val argsArity: Int) : Node() {
+    final val INLINE_CACHE_SIZE : Int = 2
+    abstract fun executeDispatch(frame: VirtualFrame, closure: Closure, args: Array<out Any?>): Any?
+  }
+
+  class DirectDispatchNode(next : DispatchNode, callTarget: CallTarget, argsArity: Int) : DispatchNode(argsArity) {
+    override fun executeDispatch(frame: VirtualFrame, closure: Closure, args: Array<out Any?>): Any? = panic("dispatch")
+  }
+
+  // this needs to do a Saura cache
+  class GenericDispatchNode(argsArity: Int) : DispatchNode(argsArity) {
+    @Child private val callNode: IndirectCallNode = Truffle.getRuntime().createIndirectCallNode()
+    override fun executeDispatch(frame: VirtualFrame, closure: Closure, args: Array<out Any?>): Any? {
+      CallUtils.call(frame, closure.callTarget)
+      if (closure.arity >= args.size) {
+        return if (closure.arity == args.size) {
+          val args = if (closure.env != null) consAppend(closure.env, closure.papArgs, args) else append(closure.papArgs, args)
+          CallUtils.call(callNode,closure.callTarget, args)
+        } else {
+          closure.pap(args) // not enough arguments, pap node
+        }
+      } else {
+        CompilerDirectives.transferToInterpreterAndInvalidate()
+        @Suppress("UNCHECKED_CAST")
+        val new = this.replace(App(App(rator, rands.copyOf(fn.arity) as Array<Code>), rands.copyOfRange(fn.arity, rands.size)))
+        return new.executeFn(frame, fn)
+      }
+
+
+
+    }
+  }
+
+
+  class UninitializedDispatchNode(argsArity: Int) : DispatchNode(argsArity) {
+    override fun executeDispatch(frame: VirtualFrame, closure: Closure, args: Array<out Any?>) {
+      CompilerDirectives.transferToInterpreterAndInvalidate()
+      var cur : DispatchNode = this
+      var size = 0
+      while (cur.parent is DispatchNode) {
+        cur = cur.parent as DispatchNode
+        ++size
+      }
+      val app = cur.parent as App
+      val replacement =
+        if (size < INLINE_CACHE_SIZE)
+          DirectDispatchNode(UninitializedDispatchNode(argsArity), closure.callTarget, closure.arity).also {
+            this.replace(it)
+          }
+        else
+          GenericDispatchNode().also { app.dispatchNode.replace(it) } // this probably needs to become a Saura-style arity-based cache
+    }
+
+  }
+
+
+
   @TypeSystemReference(DataTypes::class)
   @NodeInfo(shortName = "App")
   class App(
@@ -63,7 +123,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     // TODO: use DirectCallNode when possible, IndirectCallNode doesn't do inlining or splitting
     // mb use an inline cache + DirectCallNode?
     @Child private var indirectCallNode: IndirectCallNode = Truffle.getRuntime().createIndirectCallNode()
-
+    @Child private var dispatchNode: DispatchNode
     @ExplodeLoop
     private fun executeRands(frame: VirtualFrame): Array<out Any?> = rands.map { it.executeAny(frame) }.toTypedArray()
 
