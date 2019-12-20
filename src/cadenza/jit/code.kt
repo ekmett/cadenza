@@ -75,7 +75,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
           val args = if (fn.env != null) consAppend(fn.env, fn.papArgs, ys) else append(fn.papArgs, ys)
           // TODO: kotlin always does an Array.copyOf even for a single spread
           // https://discuss.kotlinlang.org/t/hidden-allocations-when-using-vararg-and-spread-operator/1640/3
-          indirectCallNode.call(fn.callTarget, *args)
+          CallUtils.call(indirectCallNode,fn.callTarget,args)
         } else {
           fn.pap(ys) // not enough arguments, pap node
         }
