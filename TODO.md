@@ -15,3 +15,7 @@
 * Chrome debugger support
 
 * AppLam -> direct call
+
+* Benchmark the crap out of this
+
+* Tests? Who needs them
