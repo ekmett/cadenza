@@ -1,5 +1,6 @@
 package cadenza.data
 
+import cadenza.jit.CallUtils
 import cadenza.jit.ClosureRootNode
 import cadenza.semantics.Type
 import cadenza.semantics.Type.Arr
@@ -13,6 +14,7 @@ import com.oracle.truffle.api.interop.TruffleObject
 import com.oracle.truffle.api.interop.UnsupportedTypeException
 import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
+import com.oracle.truffle.api.nodes.DirectCallNode
 import com.oracle.truffle.api.nodes.ExplodeLoop
 
 
@@ -20,11 +22,11 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class Closure (
-  @field:CompilerDirectives.CompilationFinal val env: MaterializedFrame? = null,
-  val papArgs: Array<Any?>,
-  val arity: Int,
+  @field:CompilerDirectives.CompilationFinal @JvmField val env: MaterializedFrame? = null,
+  @JvmField val papArgs: Array<Any?>,
+  @JvmField val arity: Int,
   private val targetType: Type,
-  val callTarget: RootCallTarget
+  @JvmField val callTarget: RootCallTarget
 ) : TruffleObject {
   val type get() = targetType.after(papArgs.size)
 
@@ -57,20 +59,36 @@ class Closure (
     return call(arguments)
   }
 
-  // only used for InteropLibrary execute
-  fun call(arguments: Array<out Any?>): Any? {
-    val args = append(papArgs, arguments)
-    val len = arguments.size
+  // invariant: node.callTarget == this.callTarget
+  fun callDirectWith(node: DirectCallNode, ys: Array<out Any?>): Any? {
     return when {
-      len < arity -> Closure(env, args, arity - len, targetType, callTarget)
-      len == arity ->
-        if (env != null) callTarget.call(env, *args)
-        else callTarget.call(*args)
+      ys.size < arity -> pap(ys)
+      ys.size == arity -> {
+        val args = if (env != null) consAppend(env, papArgs, ys) else append(papArgs, ys)
+        CallUtils.callDirect(node, args)
+      }
       else -> {
-        val g =
-          if (env != null) callTarget.call(*consTake(env, arity, args))
-          else callTarget.call(*(args.take(arity).toTypedArray()))
-        (g as Closure).call(drop(arity, args))
+        val zs = append(papArgs, ys)
+        val args = if (env != null) consTake(env, arity, zs) else (zs.take(arity).toTypedArray())
+        val g = CallUtils.callDirect(node, args)
+        (g as Closure).call(drop(arity, zs))
+      }
+    }
+  }
+
+  // only used for InteropLibrary execute
+  fun call(ys: Array<out Any?>): Any? {
+    return when {
+      ys.size < arity -> pap(ys)
+      ys.size == arity -> {
+        val args = if (env != null) consAppend(env, papArgs, ys) else append(papArgs, ys)
+        CallUtils.callTarget(callTarget, args)
+      }
+      else -> {
+        val zs = append(papArgs, ys)
+        val args = if (env != null) consTake(env, arity, zs) else (zs.take(arity).toTypedArray())
+        val g = CallUtils.callTarget(callTarget, args)
+        (g as Closure).call(drop(arity, zs))
       }
     }
   }

@@ -17,7 +17,6 @@ import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.profiles.ConditionProfile
 import com.oracle.truffle.api.source.SourceSection
 
-
 // utility
 @Suppress("NOTHING_TO_INLINE")
 private inline fun isSuperCombinator(callTarget: RootCallTarget) =
@@ -53,38 +52,22 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.ExpressionTag::class.java
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = CodeWrapper(this, probe)
 
+
   @TypeSystemReference(DataTypes::class)
   @NodeInfo(shortName = "App")
-  class App(
+  open class App(
     @field:Child var rator: Code,
     @field:Children val rands: Array<Code>,
     loc: Loc? = null
   ) : Code(loc) {
-    // TODO: use DirectCallNode when possible, IndirectCallNode doesn't do inlining or splitting
-    // mb use an inline cache + DirectCallNode?
-    @Child private var indirectCallNode: IndirectCallNode = Truffle.getRuntime().createIndirectCallNode()
+    @Child private var dispatch: Dispatch = DispatchNodeGen.create(rands.size)
 
     @ExplodeLoop
-    private fun executeRands(frame: VirtualFrame): Array<out Any?> = rands.map { it.executeAny(frame) }.toTypedArray()
+    private fun executeRands(frame: VirtualFrame): Array<Any?> = rands.map { it.executeAny(frame) }.toTypedArray()
 
     private fun executeFn(frame: VirtualFrame, fn: Closure): Any? {
-      // TODO: does this work with foreign CallTargets with nbe?
-      if (fn.arity >= rands.size) {
-        val ys = executeRands(frame)
-        return if (fn.arity == rands.size) {
-          val args = if (fn.env != null) consAppend(fn.env, fn.papArgs, ys) else append(fn.papArgs, ys)
-          // TODO: kotlin always does an Array.copyOf even for a single spread
-          // https://discuss.kotlinlang.org/t/hidden-allocations-when-using-vararg-and-spread-operator/1640/3
-          CallUtils.call(indirectCallNode,fn.callTarget,args)
-        } else {
-          fn.pap(ys) // not enough arguments, pap node
-        }
-      } else {
-        CompilerDirectives.transferToInterpreterAndInvalidate()
-        @Suppress("UNCHECKED_CAST")
-        val new = this.replace(App(App(rator, rands.copyOf(fn.arity) as Array<Code>), rands.copyOfRange(fn.arity, rands.size)))
-        return new.executeFn(frame, fn)
-      }
+      // TODO: think about how foreign calltargets should work with nbe
+      return dispatch.executeDispatch(fn, executeRands(frame))
     }
 
     @Throws(NeutralException::class)

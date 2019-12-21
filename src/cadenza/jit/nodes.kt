@@ -62,6 +62,7 @@ open class ClosureBody constructor(
 
 // todo: should this get removed & always inline?
 // might still be good to use this, since we could use this e.g. at gc time to do selector forwarding
+// todo: this doesn't work if one of the args is a neutral
 open class BuiltinRootNode(
   private val language: TruffleLanguage<*>,
   @Child var builtin: Builtin

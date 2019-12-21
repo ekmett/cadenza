@@ -3,7 +3,6 @@ package cadenza.semantics
 import cadenza.*
 import cadenza.jit.*
 import cadenza.jit.Code.Companion.lam
-import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.FrameDescriptor
 import com.oracle.truffle.api.source.Source
