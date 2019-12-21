@@ -19,6 +19,9 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 
 
 // TODO: consider splitting Closure(callTarget, arity, type) from env & pap & statically allocate that part
+// TODO: consider storing env in papArgs, to make indirect calls faster
+// (don't need to branch on env + pap, just pap)
+// maybe store flag if it has an env & read it from papArgs?
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class Closure (

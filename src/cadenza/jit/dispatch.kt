@@ -20,7 +20,9 @@ abstract class Dispatch(@JvmField val argsSize: Int) : Node() {
     "fn.papArgs.length == papSize",
     "(fn.env == null) == noEnv",
     // TODO: callTarget - papSize = arity, so don't need to check this after specialization
-    // or alternatively could use arity to reconstruct papSize
+    // or alternatively could use arity + callTarget metadata to reconstruct papSize
+    // want closure field that's bitpacked hasEnv + papSize/arity anyways to avoid multiple loads
+    // & after specialization only check callTarget + that field
     "fn.arity == argsSize"
   ], limit = "3")
   fun callDirect(fn: Closure, ys: Array<Any?>,
