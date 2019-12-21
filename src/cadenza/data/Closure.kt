@@ -101,22 +101,25 @@ class Closure (
   }
 }
 
-inline fun append(xs: Array<out Any?>, ys: Array<out Any?>): Array<Any?> {
-  val zs = arrayOfNulls<Any>(xs.size + ys.size)
-  System.arraycopy(xs, 0, zs, 0, xs.size)
-  System.arraycopy(ys, 0, zs, xs.size, ys.size)
+fun append(xs: Array<out Any?>, ys: Array<out Any?>): Array<Any?> = appendL(xs, xs.size, ys, ys.size)
+
+fun appendL(xs: Array<out Any?>, xsSize: Int, ys: Array<out Any?>, ysSize: Int): Array<Any?> {
+  val zs = arrayOfNulls<Any>(xsSize + ysSize)
+  System.arraycopy(xs, 0, zs, 0, xsSize)
+  System.arraycopy(ys, 0, zs, xsSize, ysSize)
   return zs
 }
 
-inline fun consAppend(x: Any, xs: Array<out Any?>, ys: Array<out Any?>): Array<Any?> {
-  val zs = arrayOfNulls<Any>(1 + xs.size + ys.size)
+fun consAppend(x: Any, xs: Array<out Any?>, ys: Array<out Any?>): Array<Any?> = consAppendL(x, xs, xs.size, ys, ys.size)
+
+fun consAppendL(x: Any, xs: Array<out Any?>, xsSize: Int, ys: Array<out Any?>, ysSize: Int): Array<Any?> {
+  val zs = arrayOfNulls<Any>(1 + xsSize + ysSize)
   zs[0] = x
-  System.arraycopy(xs, 0, zs, 1, xs.size)
-  System.arraycopy(ys, 0, zs, 1 + xs.size, ys.size)
+  System.arraycopy(xs, 0, zs, 1, xsSize)
+  System.arraycopy(ys, 0, zs, 1 + xsSize, ysSize)
   return zs
 }
 
-@ExplodeLoop
 private fun cons(x: Any, xs: Array<out Any?>): Array<Any?> {
   val ys = arrayOfNulls<Any>(xs.size + 1)
   ys[0] = x
