@@ -130,14 +130,16 @@ object FixNatF : Builtin2(Type.Arr(natFF, natF)) {
 }
 
 // fixNatF with a known function
-// inlines up to graal.TruffleMaximumRecursiveInlining
+// inlines possibly up to graal.TruffleMaximumRecursiveInlining (default 2)
 class FixNatF1(private val f: Closure, language: Language) : Builtin1(natF) {
-  @Child var callNode: DirectCallNode = DirectCallNode.create(f.callTarget)
   private val target: RootCallTarget = Truffle.getRuntime().createCallTarget(BuiltinRootNode(language, this))
   private val self = Closure(null, arrayOf(), 1, type, target)
+  @Child var dispatch: Dispatch = DispatchNodeGen.create(2)
 
   override fun execute(x: Any?):  Any? {
-    return f.callDirectWith(callNode, arrayOf(self, x))
+    // still need to use a dispatch since calling w/ multiple args => might need to call twice
+    // but actually it's impossible to branch on values of function types, so this is avoidable?
+    return dispatch.executeDispatch(f, arrayOf(self, x))
   }
 }
 
