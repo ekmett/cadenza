@@ -164,3 +164,29 @@ fun builder(signature: String) : ByteArray = `class`(
     todo
   }
 }
+
+fun ByteArray.loadClass(className: String) : Class<*> {
+  val classBuffer = this
+  return object : ClassLoader(Int::class.java.classLoader) {
+    override fun findClass(name: String): Class<*> =
+      defineClass(name, classBuffer, 0, classBuffer.size)
+  }.loadClass(className)
+}
+
+
+val frameCache: HashMap<String, Class<DataFrame>> = HashMap()
+
+// broken
+fun buildFrame(fields: Array<Any>): DataFrame {
+  val types = fields.map { FieldInfo.from(it) }
+  val signature = types.map { it.sig }.joinToString("")
+  var klass = frameCache[signature]
+  if (klass == null) {
+    klass = frame(signature).loadClass("cadenza.frame.dynamic.$signature") as Class<DataFrame>
+    frameCache[signature] = klass
+  }
+  val cstr = klass.getConstructor(*(Array(fields.size) { Object::class.java }))
+  val inst = cstr.newInstance(*fields)
+  return inst
+}
+

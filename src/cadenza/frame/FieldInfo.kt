@@ -23,6 +23,13 @@ internal sealed class FieldInfo(val sig: Char, val type: Type) {
       'D' -> doubleFieldInfo
       else -> panic("unknown field type")
     }
+    fun from(x: Any): FieldInfo = when (x) {
+      is Int -> intFieldInfo
+      is Float -> floatFieldInfo
+      is Long -> longFieldInfo
+      is Double -> doubleFieldInfo
+      else -> objectFieldInfo
+    }
   }
 }
 

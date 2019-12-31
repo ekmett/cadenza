@@ -23,21 +23,18 @@ abstract class LocatedNode(val loc: Loc? = null) : Node(), InstrumentableNode {
   override fun isInstrumentable() = loc !== null
 }
 
-@TypeSystemReference(DataTypes::class)
-@NodeInfo(shortName = "DataFrameBuilder")
-abstract class DataFrameBuilder : Node() {
-  abstract fun execute(frame: VirtualFrame)
-}
-
 @NodeInfo(language = "core", description = "A root of a core tree.")
 @TypeSystemReference(DataTypes::class)
-class ProgramRootNode constructor(
+open class ProgramRootNode constructor(
   language: Language,
   @field:Child private var body: Code,
-  fd: FrameDescriptor
+  fd: FrameDescriptor,
+  val source: Source
 ) : RootNode(language, fd) {
   override fun isCloningAllowed() = true
   override fun execute(frame: VirtualFrame) = body.executeAny(frame)
+
+  override fun getSourceSection(): SourceSection = source.createSection(0, source.length)
 }
 
 class InlineCode(
@@ -65,12 +62,14 @@ open class ClosureBody constructor(
 // todo: this doesn't work if one of the args is a neutral
 open class BuiltinRootNode(
   private val language: TruffleLanguage<*>,
-  @Child var builtin: Builtin
+  @field:Child var builtin: Builtin
 ) : RootNode(language, FrameDescriptor()) {
   override fun execute(frame: VirtualFrame): Any? {
 //    assert(frame.arguments.size == builtin.arity) { "bad builtin application $builtin" }
     return builtin.run(frame.arguments)
   }
+
+  override fun isCloningAllowed() = true
 }
 
 @GenerateWrapper
@@ -119,5 +118,7 @@ open class ClosureRootNode(
   override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode = ClosureRootNodeWrapper(this, this, probeNode)
   override fun getSourceSection(): SourceSection? = loc?.let { source.section(it) }
   override fun isInstrumentable() = loc !== null
+
+  override fun isCloningAllowed() = true
 }
 

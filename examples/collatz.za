@@ -1,0 +1,1 @@
+fixNatF (\(f : Nat -> Nat) (x : Nat) -> if eq x 1 then x else f (printId (if (eq (mod x 2) 0) then div x 2 else plus (mult 3 x) 1))) 11111

@@ -3,18 +3,20 @@ package cadenza.jit
 import cadenza.data.*
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.dsl.Cached
+import com.oracle.truffle.api.dsl.ReportPolymorphism
 import com.oracle.truffle.api.dsl.Specialization
 import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.nodes.DirectCallNode
 import com.oracle.truffle.api.nodes.IndirectCallNode
 import com.oracle.truffle.api.nodes.Node
 
+// TODO: dispatch on closure equality for static (no env or pap) closures?
+@ReportPolymorphism
 abstract class Dispatch(@JvmField val argsSize: Int) : Node() {
 
   // pre: ys.size == argsSize
   abstract fun executeDispatch(closure: Closure, ys: Array<Any?>): Any?
 
-  // TODO: variant for arity < argsSize that keeps a cached Dispatch (per specialization) (callDirectOverapplied)
   @Specialization(guards = [
     "fn.arity == argsSize",
     "fn.callTarget == cachedCallTarget"
@@ -33,7 +35,7 @@ abstract class Dispatch(@JvmField val argsSize: Int) : Node() {
   }
 
   @Specialization(guards = [
-    // TODO: can this be arity < argsSize?
+    // TODO: can/should this be arity < argsSize?
     "fn.arity < argsSize",
     "fn.arity == arity",
     "fn.callTarget == cachedCallTarget"
@@ -75,7 +77,7 @@ abstract class Dispatch(@JvmField val argsSize: Int) : Node() {
   @Specialization(guards = [
     "fn.arity < argsSize",
     "arity == fn.arity"
-  ])
+  ], replaces = ["callDirectOverapplied"])
   fun callIndirectOverapplied(fn: Closure, ys: Array<Any?>,
                               @Cached("fn.arity") arity: Int,
                               @Cached("create()") callNode: IndirectCallNode,

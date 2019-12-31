@@ -23,7 +23,10 @@ val Parse.ident: String get() = trying("ident") {
   else { x }
 }
 val Parse.space: Unit get() { many { satisfy { it.isWhitespace() }} }
-val Parse.lit: Term get() = tlitNat(some {satisfy { it.isDigit() }}.joinToString("").toInt())
+val Parse.lit: Term get() {
+  val (x, loc) = spanned { some {satisfy { it.isDigit() }}.joinToString("").toInt() }
+  return tlitNat(x, loc)
+}
 inline fun <T,A> T.token(f: T.() -> A): A where T : Parse { val a = f(); space; return a }
 inline fun <T>T.tok(x : String): String where T : Parse { return token { string(x) } }
 
@@ -56,16 +59,20 @@ val Parse.grammar: Term get() = choice(
   val else_ = grammar
   tif(cond, then, else_)
 },{
-  val x = some {
+  val (x, loc) = spanned { some {
     choice(
       { parens { grammar }},
-      { tvar( token { ident })},
+      {
+        val (a, loc) = spanned { token { ident } }
+        tvar(a, loc)
+      },
       { token { lit }}
     )
-  }
+  }}
   if (x.size == 1) {
     x[0]
   } else {
-    tapp(x[0], *(x.drop(1).toTypedArray()))
+    tapp(x[0], x.drop(1).toTypedArray(), loc)
   }
 })
+

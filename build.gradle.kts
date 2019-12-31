@@ -41,19 +41,21 @@ plugins {
 
 val compiler by configurations.creating
 
+val graalVersion = "19.3.0"
+
 dependencies {
   implementation(kotlin("stdlib"))
   implementation(kotlin("stdlib-jdk8"))
   arrayOf("asm","asm-tree","asm-commons").forEach { implementation("org.ow2.asm:$it:7.1") }
   implementation("org.fusesource.jansi:jansi:1.18")
-  compiler("org.graalvm.compiler:compiler:19.3.0")
-  implementation("org.graalvm.compiler:compiler:19.3.0")
-  implementation("org.graalvm.sdk:graal-sdk:19.3.0")
-  implementation("org.graalvm.sdk:launcher-common:19.3.0")
-  implementation("org.graalvm.truffle:truffle-api:19.3.0")
-  testImplementation("org.graalvm.compiler:compiler:19.3.0")
-  "kapt"("org.graalvm.truffle:truffle-api:19.3.0")
-  "kapt"("org.graalvm.truffle:truffle-dsl-processor:19.3.0")
+  compiler("org.graalvm.compiler:compiler:$graalVersion")
+  implementation("org.graalvm.compiler:compiler:$graalVersion")
+  implementation("org.graalvm.sdk:graal-sdk:$graalVersion")
+  implementation("org.graalvm.sdk:launcher-common:$graalVersion")
+  implementation("org.graalvm.truffle:truffle-api:$graalVersion")
+  testImplementation("org.graalvm.compiler:compiler:$graalVersion")
+  "kapt"("org.graalvm.truffle:truffle-api:$graalVersion")
+  "kapt"("org.graalvm.truffle:truffle-dsl-processor:$graalVersion")
   testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
 }
 
@@ -172,7 +174,7 @@ tasks.register("componentJar", Jar::class) {
     attributes["Bundle-DocURL"] = "https://github.com/ekmett/cadenza"
     attributes["Bundle-Symbolic-Name"] = "cadenza"
     attributes["Bundle-Version"] = "0.0-SNAPSHOT"
-    attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=19.3.0)(os_arch=amd64))\""
+    attributes["Bundle-RequireCapability"] = "org.graalvm;filter:=\"(&(graalvm_version=$graalVersion)(os_arch=amd64))\""
     attributes["x-GraalVM-Polyglot-Part"] = "True"
   }
 }
@@ -234,7 +236,7 @@ logger.info("os = {}",os)
 
 // can i just tweak this one now?
 tasks.replace("run", JavaExec::class.java).run {
-  enableAssertions = true
+//  enableAssertions = true
   description = "Run cadenza directly from the working directory"
   dependsOn(":jar")
   classpath = sourceSets["main"].runtimeClasspath
@@ -245,10 +247,13 @@ tasks.replace("run", JavaExec::class.java).run {
     "--upgrade-module-path=${compiler.asPath}",
     "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar",
     "-Djansi.force=true"
-//    ,"-Dgraal.Dump=:1",
-//    "-Dgraal.PrintGraph=Network",
-//    "-Dgraal.CompilationFailureAction=ExitVM",
-//    "-Dgraal.TraceTruffleCompilation=true"
+    ,"-Dgraal.Dump=:1",
+    "-Dgraal.PrintGraph=Network",
+    "-Dgraal.CompilationFailureAction=ExitVM",
+    "-Dgraal.TraceTruffleCompilation=true",
+    "-Dgraal.TraceTruffleSplitting=true",
+    "-Dgraal.TruffleTraceSplittingSummary=true",
+    "-Dgraal.TruffleMaximumRecursiveInlining=0"
   )
   jvmArgs = args
   main = "cadenza.Launcher"

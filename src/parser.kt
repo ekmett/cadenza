@@ -200,5 +200,5 @@ inline fun <P,A> P.spanned(p: P.() -> A): Pair<A,Loc> where P : Parse {
   val a = pos
   val x = p()
   val b = pos
-  return Pair(x, Loc.Range(a,b))
+  return Pair(x, Loc.Range(a,b-a))
 }

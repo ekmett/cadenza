@@ -1,0 +1,1 @@
+fixNatF (\(f : Nat -> Nat) (x : Nat) -> if le x 1 then x else plus (f (minus x 1)) (f (minus x 2))) 15

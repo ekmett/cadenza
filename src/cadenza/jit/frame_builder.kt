@@ -17,7 +17,7 @@ val noFrameBuilders = arrayOf<FrameBuilder>() // can't make const because kotlin
 @NodeInfo(shortName = "FrameBuilder")
 abstract class FrameBuilder(
   private val slot: FrameSlot,
-  @field:Child protected var rhs: Code
+  @field:Child var rhs: Code
 ) : Node() {
 
   fun build(frame: VirtualFrame, oldFrame: VirtualFrame) {

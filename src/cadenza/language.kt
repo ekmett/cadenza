@@ -150,9 +150,10 @@ class Language : TruffleLanguage<Language.Context>() {
   }
 
   override fun parse(request: ParsingRequest): CallTarget {
+    val source = request.source
     // todo: request.argumentNames
     // todo: parse decls here instead of expressions?
-    val result = request.source.parse { grammar }
+    val result = source.parse { grammar }
     when (result) {
       is Failure -> {
         print(result)
@@ -162,7 +163,7 @@ class Language : TruffleLanguage<Language.Context>() {
         val ci = CompileInfo(request.source, this)
         val fd = FrameDescriptor()
         val witness = result.value.infer(initialCtx)
-        val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd)
+        val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd, source)
         return Truffle.getRuntime().createCallTarget(rootNode)
       }
     }

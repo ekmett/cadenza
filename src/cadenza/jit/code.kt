@@ -2,12 +2,14 @@ package cadenza.jit
 
 import cadenza.Loc
 import cadenza.data.*
+import cadenza.frame.buildFrame
 import cadenza.panic
 import cadenza.section
 import cadenza.semantics.Type
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
+import com.oracle.truffle.api.dsl.ReportPolymorphism
 import com.oracle.truffle.api.dsl.Specialization
 import com.oracle.truffle.api.dsl.TypeSystemReference
 import com.oracle.truffle.api.frame.*
@@ -22,11 +24,13 @@ import com.oracle.truffle.api.source.SourceSection
 private inline fun isSuperCombinator(callTarget: RootCallTarget) =
   callTarget.rootNode.let { it is ClosureRootNode && it.isSuperCombinator() }
 
+@ReportPolymorphism
 @Suppress("NOTHING_TO_INLINE","unused")
 @GenerateWrapper
 @NodeInfo(language = "core", description = "core nodes")
 @TypeSystemReference(DataTypes::class)
-abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
+abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+  constructor(that: Code) : this(that.loc)
 
   @Throws(NeutralException::class)
   abstract fun execute(frame: VirtualFrame): Any?
@@ -50,7 +54,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
   override fun isInstrumentable() = loc !== null
 
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.ExpressionTag::class.java
-  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = CodeWrapper(this, probe)
+  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = CodeWrapper(this, this, probe)
 
 
   @TypeSystemReference(DataTypes::class)
@@ -85,9 +89,10 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
     override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.CallTag::class.java || super.hasTag(tag)
   }
 
+  // only used in argPreamble
   @TypeSystemReference(DataTypes::class)
   @NodeInfo(shortName = "Arg")
-  class Arg(private val index: Int) : Code() {
+  class Arg(private val index: Int) : Code(null) {
     @Throws(NeutralException::class)
     override fun execute(frame: VirtualFrame): Any? = throwIfNeutralValue(frame.arguments[index])
     override fun executeAny(frame: VirtualFrame): Any? = frame.arguments[index]
@@ -201,7 +206,7 @@ abstract class Code(val loc: Loc? = null) : Node(), InstrumentableNode {
   abstract class CallBuiltin(
     // type of whole application
     val type: Type,
-    private val builtin: Builtin,
+    @field:Child private var builtin: Builtin,
     @field:Children internal var args: Array<Code>,
     loc: Loc? = null
   ) : Code(loc) {

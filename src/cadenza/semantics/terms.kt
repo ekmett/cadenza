@@ -72,7 +72,7 @@ abstract class Term {
     }
 
     @Suppress("unused")
-    fun tapp(trator: Term, vararg trands: Term, loc: Loc? = null): Term = object : Term() {
+    fun tapp(trator: Term, trands: Array<Term>, loc: Loc? = null): Term = object : Term() {
       @Throws(TypeError::class)
       override fun infer(ctx: Ctx): Witness {
         val wrator = trator.infer(ctx)
@@ -98,16 +98,9 @@ abstract class Term {
     @Suppress("UNUSED_PARAMETER","unused")
     fun tlam(names: Array<Pair<Name,Type>>, body: Term, loc: Loc? = null): Term = object : Term() {
       override fun infer(ctx: Ctx): Witness {
-        var ctx2 = ctx;
-        for ((n,ty) in names) {
-          ctx2 = ConsEnv(n, NameInfo(ty, null), ctx2)
-        }
+        val ctx2 = names.fold(ctx) { x, (n, ty) -> ConsEnv(n, NameInfo(ty, null), x) }
         val bodyw = body.infer(ctx2)
-        var aty = bodyw.type
-        for ((_,ty) in names.reversed()) {
-          aty = Type.Arr(ty, aty)
-        }
-        val arity = names.size
+        val aty = names.foldRight(bodyw.type) { (_,ty), x -> Type.Arr(ty, x) }
         return object : Witness(aty) {
           // looks at what vars the body adds to it's FrameDescriptor to decide what to capture
           // TODO: maybe should calculate fvs instead?
@@ -142,14 +135,16 @@ abstract class Term {
                 ClosureRootNode(
                   ci.language,
                   bodyFd,
-                  arity,
+                  names.size,
                   envPreamble.toTypedArray(),
                   argPreamble.toTypedArray(),
                   ClosureBody(bodyCode),
-                  ci.source
+                  ci.source,
+                  loc
                 )
               ),
-              aty
+              aty,
+              loc
             )
           }
         }
