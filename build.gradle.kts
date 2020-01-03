@@ -123,12 +123,13 @@ tasks.test {
     events("passed","skipped","failed")
     showStandardStreams = true
   }
+  dependsOn(":jar")
   jvmArgs = listOf(
     "-XX:+UnlockExperimentalVMOptions",
     "-XX:+EnableJVMCI",
     "--module-path=${compiler.asPath}",
     "--upgrade-module-path=${compiler.asPath}",
-    "-Dtruffle.class.path.append=@CADENZA_APP_HOME@/lib/cadenza-${project.version}.jar"
+    "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar"
   )
 }
 
@@ -253,7 +254,13 @@ tasks.replace("run", JavaExec::class.java).run {
     "-Dgraal.TraceTruffleCompilation=true",
     "-Dgraal.TraceTruffleSplitting=true",
     "-Dgraal.TruffleTraceSplittingSummary=true",
-    "-Dgraal.TruffleMaximumRecursiveInlining=0"
+    "--add-opens=jdk.internal.vm.compiler/org.graalvm.compiler.truffle.runtime=ALL-UNNAMED",
+    "-Dgraal.TraceTruffleAssumptions=true",
+    "-Dgraal.TraceTruffleTransferToInterpreter=true",
+    // limit size of graphs for easier visualization
+    "-Dgraal.TruffleMaximumRecursiveInlining=0",
+    "-Dgraal.LoopPeeling=false"
+
   )
   jvmArgs = args
   main = "cadenza.Launcher"

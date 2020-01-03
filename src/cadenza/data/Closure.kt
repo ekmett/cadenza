@@ -14,14 +14,12 @@ import com.oracle.truffle.api.interop.TruffleObject
 import com.oracle.truffle.api.interop.UnsupportedTypeException
 import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
-import com.oracle.truffle.api.nodes.DirectCallNode
 import com.oracle.truffle.api.nodes.ExplodeLoop
 
 
-// TODO: consider splitting Closure(callTarget, arity, type) from env & pap & statically allocate that part
 // TODO: consider storing env in papArgs, to make indirect calls faster
 // (don't need to branch on env + pap, just pap)
-// maybe store flag if it has an env & read it from papArgs?
+// & store flag if it has an env & read it from papArgs?
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class Closure (
@@ -62,25 +60,9 @@ class Closure (
     return call(arguments)
   }
 
-  // invariant: node.callTarget == this.callTarget
-  fun callDirectWith(node: DirectCallNode, ys: Array<out Any?>): Any? {
-    return when {
-      ys.size < arity -> pap(ys)
-      ys.size == arity -> {
-        val args = if (env != null) consAppend(env, papArgs, ys) else append(papArgs, ys)
-        CallUtils.callDirect(node, args)
-      }
-      else -> {
-        val zs = append(papArgs, ys)
-        val args = if (env != null) consTake(env, arity, zs) else (zs.take(arity).toTypedArray())
-        val g = CallUtils.callDirect(node, args)
-        (g as Closure).call(drop(arity, zs))
-      }
-    }
-  }
-
   // only used for InteropLibrary execute
-  fun call(ys: Array<out Any?>): Any? {
+  private fun call(ys: Array<out Any?>): Any? {
+    // TODO: need to catch TailCallException here
     return when {
       ys.size < arity -> pap(ys)
       ys.size == arity -> {

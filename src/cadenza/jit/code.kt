@@ -2,7 +2,6 @@ package cadenza.jit
 
 import cadenza.Loc
 import cadenza.data.*
-import cadenza.frame.buildFrame
 import cadenza.panic
 import cadenza.section
 import cadenza.semantics.Type
@@ -62,9 +61,10 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   open class App(
     @field:Child var rator: Code,
     @field:Children val rands: Array<Code>,
-    loc: Loc? = null
+    loc: Loc? = null,
+    tail_call: Boolean = false
   ) : Code(loc) {
-    @Child private var dispatch: Dispatch = DispatchNodeGen.create(rands.size)
+    @Child private var dispatch: Dispatch = DispatchNodeGen.create(rands.size, tail_call)
 
     @ExplodeLoop
     private fun executeRands(frame: VirtualFrame): Array<Any?> = rands.map { it.executeAny(frame) }.toTypedArray()
@@ -101,9 +101,9 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
 
   class If(
     val type: Type,
-    @field:Child private var condNode: Code,
-    @field:Child private var thenNode: Code,
-    @field:Child private var elseNode: Code,
+    @field:Child var condNode: Code,
+    @field:Child var thenNode: Code,
+    @field:Child var elseNode: Code,
     loc: Loc? = null
   ) : Code(loc) {
     private val conditionProfile = ConditionProfile.createBinaryProfile()

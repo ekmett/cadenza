@@ -149,7 +149,8 @@ class FixNatF1(private val f: Closure, language: Language) : Builtin1(natF) {
   // TODO: make this instrumentable?
   private val target: RootCallTarget = Truffle.getRuntime().createCallTarget(BuiltinRootNode(language, this))
   private val self = Closure(null, arrayOf(), 1, type, target)
-  @Child var dispatch: Dispatch = DispatchNodeGen.create(2)
+  // TODO: making this a tail call breaks the specialization we get by using FixNatF1
+  @Child var dispatch: Dispatch = DispatchNodeGen.create(2, true)
 
   override fun execute(x: Any?):  Any? {
     // still need to use a dispatch since calling w/ multiple args => might need to call twice

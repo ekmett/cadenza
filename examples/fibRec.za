@@ -1,1 +1,1 @@
-let go n a b = if eq n 0 then a else go (minus n 1) b (plus a b) in go 20 0 1
+fix (\f n a b -> if eq n 0 then a else f (minus n 1) b (plus a b)) 20 0 1

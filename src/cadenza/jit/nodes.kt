@@ -35,6 +35,7 @@ open class ProgramRootNode constructor(
   override fun execute(frame: VirtualFrame) = body.executeAny(frame)
 
   override fun getSourceSection(): SourceSection = source.createSection(0, source.length)
+  override fun getName() = "program root"
 }
 
 class InlineCode(
@@ -70,6 +71,7 @@ open class BuiltinRootNode(
   }
 
   override fun isCloningAllowed() = true
+  override fun getName() = "builtin"
 }
 
 @GenerateWrapper
@@ -112,12 +114,12 @@ open class ClosureRootNode(
     return local
   }
 
-  // TODO: call right execute* based on type of body?
   override fun execute(frame: VirtualFrame) = body.execute(preamble(frame))
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java
   override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode = ClosureRootNodeWrapper(this, this, probeNode)
   override fun getSourceSection(): SourceSection? = loc?.let { source.section(it) }
   override fun isInstrumentable() = loc !== null
+  override fun getName() = "closure"
 
   override fun isCloningAllowed() = true
 }

@@ -138,7 +138,7 @@ abstract class Term {
                   names.size,
                   envPreamble.toTypedArray(),
                   argPreamble.toTypedArray(),
-                  ClosureBody(bodyCode),
+                  ClosureBody(markTailCalls(bodyCode)),
                   ci.source,
                   loc
                 )
