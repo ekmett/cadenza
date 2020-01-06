@@ -63,11 +63,11 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/frame/dynamic
         types.mapIndexedNotNull { i, v -> if(predicate(v)) i to LabelNode() else null }.toTypedArray().let {
           if (it.isNotEmpty()) {
             val defaultLabel = LabelNode()
+            aload_0
             iload_1
             lookupswitch(defaultLabel, *it)
             it.forEach { (i, label) ->
               add(label)
-              aload_0
               val t = types[i]
               getfield(type, members[i], t.type)
               t.ret(this)
