@@ -74,14 +74,21 @@ class TailCallLoop() : Node() {
       // Truffle.getRuntime().createCallTarget(rootNode)
 //      target = (Truffle.getRuntime() as GraalTruffleRuntime).createOSRCallTarget(rootNode)
       target = Truffle.getRuntime().createCallTarget(rootNode)
-      (target as OptimizedCallTarget).compile(true)
+      // TODO: when not allowed to do this, could instead make a calltarget
+      // that runs the loop for k iterations & call it a bunch to get it to compile
+      // could take k as an argument to the loop?
+      // this requires an
+      try {
+        (target as OptimizedCallTarget).compile(true)
+      } catch (e: IllegalAccessError) {}
       callNode = DirectCallNode.create(target)
     }
     // don't use callTarget: it leaves calls to pushEncapsulatingNode etc in the resulting code
     // either use callOSR or a DirectCallNode
 //    return CallUtils.callTarget(target as CallTarget, arrayOf(tailCall.fn, tailCall.args))
-    return (target as OptimizedCallTarget).callOSR(tailCall.fn, tailCall.args)
-//    return CallUtils.callDirect(callNode, arrayOf(tailCall.fn, tailCall.args))
+    // TODO: use callOSR when we can?
+//    return (target as OptimizedCallTarget).callOSR(tailCall.fn, tailCall.args)
+    return CallUtils.callDirect(callNode, arrayOf(tailCall.fn, tailCall.args))
   }
 }
 
