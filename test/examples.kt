@@ -1,3 +1,4 @@
+import cadenza.frame.frame
 import org.graalvm.polyglot.Context
 import org.junit.jupiter.api.Test
 
@@ -12,5 +13,9 @@ class ExampleTests {
   @Test fun add() {
     val x = ctx.eval("cadenza", "fixNatF (\\(f : Nat -> Nat) (x : Nat) -> if le 100 x then x else f (plus x 1)) 0")
     assert(x.asInt() == 100)
+  }
+
+  @Test fun wat() {
+    val f = frame("OI")
   }
 }

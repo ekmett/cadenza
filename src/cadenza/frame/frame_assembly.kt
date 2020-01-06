@@ -42,6 +42,7 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/frame/dynamic
           else -> {
             val no = LabelNode()
             val yes = LabelNode()
+            iload_1
             lookupswitch(no, *types.mapIndexedNotNull { i, v -> if (predicate(v)) i to yes else null }.toTypedArray())
             add(no)
             iconst_0
@@ -62,6 +63,7 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/frame/dynamic
         types.mapIndexedNotNull { i, v -> if(predicate(v)) i to LabelNode() else null }.toTypedArray().let {
           if (it.isNotEmpty()) {
             val defaultLabel = LabelNode()
+            iload_1
             lookupswitch(defaultLabel, *it)
             it.forEach { (i, label) ->
               add(label)
