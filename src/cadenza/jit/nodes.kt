@@ -31,8 +31,16 @@ open class ProgramRootNode constructor(
   fd: FrameDescriptor,
   val source: Source
 ) : RootNode(language, fd) {
+  @Child var tailCallLoop = TailCallLoop()
+
   override fun isCloningAllowed() = true
-  override fun execute(frame: VirtualFrame) = body.executeAny(frame)
+  override fun execute(frame: VirtualFrame): Any? {
+    return try {
+      body.executeAny(frame)
+    } catch (tailCall: TailCallException) {
+      tailCallLoop.execute(tailCall)
+    }
+  }
 
   override fun getSourceSection(): SourceSection = source.createSection(0, source.length)
   override fun getName() = "program root"
