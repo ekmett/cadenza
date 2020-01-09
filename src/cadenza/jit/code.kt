@@ -92,7 +92,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   // only used in argPreamble
   @TypeSystemReference(DataTypes::class)
   @NodeInfo(shortName = "Arg")
-  class Arg(private val index: Int) : Code(null) {
+  class Arg(private val index: Int, loc: Loc) : Code(loc) {
     @Throws(NeutralException::class)
     override fun execute(frame: VirtualFrame): Any? = throwIfNeutralValue(frame.arguments[index])
     override fun executeAny(frame: VirtualFrame): Any? = frame.arguments[index]
@@ -203,26 +203,26 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   // a fully saturated call to a builtin
 // invariant: builtins themselves do not return neutral values, other than through evaluating their argument
   @Suppress("unused")
-  abstract class CallBuiltin(
+  class CallBuiltin(
     // type of whole application
     val type: Type,
     @field:Child private var builtin: Builtin,
     @field:Children internal var args: Array<Code>,
     loc: Loc? = null
   ) : Code(loc) {
-    // TODO: could inline this?
+    @ExplodeLoop
     private fun executeArgs(frame: VirtualFrame): Pair<Array<Any?>,Boolean> {
       var neutral = false
-      val vals: ArrayList<Any?> = ArrayList()
-      for (x in args) {
-        vals.add(try {
+      val vals: Array<Any?> = arrayOfNulls(args.size)
+      args.forEachIndexed { ix, x ->
+        vals[ix] = try {
           x.execute(frame)
         } catch (n: NeutralException) {
           neutral = true
           n.get()
-        })
+        }
       }
-      return Pair(vals.toTypedArray(), neutral)
+      return Pair(vals, neutral)
     }
 
     override fun executeAny(frame: VirtualFrame): Any? {

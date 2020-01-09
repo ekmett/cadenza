@@ -85,9 +85,15 @@ abstract class Term {
         }.toTypedArray<Witness>()
         return object : Witness(currentType) {
           override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
+            val rator = wrator.compile(ci,fd)
+            val rands = wrands.map { it.compile(ci,fd) }.toTypedArray()
+            if (rator is Code.Lam && rator.callTarget.rootNode is BuiltinRootNode) {
+              val builtin = (rator.callTarget.rootNode as BuiltinRootNode).builtin
+              return Code.CallBuiltin(rator.type.after(rands.size), builtin, rands, loc)
+            }
             return Code.App(
-              wrator.compile(ci,fd),
-              wrands.map { it.compile(ci,fd) }.toTypedArray(),
+              rator,
+              rands,
               loc
             )
           }
@@ -121,7 +127,7 @@ abstract class Term {
                 closureCaptures += put(closureSlot, Code.`var`(parentSlot))
                 envPreamble += put(slot, Code.`var`(closureSlot))
               } else {
-                argPreamble += put(slot, Code.Arg(if (captures) ix+1 else ix))
+                argPreamble += put(slot, Code.Arg(if (captures) ix+1 else ix, loc!!))
               }
             }
 

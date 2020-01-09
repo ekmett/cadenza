@@ -88,9 +88,9 @@ open class ClosureRootNode(
   private val language: TruffleLanguage<*>,
   frameDescriptor: FrameDescriptor = FrameDescriptor(),
   val arity: Int,
-  @Children val envPreamble: Array<FrameBuilder> = noFrameBuilders,
-  @Children val argPreamble: Array<FrameBuilder>,
-  @Child var body: ClosureBody,
+  @field:Children val envPreamble: Array<FrameBuilder> = noFrameBuilders,
+  @field:Children val argPreamble: Array<FrameBuilder>,
+  @field:Child var body: ClosureBody,
   val source: Source,
   val loc: Loc? = null
 ) : RootNode(language, frameDescriptor), InstrumentableNode {

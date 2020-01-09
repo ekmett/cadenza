@@ -2,6 +2,7 @@ package cadenza.jit;
 
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.nodes.DirectCallNode;
+import com.oracle.truffle.api.nodes.ExplodeLoop;
 import com.oracle.truffle.api.nodes.IndirectCallNode;
 
 public abstract class CallUtils {
@@ -14,5 +15,14 @@ public abstract class CallUtils {
   }
   public static Object callTarget(CallTarget target, Object[] arguments) {
     return target.call(arguments);
+  }
+  @ExplodeLoop
+  public static Object[] copyArray(Object[] array, int len) {
+    Object[] out = new Object[len];
+//    for (int i = 0; i < len; i++) {
+//      out[i] = array[i];
+//    }
+    System.arraycopy(array, 0, out, 0, len);
+    return out;
   }
 }

@@ -14,7 +14,7 @@ import com.oracle.truffle.api.nodes.*
 // just an inline cache of DirectCallNodes & IndirectCallNodes
 @ReportPolymorphism
 abstract class DispatchCallTarget : Node() {
-  abstract fun executeDispatch(callTarget: CallTarget, ys: Array<Any?>): Any?
+  abstract fun executeDispatch(callTarget: CallTarget, ys: Array<Any?>): Any
 
   @Specialization(guards = [
     "callTarget == cachedCallTarget"
