@@ -2,17 +2,11 @@ package cadenza.jit
 
 import cadenza.Language
 import com.oracle.truffle.api.*
-import com.oracle.truffle.api.dsl.Cached
-import com.oracle.truffle.api.dsl.Fallback
-import com.oracle.truffle.api.dsl.Specialization
 import com.oracle.truffle.api.frame.*
 import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.profiles.BranchProfile
-import com.oracle.truffle.api.profiles.IntValueProfile
 import org.graalvm.compiler.truffle.runtime.OptimizedCallTarget
 import java.lang.Exception
-import kotlin.math.min
-import java.lang.reflect.Array as JavaArray
 
 
 class TailCallException(val fn: CallTarget, @CompilerDirectives.CompilationFinal(dimensions = 1) val args: Array<Any?>) : ControlFlowException() {}
@@ -67,7 +61,7 @@ class IndirectCallerNode() : Node() {
 
 
 class TailCallLoop() : Node() {
-  @Child var loopNode = ExceptionLoopNode(TailCallERepeatingNode())
+  @Child var loopNode = LoopNode(TailCallRepeatingNode())
 
   fun execute(tailCall: TailCallException): Any {
     return loopNode.execute(TailCallState(tailCall))
@@ -75,7 +69,7 @@ class TailCallLoop() : Node() {
 }
 
 
-class ExceptionLoopNode<S : Any>(@field:Child var repeatingNode: ExceptionRepeatingNode<S>) : Node() {
+class LoopNode<S : Any>(@field:Child var repeatingNode: RepeatingNode<S>) : Node() {
   @CompilerDirectives.CompilationFinal var target: CallTarget? = null
   @Child var callNode: DirectCallNode? = null
 
@@ -94,35 +88,25 @@ class ExceptionLoopNode<S : Any>(@field:Child var repeatingNode: ExceptionRepeat
     var k = 0
 
     while (true) {
-      try {
-        return repeatingNode.body(state)
-      } catch (e: Exception) {
-        if (k > 10) { throw e }
-        repeatingNode.shouldContinue(e)?.let {
-          stateV = it } ?: run { throw e }
-      }
+      val x = repeatingNode.body(stateV)
+      if (k > 10) { return x }
+      if (x is ContinueLoop<*>) { stateV = x.state as S } else { return x }
+      k++
     }
   }
 
   fun execute(state: S): Any {
     var stateV = state
+
     while (!CompilerDirectives.inInterpreter()) {
-      try {
-        return repeatingNode.body(stateV)
-      } catch (e: Exception) {
-        repeatingNode.shouldContinue(e)?.let {
-          stateV = it } ?: run { throw e }
-      }
+      val x = profilingLoop(stateV)
+      if (x is ContinueLoop<*>) { stateV = x.state as S } else { return x }
     }
 
     if (target == null) {
       CompilerDirectives.transferToInterpreterAndInvalidate()
-      try {
-        return profilingLoop(state)
-      } catch (e: Exception) {
-        repeatingNode.shouldContinue(e)?.let {
-          stateV = it } ?: run { throw e }
-      }
+      val x = profilingLoop(stateV)
+      if (x is ContinueLoop<*>) { stateV = x.state as S } else { return x }
       val language = lookupLanguageReference(Language::class.java).get()
       val rootNode = LoopRootNode(repeatingNode, FrameDescriptor(), language)
       // probably fine if this is just
@@ -131,8 +115,6 @@ class ExceptionLoopNode<S : Any>(@field:Child var repeatingNode: ExceptionRepeat
       target = Truffle.getRuntime().createCallTarget(rootNode)
       // TODO: when not allowed to do this, could instead make a calltarget
       // that runs the loop for k iterations & call it a bunch to get it to compile
-      // could take k as an argument to the loop?
-      // this requires an
       try {
         (target as OptimizedCallTarget).compile(true)
       } catch (e: IllegalAccessError) {}
@@ -144,16 +126,16 @@ class ExceptionLoopNode<S : Any>(@field:Child var repeatingNode: ExceptionRepeat
   }
 }
 
+class ContinueLoop<S : Any>(val state: S)
+
 // TODO: make state be an array & pass it as arguments to our RootNode?
-// or use generics to let run take multiple args?
-// TODO: a return value instead of exceptions for continue?
-abstract class ExceptionRepeatingNode<S : Any> : Node() {
+// or use generics to let body have multiple args?
+abstract class RepeatingNode<S : Any> : Node() {
+  // return ContinueLoop(newState) to continue, anything else to return
   abstract fun body(state: S): Any
-  abstract fun shouldContinue(exception: Exception): S?
-  // copy constructor for state, to help escape analysis
+  // copy state if possible (if state is immutable), to help escape analysis
   abstract fun realloc(state: S): S
 }
-
 
 
 @CompilerDirectives.ValueType
@@ -165,40 +147,32 @@ class TailCallState {
   constructor(e: TailCallException) { fn = e.fn; args = e.args }
 }
 
-class TailCallERepeatingNode : ExceptionRepeatingNode<TailCallState>() {
+class TailCallRepeatingNode : RepeatingNode<TailCallState>() {
   @Child var callNode: DispatchCallTarget = DispatchCallTargetNodeGen.create()
 
   override fun body(state: TailCallState): Any {
-    return callNode.executeDispatch(state.fn, state.args)
-  }
-
-  override fun shouldContinue(e: Exception): TailCallState? {
-    if (e is TailCallException) {
+    return try {
+      callNode.executeDispatch(state.fn, state.args)
+    } catch (e: TailCallException) {
       val x = TailCallState(e)
       CompilerDirectives.ensureVirtualized(x)
-      return x
+      ContinueLoop(x)
     }
-    return null
   }
 
   override fun realloc(e: TailCallState): TailCallState {
     return TailCallState(e)
   }
-
 }
 
-class LoopRootNode<S : Any>(@field:Child var repeatingNode: ExceptionRepeatingNode<S>, fd: FrameDescriptor, language: Language) : RootNode(language, fd) {
+class LoopRootNode<S : Any>(@field:Child var repeatingNode: RepeatingNode<S>, fd: FrameDescriptor, language: Language) : RootNode(language, fd) {
   override fun execute(frame: VirtualFrame): Any? {
     // TODO: exit if !inInterpreter?
     var stateV = repeatingNode.realloc(frame.arguments[0] as S)
 
     while (true) {
-      try {
-        return repeatingNode.body(stateV)
-      } catch (e: Exception) {
-        repeatingNode.shouldContinue(e)?.let {
-          stateV = it } ?: run { throw e }
-      }
+      val x = repeatingNode.body(stateV)
+      if (x is ContinueLoop<*>) { stateV = x.state as S } else { return x }
     }
   }
 
