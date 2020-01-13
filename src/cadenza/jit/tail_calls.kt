@@ -126,6 +126,7 @@ class LoopNode<S : Any>(@field:Child var repeatingNode: RepeatingNode<S>) : Node
   }
 }
 
+@CompilerDirectives.ValueType
 class ContinueLoop<S : Any>(val state: S)
 
 // TODO: make state be an array & pass it as arguments to our RootNode?
@@ -155,7 +156,7 @@ class TailCallRepeatingNode : RepeatingNode<TailCallState>() {
       callNode.executeDispatch(state.fn, state.args)
     } catch (e: TailCallException) {
       val x = TailCallState(e)
-      CompilerDirectives.ensureVirtualized(x)
+//      CompilerDirectives.ensureVirtualized(x)
       ContinueLoop(x)
     }
   }

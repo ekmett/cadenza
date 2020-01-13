@@ -39,7 +39,7 @@ plugins {
   id("org.ajoberstar.git-publish") version "2.1.1"
 }
 
-val compiler by configurations.creating
+val compiler: Configuration by configurations.creating
 
 val graalVersion = "19.3.0"
 
@@ -68,8 +68,9 @@ tasks.withType<KotlinCompile> {
   kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
 }
 
-val SourceSet.kotlin: SourceDirectorySet
-  get() = (this as HasConvention).convention.getPlugin(KotlinSourceSet::class.java).kotlin
+fun<R> SourceSet.kotlin(f: KotlinSourceSet.() -> R): R =
+  ((this as HasConvention).convention.getPlugin(KotlinSourceSet::class.java)).f()
+val SourceSet.kotlin: SourceDirectorySet get() = kotlin { kotlin }
 
 sourceSets {
   main {
@@ -78,6 +79,23 @@ sourceSets {
   }
   test {
     kotlin.srcDirs("test")
+  }
+  val bench by creating {
+    dependencies {
+      "kaptBench"("org.openjdk.jmh:jmh-generator-annprocess:1.22")
+    }
+//    java.srcDir("bench")
+    kotlin.srcDir("bench")
+    kotlin {
+      dependencies {
+        implementation(kotlin("stdlib"))
+        implementation("org.openjdk.jmh:jmh-core:1.22")
+      }
+    }
+    compileClasspath += sourceSets["main"].output
+    runtimeClasspath += sourceSets["main"].output
+    compileClasspath += configurations.runtimeClasspath.get()
+    runtimeClasspath += configurations.runtimeClasspath.get()
   }
 }
 
@@ -117,6 +135,27 @@ application {
 
 var rootBuildDir = project.buildDir
 
+val graalArgs = listOf(
+  "-XX:+UnlockExperimentalVMOptions",
+  "-XX:+EnableJVMCI",
+  "--module-path=${compiler.asPath}",
+  "--upgrade-module-path=${compiler.asPath}",
+  "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar",
+  "--add-opens=jdk.internal.vm.compiler/org.graalvm.compiler.truffle.runtime=ALL-UNNAMED",
+
+  "-Dgraal.Dump=:1",
+  "-Dgraal.PrintGraph=Network",
+  "-Dgraal.CompilationFailureAction=ExitVM",
+  "-Dgraal.TraceTruffleCompilation=true",
+//  "-Dgraal.TraceTruffleSplitting=true",
+//  "-Dgraal.TruffleTraceSplittingSummary=true",
+  "-Dgraal.TraceTruffleAssumptions=true",
+  "-Dgraal.TraceTruffleTransferToInterpreter=true",
+  // limit size of graphs for easier visualization
+  "-Dgraal.TruffleMaximumRecursiveInlining=0",
+  "-Dgraal.LoopPeeling=false"
+)
+
 tasks.test {
   useJUnitPlatform()
   testLogging {
@@ -124,14 +163,18 @@ tasks.test {
     showStandardStreams = true
   }
   dependsOn(":jar")
-  jvmArgs = listOf(
-    "-XX:+UnlockExperimentalVMOptions",
-    "-XX:+EnableJVMCI",
-    "--module-path=${compiler.asPath}",
-    "--upgrade-module-path=${compiler.asPath}",
-    "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar"
-  )
+  jvmArgs = graalArgs
 }
+
+
+tasks.register("bench", JavaExec::class) {
+  dependsOn("benchClasses")
+//  dependsOn(sourceSets["bench"].getJarTaskName())
+  classpath = sourceSets["bench"].runtimeClasspath + sourceSets["bench"].compileClasspath
+  main = "org.openjdk.jmh.Main"
+  jvmArgs = graalArgs
+}
+
 
 tasks.getByName<Jar>("jar") {
   exclude("jre/**")
@@ -241,12 +284,7 @@ tasks.replace("run", JavaExec::class.java).run {
   description = "Run cadenza directly from the working directory"
   dependsOn(":jar")
   classpath = sourceSets["main"].runtimeClasspath
-  val args = mutableListOf(
-    "-XX:+UnlockExperimentalVMOptions",
-    "-XX:+EnableJVMCI",
-    "--module-path=${compiler.asPath}",
-    "--upgrade-module-path=${compiler.asPath}",
-    "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar",
+  jvmArgs = graalArgs + listOf(
     "-Djansi.force=true"
     ,"-Dgraal.Dump=:1",
     "-Dgraal.PrintGraph=Network",
@@ -254,15 +292,12 @@ tasks.replace("run", JavaExec::class.java).run {
     "-Dgraal.TraceTruffleCompilation=true",
     "-Dgraal.TraceTruffleSplitting=true",
     "-Dgraal.TruffleTraceSplittingSummary=true",
-    "--add-opens=jdk.internal.vm.compiler/org.graalvm.compiler.truffle.runtime=ALL-UNNAMED",
     "-Dgraal.TraceTruffleAssumptions=true",
     "-Dgraal.TraceTruffleTransferToInterpreter=true",
     // limit size of graphs for easier visualization
     "-Dgraal.TruffleMaximumRecursiveInlining=0",
     "-Dgraal.LoopPeeling=false"
-
   )
-  jvmArgs = args
   main = "cadenza.Launcher"
 }
 
@@ -316,7 +351,7 @@ if (graalHome != null) {
     description = "Run a registered version of cadenza"
     dependsOn(":register")
     executable = "$graalBinDir/cadenza"
-    environment("JAVA_HOME", graalHome)
+    environment("JAVA_HOME", graalHome as String)
     outputs.upToDateWhen { false }
   }
   tasks.register("unregister", Exec::class) {

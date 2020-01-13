@@ -44,6 +44,16 @@ class Closure (
     assert(arity <= targetType.arity - papArgs.size)
   }
 
+  override fun equals(other: Any?): Boolean {
+    return (
+      (other is Closure) &&
+      (callTarget == other.callTarget) &&
+      (arity == other.arity) &&
+      (papArgs.contentEquals(other.papArgs)) &&
+      (env == other.env)
+    )
+  }
+
   @ExportMessage
   fun isExecutable() = true
 

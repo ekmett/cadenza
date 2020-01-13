@@ -21,7 +21,7 @@ import com.oracle.truffle.api.nodes.NodeInfo
 import com.oracle.truffle.api.source.SourceSection
 import org.graalvm.options.OptionDescriptors
 import org.graalvm.options.OptionValues
-import org.graalvm.polyglot.Source
+import com.oracle.truffle.api.source.Source
 import java.io.IOException
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -34,7 +34,7 @@ const val LANGUAGE_MIME_TYPE = "application/x-cadenza"
 const val LANGUAGE_EXTENSION = "za"
 
 @Suppress("unused")
-private val LANGUAGE_BUILTIN_SOURCE by lazy { Source.newBuilder(LANGUAGE_ID, "", "[cadenza builtin]").buildLiteral()!! }
+private val LANGUAGE_BUILTIN_SOURCE by lazy { org.graalvm.polyglot.Source.newBuilder(LANGUAGE_ID, "", "[cadenza builtin]").buildLiteral()!! }
 private val LANGUAGE_SHEBANG_REGEXP by lazy { Pattern.compile("^#! ?/usr/bin/(env +cadenza|cadenza).*")!! }
 
 @Suppress("unused")
@@ -153,6 +153,10 @@ class Language : TruffleLanguage<Language.Context>() {
     val source = request.source
     // todo: request.argumentNames
     // todo: parse decls here instead of expressions?
+    return parse(source)
+  }
+
+  fun parse(source: Source): CallTarget {
     val result = source.parse { grammar }
     when (result) {
       is Failure -> {
@@ -160,7 +164,7 @@ class Language : TruffleLanguage<Language.Context>() {
         throw SyntaxError(result)
       }
       is Success -> {
-        val ci = CompileInfo(request.source, this)
+        val ci = CompileInfo(source, this)
         val fd = FrameDescriptor()
         val witness = result.value.infer(initialCtx)
         val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd, source)
@@ -193,4 +197,9 @@ class Language : TruffleLanguage<Language.Context>() {
 
   @Suppress("UNUSED_PARAMETER")
   inline fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo
+
+  companion object {
+    fun currentLanguage(): Language = getCurrentLanguage(Language::class.java)
+
+  }
 }

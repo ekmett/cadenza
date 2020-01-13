@@ -125,22 +125,35 @@ val natFF = Type.Arr(natF, natF)
 
 //// fixNatF f x = f (fixNatF f) x
 //abstract class FixNatF : Builtin2(Type.Arr(natFF, natF)) {
-//  @Child var dispatch: Dispatch = DispatchNodeGen.create(2)
-//  @Specialization(guards = ["f == cachedF"])
+//  @CompilerDirectives.CompilationFinal var target: RootCallTarget? = null
+//
+//  @Child var dispatch: Dispatch = DispatchNodeGen.create(2, true)
+//  @Specialization(guards = ["f.equals(cachedF)"], limit = "100000")
 //  fun fixNatF(f: Closure, x: Any?, @Cached("f") cachedF: Closure, @Cached("mkSelfApp(cachedF)") selfApp: Closure): Any? {
 //    return dispatch.executeDispatch(cachedF, arrayOf(selfApp, x))
 //  }
-//  fun mkSelfApp(f: Closure) = Closure(null, arrayOf(f), 1, type, (this.rootNode as BuiltinRootNode).callTarget as RootCallTarget)
+//
+//  fun mkSelfApp(f: Closure): Closure {
+//    if (target == null) {
+//      CompilerDirectives.transferToInterpreterAndInvalidate()
+//      val language = lookupLanguageReference(Language::class.java).get()
+//      target = Truffle.getRuntime().createCallTarget(BuiltinRootNode(language, this))
+//    }
+//    return Closure(null, arrayOf(f), 1, type, target as RootCallTarget)
+//  }
 //}
 
 // fixNatF f x = f (fixNatF f) x
 abstract class FixNatF : Builtin2(Type.Arr(natFF, natF)) {
-  // TODO: cache f => FixNatF1?
-  @Specialization
-  fun fixNatF(left: Closure, right: Any?, @CachedLanguage language: Language): Any? {
-    CompilerDirectives.transferToInterpreter()
-    return FixNatF1(left, language).execute(right)
+  @Specialization(guards = ["f.equals(cachedF)"], limit = "100000")
+  fun fixNatF(f: Closure, right: Any?,
+              @CachedLanguage language: Language,
+              @Cached("f") cachedF: Closure,
+              @Cached("mkFix(f, language)") fix: FixNatF1
+              ): Any? {
+    return fix.execute(right)
   }
+  fun mkFix(f: Closure, language: Language) = FixNatF1(f, language)
 }
 
 // fixNatF with a known function
@@ -150,6 +163,7 @@ class FixNatF1(private val f: Closure, language: Language) : Builtin1(natF) {
   private val target: RootCallTarget = Truffle.getRuntime().createCallTarget(BuiltinRootNode(language, this))
   private val self = Closure(null, arrayOf(), 1, type, target)
   // TODO: making this a tail call breaks the specialization we get by using FixNatF1
+  // TODO: this is wrong when using CallBuiltin
   @Child var dispatch: Dispatch = DispatchNodeGen.create(2, true)
 
   override fun execute(x: Any?):  Any? {
