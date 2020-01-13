@@ -9,6 +9,18 @@ import org.graalvm.compiler.truffle.runtime.OptimizedCallTarget
 import java.lang.Exception
 
 
+// list of ways custom loop node better than builtin
+// * if reflection not allowed, can make variant that still compiles w/ interpreted parent
+//   & doesn't need to use the parent's FrameWithoutBoxing for state
+// * might be able to get tail call loop to manually unroll good
+//   such that if f tail calls g, there's only one dispatch check per unrolled loop body
+//   (reduces trampoline overhead by unrolling)
+//   probably a decent amount of effort to get it to work
+//   * TODO: try ExceptionLoopNode (that uses an exception to signal continue) again?
+//     or make a specialized loopnode for tail calls?
+// * less interpreter overhead
+
+
 class TailCallException(val fn: CallTarget, @CompilerDirectives.CompilationFinal(dimensions = 1) val args: Array<Any?>) : ControlFlowException() {}
 
 class DirectCallerNode(callTarget: CallTarget) : Node() {
@@ -84,29 +96,26 @@ class LoopNode<S : Any>(@field:Child var repeatingNode: RepeatingNode<S>) : Node
 
 
   fun profilingLoop(state: S): Any {
-    var stateV = state
     var k = 0
 
     while (true) {
-      val x = repeatingNode.body(stateV)
+      val x = repeatingNode.body(state)
       if (k > 10) { return x }
-      if (x is ContinueLoop<*>) { stateV = x.state as S } else { return x }
+      if (x !== CONTINUE_LOOP_STATUS) { return x }
       k++
     }
   }
 
   fun execute(state: S): Any {
-    var stateV = state
-
     while (!CompilerDirectives.inInterpreter()) {
-      val x = profilingLoop(stateV)
-      if (x is ContinueLoop<*>) { stateV = x.state as S } else { return x }
+      val x = profilingLoop(state)
+      if (x !== CONTINUE_LOOP_STATUS) { return x }
     }
 
     if (target == null) {
       CompilerDirectives.transferToInterpreterAndInvalidate()
-      val x = profilingLoop(stateV)
-      if (x is ContinueLoop<*>) { stateV = x.state as S } else { return x }
+      val x = profilingLoop(state)
+      if (x !== CONTINUE_LOOP_STATUS) { return x }
       val language = lookupLanguageReference(Language::class.java).get()
       val rootNode = LoopRootNode(repeatingNode, FrameDescriptor(), language)
       // probably fine if this is just
@@ -121,28 +130,39 @@ class LoopNode<S : Any>(@field:Child var repeatingNode: RepeatingNode<S>) : Node
       callNode = DirectCallNode.create(target)
     }
 
-    return runCompiled(stateV)
+    return runCompiled(state)
 
   }
 }
 
-@CompilerDirectives.ValueType
-class ContinueLoop<S : Any>(val state: S)
+//@CompilerDirectives.ValueType
+//class ContinueLoop<S : Any>(val state: S)
+//
+//class ContinueLoop
+
+val CONTINUE_LOOP_STATUS: Any = object : Any() {
+  override fun toString(): String {
+    return "CONTINUE_LOOP_STATUS"
+  }
+}
+
 
 // TODO: make state be an array & pass it as arguments to our RootNode?
 // or use generics to let body have multiple args?
 abstract class RepeatingNode<S : Any> : Node() {
   // return ContinueLoop(newState) to continue, anything else to return
   abstract fun body(state: S): Any
-  // copy state if possible (if state is immutable), to help escape analysis
+  // make a new copy of state
   abstract fun realloc(state: S): S
+  // copy state back to
+  abstract fun copy(from: S, to: S)
 }
 
 
 @CompilerDirectives.ValueType
 class TailCallState {
-  val fn: CallTarget
-  @CompilerDirectives.CompilationFinal(dimensions = 1) val args: Array<Any?>
+  var fn: CallTarget
+  var args: Array<Any?>
 
   constructor(e: TailCallState) { fn = e.fn; args = e.args }
   constructor(e: TailCallException) { fn = e.fn; args = e.args }
@@ -155,25 +175,38 @@ class TailCallRepeatingNode : RepeatingNode<TailCallState>() {
     return try {
       callNode.executeDispatch(state.fn, state.args)
     } catch (e: TailCallException) {
-      val x = TailCallState(e)
-//      CompilerDirectives.ensureVirtualized(x)
-      ContinueLoop(x)
+      state.fn = e.fn
+      state.args = e.args
+      CONTINUE_LOOP_STATUS
     }
   }
 
   override fun realloc(e: TailCallState): TailCallState {
     return TailCallState(e)
   }
+
+  override fun copy(from: TailCallState, to: TailCallState) {
+    to.fn = from.fn
+    to.args = from.args
+  }
 }
 
 class LoopRootNode<S : Any>(@field:Child var repeatingNode: RepeatingNode<S>, fd: FrameDescriptor, language: Language) : RootNode(language, fd) {
+
   override fun execute(frame: VirtualFrame): Any? {
     // TODO: exit if !inInterpreter?
-    var stateV = repeatingNode.realloc(frame.arguments[0] as S)
+    val state = frame.arguments[0] as S
+    val state2 = repeatingNode.realloc(state)
+    CompilerDirectives.ensureVirtualized(state2)
 
     while (true) {
-      val x = repeatingNode.body(stateV)
-      if (x is ContinueLoop<*>) { stateV = x.state as S } else { return x }
+      for (x in 1..10) {
+        val x = repeatingNode.body(state2)
+        if (x !== CONTINUE_LOOP_STATUS) {
+          repeatingNode.copy(state2, state)
+          return x
+        }
+      }
     }
   }
 
