@@ -4,7 +4,6 @@ import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import java.util.concurrent.TimeUnit
 import cadenza.Language
-import cadenza.interpreter.eval
 import cadenza.interpreter.initialEnv
 //import cadenza.jit.Builtin
 import com.oracle.truffle.api.CallTarget
@@ -19,21 +18,22 @@ abstract class SourceBenchmark {
   abstract val text: CharSequence
 
   val source by lazy { Source.newBuilder("cadenza", text, "bench.za").build() }
-  val interpExpr by lazy { cadenza.interpreter.parse(source) }
+
   val cadenzaTarget by lazy {
     val ctx = Context.create()
     ctx.enter()
     ctx.initialize("cadenza")
     Language.currentLanguage().parse(source)
   }
-
-  @Benchmark
-  fun interpreter() {
-    interpExpr.eval(initialEnv)
-  }
   @Benchmark
   fun cadenza() {
     cadenzaTarget.call()
+  }
+
+  val interpExpr by lazy { cadenza.interpreter.parse(source) }
+  @Benchmark
+  fun interpreter() {
+    interpExpr.eval(initialEnv)
   }
 }
 
@@ -58,3 +58,5 @@ open class Fib : SourceBenchmark() {
     bh.consume(fib(15))
   }
 }
+
+

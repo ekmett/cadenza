@@ -13,12 +13,25 @@ import cadenza.syntax.*
 import com.oracle.truffle.api.source.Source
 
 // de bruijn indexed core, for comparsion vs truffle
-sealed class Expr
-data class Lam(val n: Int, val b: Expr) : Expr()
-data class Var(val n: Int) : Expr()
-data class App(val f: Expr, val args: Array<Expr>) : Expr()
-data class If(val cond: Expr, val then: Expr, val else_: Expr) : Expr()
-data class Const(val x: Any) : Expr()
+sealed class Expr {
+  abstract fun eval(env: Env): Any
+}
+data class Lam(val n: Int, val b: Expr) : Expr() {
+  override fun eval(env: Env): Any = Closure(n, b, env)
+}
+data class Var(val n: Int) : Expr() {
+  override fun eval(env: Env): Any = env.lookup(n)!!
+}
+data class App(val f: Expr, val args: Array<Expr>) : Expr() {
+  override fun eval(env: Env): Any = call(f.eval(env), map(args) { it.eval(env) })
+}
+data class If(val cond: Expr, val then: Expr, val else_: Expr) : Expr() {
+  override fun eval(env: Env): Any = if (cond.eval(env) as Boolean) then.eval(env) else else_.eval(env)
+}
+data class Const(val x: Any) : Expr() {
+  override fun eval(env: Env): Any = x
+}
+
 
 // a env (total substitution to values) applied to Lam n f, as a value
 data class Closure(val n: Int, val b: Expr, val env: Env)
@@ -131,11 +144,4 @@ fun callBuiltin(builtin: Builtin, ys: Array<Any>): Any = when (builtin) {
   else -> builtin.run(ys as Array<Any?>)!!
 }
 
-fun Expr.eval(env: Env): Any = when (this) {
-  is Var -> env.lookup(n)!!
-  is App -> call(f.eval(env), map(args) { it.eval(env) })
-  is Const -> x
-  is If -> if (cond.eval(env) as Boolean) then.eval(env) else else_.eval(env)
-  is Lam -> Closure(n, b, env)
-}
 

@@ -3,10 +3,10 @@
 ```
 Benchmark        Mode  Cnt   Score    Error  Units
 Add.cadenza      avgt    5   0.010 ±  0.001  ms/op
-Add.interpreter  avgt    5   0.143 ±  0.019  ms/op
+Add.interpreter  avgt    5   0.123 ±  0.005  ms/op
 Add.kotlin       avgt    5  ≈ 10⁻⁶           ms/op
 Fib.cadenza      avgt    5   0.015 ±  0.001  ms/op
-Fib.interpreter  avgt    5   0.386 ±  0.157  ms/op
+Fib.interpreter  avgt    5   0.330 ±  0.088  ms/op
 Fib.kotlin       avgt    5   0.003 ±  0.001  ms/op
 ```
 
