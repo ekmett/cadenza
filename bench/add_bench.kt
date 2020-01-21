@@ -12,37 +12,49 @@ import com.oracle.truffle.api.source.Source
 import org.graalvm.polyglot.Context
 
 
-
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
-open class AddBenchmark {
-  @Benchmark fun addKotlin(bh: Blackhole) {
-    var x = 0
-    while (x <= 10000) { x++ }
-    bh.consume(x)
-  }
+abstract class SourceBenchmark {
+  abstract val text: CharSequence
 
-  val addSource = Source.newBuilder("cadenza", "fixNatF (\\(f : Nat -> Nat) (x : Nat) -> if le 1000 x then x else f (plus x 1)) 0", "add.za").build()
-  var addInterp = cadenza.interpreter.parse(addSource)
-
-
-  @Benchmark
-  fun addInterp() {
-    addInterp.eval(initialEnv)
-  }
-
-  val ctx = Context.create()
-  var addCadenza: CallTarget
-  init {
+  val source by lazy { Source.newBuilder("cadenza", text, "bench.za").build() }
+  val interpExpr by lazy { cadenza.interpreter.parse(source) }
+  val cadenzaTarget by lazy {
+    val ctx = Context.create()
     ctx.enter()
     ctx.initialize("cadenza")
-    addCadenza = Language.currentLanguage().parse(addSource)
+    Language.currentLanguage().parse(source)
   }
 
   @Benchmark
-  fun addCadenza() {
-    addCadenza.call()
+  fun interpreter() {
+    interpExpr.eval(initialEnv)
   }
+  @Benchmark
+  fun cadenza() {
+    cadenzaTarget.call()
+  }
+}
 
+open class Add : SourceBenchmark() {
+  override val text = "fixNatF (\\(f : Nat -> Nat) (x : Nat) -> if le 1000 x then x else f (plus x 1)) 0"
+
+  @Benchmark
+  fun kotlin(bh: Blackhole) {
+    var x = 0
+    while (x <= 1000) { x++ }
+    bh.consume(x)
+  }
+}
+
+fun fib(x: Int): Int = if (x <= 1) x else fib (x - 1) + fib (x - 2)
+
+open class Fib : SourceBenchmark() {
+  override val text = "fixNatF (\\(f : Nat -> Nat) (x : Nat) -> if le x 1 then x else plus (f (minus x 1)) (f (minus x 2))) 15"
+
+  @Benchmark
+  fun kotlin(bh: Blackhole) {
+    bh.consume(fib(15))
+  }
 }
