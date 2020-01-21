@@ -23,9 +23,6 @@ Fib.interpreter  avgt    5   0.434 ±  0.038  ms/op
 Fib.kotlin       avgt    5   0.003 ±  0.001  ms/op
 ```
 
-kotlin -> cadenza 10000x slowdown
-
-cadenza -> interp 20x slowdown
 
 interpreter is not in a horribly slow style (i think?) but is also not optimized
 
