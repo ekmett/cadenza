@@ -1,0 +1,1 @@
+fixNatF (\(f : Nat -> Nat) (x : Nat) -> if le 20000000 x then x else f (plus x 1)) 0

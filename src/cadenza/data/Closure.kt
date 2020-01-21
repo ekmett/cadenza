@@ -133,7 +133,7 @@ private fun consTake(x: Any, n: Int, xs: Array<out Any?>): Array<Any?> {
   return ys
 }
 
-private fun drop(k: Int, xs: Array<out Any?>): Array<Any?> {
+fun drop(k: Int, xs: Array<out Any?>): Array<Any?> {
   val ys = arrayOfNulls<Any>(xs.size - k)
   System.arraycopy(xs, k, ys, 0, xs.size - k)
   return ys

@@ -2,11 +2,7 @@ package cadenza.syntax
 
 import cadenza.semantics.Name
 import cadenza.semantics.Term
-import cadenza.semantics.Term.Companion.tapp
-import cadenza.semantics.Term.Companion.tif
-import cadenza.semantics.Term.Companion.tlitNat
-import cadenza.semantics.Term.Companion.tlam
-import cadenza.semantics.Term.Companion.tvar
+import cadenza.semantics.Term.*
 import cadenza.semantics.Type
 import org.intelligence.parser.*
 
@@ -25,9 +21,10 @@ val Parse.ident: String get() = trying("ident") {
 val Parse.space: Unit get() { many { satisfy { it.isWhitespace() }} }
 val Parse.lit: Term get() {
   val (x, loc) = spanned { some {satisfy { it.isDigit() }}.joinToString("").toInt() }
-  return tlitNat(x, loc)
+  return TLitNat(x, loc)
 }
 inline fun <T,A> T.token(f: T.() -> A): A where T : Parse { val a = f(); space; return a }
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T>T.tok(x : String): String where T : Parse { return token { string(x) } }
 
 inline fun <T,A> T.parens(f: T.() -> A): A where T : Parse {
@@ -49,7 +46,7 @@ val Parse.grammar: Term get() = choice(
       tok("->")
       Pair(t, grammar)
     }
-    tlam(a.first, a.second, loc)
+    TLam(a.first, a.second, loc)
   },{
   tok("if")
   val cond = grammar
@@ -57,14 +54,14 @@ val Parse.grammar: Term get() = choice(
   val then = grammar
   tok("else")
   val else_ = grammar
-  tif(cond, then, else_)
+  TIf(cond, then, else_)
 },{
   val (x, loc) = spanned { some {
     choice(
       { parens { grammar }},
       {
         val (a, loc) = spanned { token { ident } }
-        tvar(a, loc)
+        TVar(a, loc)
       },
       { token { lit }}
     )
@@ -72,7 +69,7 @@ val Parse.grammar: Term get() = choice(
   if (x.size == 1) {
     x[0]
   } else {
-    tapp(x[0], x.drop(1).toTypedArray(), loc)
+    TApp(x[0], x.drop(1).toTypedArray(), loc)
   }
 })
 

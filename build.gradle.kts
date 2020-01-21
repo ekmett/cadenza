@@ -15,7 +15,7 @@ buildscript {
     maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
   }
   dependencies {
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.41")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61")
     classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
   }
 }
@@ -57,6 +57,7 @@ dependencies {
   "kapt"("org.graalvm.truffle:truffle-api:$graalVersion")
   "kapt"("org.graalvm.truffle:truffle-dsl-processor:$graalVersion")
   testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
+  implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.3.61")
 }
 
 java {
@@ -142,6 +143,7 @@ val graalArgs = listOf(
   "--upgrade-module-path=${compiler.asPath}",
   "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar",
   "--add-opens=jdk.internal.vm.compiler/org.graalvm.compiler.truffle.runtime=ALL-UNNAMED",
+  "--add-opens=org.graalvm.truffle/com.oracle.truffle.api.source=ALL-UNNAMED",
 
   "-Dgraal.Dump=:1",
   "-Dgraal.PrintGraph=Network",
@@ -153,7 +155,8 @@ val graalArgs = listOf(
   "-Dgraal.TraceTruffleTransferToInterpreter=true",
   // limit size of graphs for easier visualization
   "-Dgraal.TruffleMaximumRecursiveInlining=0",
-  "-Dgraal.LoopPeeling=false"
+  "-Dgraal.LoopPeeling=false",
+  "-Xss32m"
 )
 
 tasks.test {

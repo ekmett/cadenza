@@ -1,11 +1,9 @@
 package cadenza.jit
 
-import cadenza.Language
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.frame.*
 import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.profiles.BranchProfile
-import org.graalvm.compiler.truffle.runtime.OptimizedCallTarget
 import java.lang.Exception
 
 
@@ -18,6 +16,7 @@ import java.lang.Exception
 //   probably a decent amount of effort to get it to work
 //   * TODO: try ExceptionLoopNode (that uses an exception to signal continue) again?
 //     or make a specialized loopnode for tail calls?
+//   but can probably unroll with normal RepeatingNode too?
 // * less interpreter overhead
 
 
@@ -73,143 +72,134 @@ class IndirectCallerNode() : Node() {
 
 
 class TailCallLoop() : Node() {
-  @Child var loopNode = LoopNode(TailCallRepeatingNode())
+  @Child var loopNode: LoopNode? = null
+  @Child var repeatingNode: TailCallRepeatingNode? = null
 
   fun execute(tailCall: TailCallException): Any {
-    return loopNode.execute(TailCallState(tailCall))
-  }
-}
-
-
-class LoopNode<S : Any>(@field:Child var repeatingNode: RepeatingNode<S>) : Node() {
-  @CompilerDirectives.CompilationFinal var target: CallTarget? = null
-  @Child var callNode: DirectCallNode? = null
-
-  fun runCompiled(state: S): Any {
-    // don't use callTarget: it leaves calls to pushEncapsulatingNode etc in the resulting code
-    // either use callOSR or a DirectCallNode
-//    return CallUtils.callTarget(target as CallTarget, arrayOf(tailCall.fn, tailCall.args))
-    // TODO: use callOSR when we can?
-//    return (target as OptimizedCallTarget).callOSR(tailCall.fn, tailCall.args)
-    return CallUtils.callDirect(callNode, arrayOf(state as Any))
-  }
-
-
-  fun profilingLoop(state: S): Any {
-    var k = 0
-
-    while (true) {
-      val x = repeatingNode.body(state)
-      if (k > 10) { return x }
-      if (x !== CONTINUE_LOOP_STATUS) { return x }
-      k++
-    }
-  }
-
-  fun execute(state: S): Any {
-    while (!CompilerDirectives.inInterpreter()) {
-      val x = profilingLoop(state)
-      if (x !== CONTINUE_LOOP_STATUS) { return x }
-    }
-
-    if (target == null) {
+    if (loopNode == null) {
       CompilerDirectives.transferToInterpreterAndInvalidate()
-      val x = profilingLoop(state)
-      if (x !== CONTINUE_LOOP_STATUS) { return x }
-      val language = lookupLanguageReference(Language::class.java).get()
-      val rootNode = LoopRootNode(repeatingNode, FrameDescriptor(), language)
-      // probably fine if this is just
-      // Truffle.getRuntime().createCallTarget(rootNode)
-//      target = (Truffle.getRuntime() as GraalTruffleRuntime).createOSRCallTarget(rootNode)
-      target = Truffle.getRuntime().createCallTarget(rootNode)
-      // TODO: when not allowed to do this, could instead make a calltarget
-      // that runs the loop for k iterations & call it a bunch to get it to compile
-      try {
-        (target as OptimizedCallTarget).compile(true)
-      } catch (e: IllegalAccessError) {}
-      callNode = DirectCallNode.create(target)
+      repeatingNode = TailCallRepeatingNode()
+      val slots = arrayOf(repeatingNode!!.argsSlot, repeatingNode!!.functionSlot, repeatingNode!!.resultSlot)
+//      loopNode = createOptimizedLoopNode(repeatingNode!!, slots, slots)
+//      // TODO: use createOSR here
+      loopNode = Truffle.getRuntime().createLoopNode(repeatingNode)
     }
-
-    return runCompiled(state)
-
+    val frame = Truffle.getRuntime().createVirtualFrame(null, repeatingNode!!.descriptor)
+    repeatingNode!!.setNextCall(frame, tailCall.fn, tailCall.args)
+    loopNode!!.execute(frame)
+    return repeatingNode!!.getResult(frame)
   }
 }
 
-//@CompilerDirectives.ValueType
-//class ContinueLoop<S : Any>(val state: S)
 //
-//class ContinueLoop
+//class CallTargetCacheEntry(
+//  @JvmField @field:Child var callNode: DirectCallNode,
+//  @JvmField @CompilerDirectives.CompilationFinal val callTarget: CallTarget,
+//  @JvmField @field:Child var next: CallTargetCacheEntry?) : Node() {}
+//
+//class CallTargetCache : Node() {
+//  @Child var cache: CallTargetCacheEntry? = null
+//  @Child var indirectCallNode = IndirectCallNode.create()
+//
+//  fun call(target: CallTarget, args: Array<Any?>): Any {
+//    var entry = cache
+//    while (entry != null) {
+//      if (entry.callTarget == target) {
+//        return CallUtils.callDirect(entry.callNode, args)
+//      }
+//      entry = entry.next
+//    }
+//    CompilerDirectives.transferToInterpreterAndInvalidate()
+//    val callNode = DirectCallNode.create(target)
+//    cache = CallTargetCacheEntry(callNode, target, cache)
+//    adoptChildren()
+//    return CallUtils.callIndirect(indirectCallNode, target, args)
+//  }
+//}
 
-val CONTINUE_LOOP_STATUS: Any = object : Any() {
-  override fun toString(): String {
-    return "CONTINUE_LOOP_STATUS"
+// current version copied from
+// https://github.com/luna/enso/blob/master/engine/runtime/src/main/java/org/enso/interpreter/node/callable/dispatch/LoopingCallOptimiserNode.java
+class TailCallRepeatingNode : Node(), RepeatingNode {
+  val descriptor = FrameDescriptor()
+  val resultSlot = descriptor.findOrAddFrameSlot("<TCO Function>", FrameSlotKind.Object)
+  val functionSlot = descriptor.findOrAddFrameSlot("<TCO Result>", FrameSlotKind.Object)
+  val argsSlot = descriptor.findOrAddFrameSlot("<TCO Arguments>", FrameSlotKind.Object)
+  @Child var dispatchNode: DispatchCallTarget = DispatchCallTargetNodeGen.create()
+//  @Child var cache = CallTargetCache()
+
+  fun setNextCall(
+    frame: VirtualFrame,
+    fn: CallTarget,
+    arguments: Array<Any?>) {
+    frame.setObject(functionSlot, fn)
+    frame.setObject(argsSlot, arguments)
   }
-}
 
+  fun getResult(frame: VirtualFrame): Any {
+    return FrameUtil.getObjectSafe(frame, resultSlot)
+  }
 
-// TODO: make state be an array & pass it as arguments to our RootNode?
-// or use generics to let body have multiple args?
-abstract class RepeatingNode<S : Any> : Node() {
-  // return ContinueLoop(newState) to continue, anything else to return
-  abstract fun body(state: S): Any
-  // make a new copy of state
-  abstract fun realloc(state: S): S
-  // copy state back to
-  abstract fun copy(from: S, to: S)
-}
+  private fun getNextFunction(frame: VirtualFrame): CallTarget {
+    val result = FrameUtil.getObjectSafe(frame, functionSlot) as CallTarget
+    frame.setObject(functionSlot, null)
+    return result
+  }
 
+  private fun getNextArgs(frame: VirtualFrame): Array<Any?> {
+    val result = FrameUtil.getObjectSafe(frame, argsSlot) as Array<Any?>
+    frame.setObject(argsSlot, null)
+    return result
+  }
 
-@CompilerDirectives.ValueType
-class TailCallState {
-  var fn: CallTarget
-  var args: Array<Any?>
+//  // explodeLoop doesn't explode the executeDispatch, so useless
+//  // let's try our own dispatch (not using specialization) + kotlin inlining
+//  @ExplodeLoop(kind = ExplodeLoop.LoopExplosionKind.FULL_EXPLODE)
+//  fun executeInner(fn1: CallTarget, args1: Array<Any?>): Any {
+//    var fn = fn1
+//    var args = args1
+//    var k = 0
+//    while (true) {
+//      try {
+//        return dispatchNode.executeDispatch(fn, args)
+//      } catch (e: Exception) {
+//        if (e is TailCallException && k < 2) {
+//          fn = e.fn; args = e.args; k++
+//        } else { throw e }
+//      }
+//    }
+//  }
 
-  constructor(e: TailCallState) { fn = e.fn; args = e.args }
-  constructor(e: TailCallException) { fn = e.fn; args = e.args }
-}
-
-class TailCallRepeatingNode : RepeatingNode<TailCallState>() {
-  @Child var callNode: DispatchCallTarget = DispatchCallTargetNodeGen.create()
-
-  override fun body(state: TailCallState): Any {
+  override fun executeRepeating(frame: VirtualFrame): Boolean {
     return try {
-      callNode.executeDispatch(state.fn, state.args)
+      val fn = getNextFunction(frame)
+      val args = getNextArgs(frame)
+      frame.setObject(resultSlot, dispatchNode.executeDispatch(fn, args))
+  //      frame.setObject(resultSlot, executeInner(fn, args))
+      false
     } catch (e: TailCallException) {
-      state.fn = e.fn
-      state.args = e.args
-      CONTINUE_LOOP_STATUS
+      setNextCall(frame, e.fn, e.args)
+      true
     }
-  }
-
-  override fun realloc(e: TailCallState): TailCallState {
-    return TailCallState(e)
-  }
-
-  override fun copy(from: TailCallState, to: TailCallState) {
-    to.fn = from.fn
-    to.args = from.args
   }
 }
 
-class LoopRootNode<S : Any>(@field:Child var repeatingNode: RepeatingNode<S>, fd: FrameDescriptor, language: Language) : RootNode(language, fd) {
 
-  override fun execute(frame: VirtualFrame): Any? {
-    // TODO: exit if !inInterpreter?
-    val state = frame.arguments[0] as S
-    val state2 = repeatingNode.realloc(state)
-    CompilerDirectives.ensureVirtualized(state2)
-
-    while (true) {
-      for (x in 1..10) {
-        val x = repeatingNode.body(state2)
-        if (x !== CONTINUE_LOOP_STATUS) {
-          repeatingNode.copy(state2, state)
-          return x
-        }
-      }
+fun createOptimizedLoopNode(repeatingNode: RepeatingNode, readFrameSlots: Array<FrameSlot>, writtenFrameSlots: Array<FrameSlot>): LoopNode {
+  val loopNode = Truffle.getRuntime().createLoopNode(repeatingNode)
+//  if (!OzLanguage.ON_GRAAL) {
+//    return loopNode
+//  }
+  return try {
+    val klass: Class<*> = if (TruffleOptions.AOT) {
+      Class.forName("org.graalvm.compiler.truffle.runtime.OptimizedOSRLoopNode\$OptimizedDefaultOSRLoopNode")
+    } else {
+      loopNode::class.java
     }
+    val createOSRLoop = klass.getMethod("createOSRLoop",
+      RepeatingNode::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType, Array<FrameSlot>::class.java, Array<FrameSlot>::class.java)
+    createOSRLoop.invoke(null, repeatingNode, 3, 100_000, readFrameSlots, writtenFrameSlots) as LoopNode
+  } catch (e: Exception) {
+    println("Virtualizing OSR loop node creation failed, falling back to normal LoopNode: $e")
+    loopNode
   }
-
-  override fun isCloningAllowed() = false
-  override fun getName() = "tail-call trampoline"
 }

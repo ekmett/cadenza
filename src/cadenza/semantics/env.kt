@@ -15,3 +15,14 @@ fun <T> Env<T>.lookup(name: String): T {
   }
   throw TypeError("unknown variable $name")
 }
+
+fun <T> Env<T>.lookupIx(name: String): Int {
+  var ix = 0; var current = this
+  while (current != null) {
+    if (name == current.name) return ix
+    current = current.next
+    ix++
+  }
+  throw TypeError("unknown variable $name")
+}
+
