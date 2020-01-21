@@ -2,15 +2,15 @@
 
 ```
 Benchmark        Mode  Cnt   Score    Error  Units
-Add.cadenza      avgt    5   0.011 ±  0.002  ms/op
-Add.interpreter  avgt    5   0.210 ±  0.046  ms/op
+Add.cadenza      avgt    5   0.010 ±  0.001  ms/op
+Add.interpreter  avgt    5   0.143 ±  0.019  ms/op
 Add.kotlin       avgt    5  ≈ 10⁻⁶           ms/op
-Fib.cadenza      avgt    5   0.016 ±  0.001  ms/op
-Fib.interpreter  avgt    5   0.464 ±  0.024  ms/op
+Fib.cadenza      avgt    5   0.015 ±  0.001  ms/op
+Fib.interpreter  avgt    5   0.386 ±  0.157  ms/op
 Fib.kotlin       avgt    5   0.003 ±  0.001  ms/op
 ```
 
-with recursive inlining + loop peeling:
+old version with recursive inlining + loop peeling:
 
 ```
 Benchmark        Mode  Cnt   Score    Error  Units

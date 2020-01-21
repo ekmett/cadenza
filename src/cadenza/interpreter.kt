@@ -2,8 +2,11 @@ package cadenza.interpreter
 
 import cadenza.data.append
 import cadenza.data.drop
+import cadenza.data.map
+import cadenza.data.take
 import cadenza.jit.Builtin
 import cadenza.jit.FixNatF
+import cadenza.jit.Plus
 import cadenza.jit.initialCtx
 import cadenza.semantics.*
 import cadenza.syntax.*
@@ -17,8 +20,8 @@ data class App(val f: Expr, val args: Array<Expr>) : Expr()
 data class If(val cond: Expr, val then: Expr, val else_: Expr) : Expr()
 data class Const(val x: Any) : Expr()
 
-// a env (total substitution to values) applied to a term, as a value
-data class Closure(val f: Expr, val env: Env)
+// a env (total substitution to values) applied to Lam n f, as a value
+data class Closure(val n: Int, val b: Expr, val env: Env)
 // a partially applied builtin, as a value
 data class BuiltinClosure(val builtin: Builtin, val papArgs: Array<Any>)
 
@@ -43,7 +46,7 @@ fun Env.lookup(ix: Int): Any? {
 fun elab(ctx: Ctx, tm: Term): Expr = when (tm) {
   is Term.TVar -> Var(ctx.lookupIx(tm.name))
   is Term.TIf -> If(elab(ctx, tm.cond), elab(ctx, tm.thenTerm), elab(ctx, tm.elseTerm))
-  is Term.TApp -> App(elab(ctx, tm.trator), tm.trands.map { elab(ctx, it) }.toTypedArray())
+  is Term.TApp -> App(elab(ctx, tm.trator), map(tm.trands) { elab(ctx, it) })
   is Term.TLam -> {
     val ctx2 = tm.names.fold(ctx) { x, (n, ty) -> ConsEnv(n, NameInfo(ty, null), x) }
     Lam(tm.names.size, elab(ctx2, tm.body))
@@ -69,7 +72,7 @@ fun Expr.subst(i: Int, v: Expr): Expr = when (this) {
     n < i -> Var(n)
     else -> Var(n - 1)
   }
-  is App -> App(f.subst(i, v), args.map { it.subst(i, v) }.toTypedArray())
+  is App -> App(f.subst(i, v), map(args) { it.subst(i, v) })
   is If -> If(cond.subst(i, v), then.subst(i, v), else_.subst(i, v))
   is Const -> this
 }
@@ -98,16 +101,13 @@ fun call(fn: Any, args: Array<Any>): Any = when(fn) {
   else -> TODO()
 }
 
-fun Closure.call(args: Array<Any>): Any = when (f) {
-  is Lam -> when {
-    args.size == f.n -> f.b.eval(env.consMany(args))
-    args.size < f.n -> Closure(Lam(f.n - args.size, f.b), env.consMany(args))
-    else -> call(
-      f.b.eval(env.consMany(args.take(f.n).toTypedArray())),
-      drop(f.n, args) as Array<Any>
-    )
-  }
-  else -> TODO()
+fun Closure.call(args: Array<Any>): Any = when {
+  args.size == n -> b.eval(env.consMany(args))
+  args.size < n -> Closure(n - args.size, b, env.consMany(args))
+  else -> call(
+    b.eval(env.consMany(take(n, args))),
+    drop(n, args) as Array<Any>
+  )
 }
 
 fun BuiltinClosure.call(args: Array<Any>): Any {
@@ -117,7 +117,7 @@ fun BuiltinClosure.call(args: Array<Any>): Any {
     ys.size < builtin.arity -> BuiltinClosure(builtin, ys)
     ys.size == builtin.arity -> callBuiltin(builtin, ys)
     else -> call(
-      callBuiltin(builtin, ys.take(builtin.arity).toTypedArray()),
+      callBuiltin(builtin, take(builtin.arity, ys)),
       drop(builtin.arity, ys) as Array<Any>
     )
   }!!
@@ -133,9 +133,9 @@ fun callBuiltin(builtin: Builtin, ys: Array<Any>): Any = when (builtin) {
 
 fun Expr.eval(env: Env): Any = when (this) {
   is Var -> env.lookup(n)!!
-  is App -> call(f.eval(env), args.map { it.eval(env) }.toTypedArray())
+  is App -> call(f.eval(env), map(args) { it.eval(env) })
   is Const -> x
   is If -> if (cond.eval(env) as Boolean) then.eval(env) else else_.eval(env)
-  is Lam -> Closure(this, env)
+  is Lam -> Closure(n, b, env)
 }
 

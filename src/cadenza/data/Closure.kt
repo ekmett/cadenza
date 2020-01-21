@@ -138,3 +138,17 @@ fun drop(k: Int, xs: Array<out Any?>): Array<Any?> {
   System.arraycopy(xs, k, ys, 0, xs.size - k)
   return ys
 }
+
+inline fun<reified T> take(k: Int, xs: Array<out T>): Array<T> {
+  val ys = arrayOfNulls<T>(k)
+  System.arraycopy(xs, 0, ys, 0, k)
+  return ys as Array<T>
+}
+
+
+inline fun<S, reified T> map(xs: Array<out S>, f: (x: S) -> T): Array<T> {
+  val ys = arrayOfNulls<T>(xs.size)
+  xs.forEachIndexed { ix, x -> ys[ix] = f(x) }
+  return ys as Array<T>
+}
+
