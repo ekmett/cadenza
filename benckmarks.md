@@ -8,7 +8,6 @@ Add.kotlin       avgt    5  ≈ 10⁻⁶           ms/op
 Fib.cadenza      avgt    5   0.016 ±  0.001  ms/op
 Fib.interpreter  avgt    5   0.464 ±  0.024  ms/op
 Fib.kotlin       avgt    5   0.003 ±  0.001  ms/op
-
 ```
 
 with recursive inlining + loop peeling:
