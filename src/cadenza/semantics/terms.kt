@@ -21,6 +21,7 @@ data class CompileInfo(
 // terms can be checked and inferred. The result is an expression.
 @Suppress("MemberVisibilityCanBePrivate")
 sealed class Term {
+  abstract fun fvs(): Set<String>
   @Throws(TypeError::class) open fun check(ctx: Ctx, expectedType: Type): Witness = infer(ctx).match(expectedType)
   @Throws(TypeError::class) abstract fun infer(ctx: Ctx): Witness
 
@@ -34,6 +35,7 @@ sealed class Term {
   }
 
   class TVar(val name: String, val loc: Loc? = null): Term() {
+    override fun fvs() = arrayOf(name).toSet()
     @Throws(TypeError::class)
     override fun infer(ctx: Ctx): Witness {
       val info = ctx.lookup(name)
@@ -55,6 +57,7 @@ sealed class Term {
   }
 
   class TIf(val cond: Term, val thenTerm: Term, val elseTerm: Term, val loc: Loc? = null): Term() {
+    override fun fvs(): Set<String> = cond.fvs() + thenTerm.fvs() + elseTerm.fvs()
     @Throws(TypeError::class)
     override fun infer(ctx: Ctx): Witness {
       val condWitness = cond.check(ctx, Type.Bool)
@@ -70,6 +73,7 @@ sealed class Term {
   }
 
   class TApp(val trator: Term, val trands: Array<Term>, val loc: Loc? = null): Term() {
+    override fun fvs(): Set<String> = trator.fvs() + trands.map { it.fvs() }.flatten()
     @Throws(TypeError::class)
     override fun infer(ctx: Ctx): Witness {
       val wrator = trator.infer(ctx)
@@ -99,6 +103,7 @@ sealed class Term {
   }
 
   class TLam(val names: Array<Pair<Name,Type>>, val body: Term, val loc: Loc? = null): Term() {
+    override fun fvs(): Set<String> = body.fvs().filter { x -> names.find { it.first == x } == null }.toSet()
     override fun infer(ctx: Ctx): Witness {
       val ctx2 = names.fold(ctx) { x, (n, ty) -> ConsEnv(n, NameInfo(ty, null), x) }
       val bodyw = body.infer(ctx2)
@@ -154,6 +159,7 @@ sealed class Term {
   }
 
   class TLitNat(val it: Int, val loc: Loc? = null): Term () {
+    override fun fvs(): Set<String> = HashSet()
     override fun infer(ctx: Ctx): Witness {
       val ty = Type.Nat
       ty.validate(it)

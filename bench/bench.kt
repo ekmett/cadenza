@@ -4,7 +4,10 @@ import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 import java.util.concurrent.TimeUnit
 import cadenza.Language
+import cadenza.interpreter.Const
+import cadenza.interpreter.eval
 import cadenza.interpreter.initialEnv
+import cadenza.interpreter.subst
 import com.oracle.truffle.api.CallTarget
 import com.oracle.truffle.api.source.Source
 import org.graalvm.polyglot.Context
@@ -31,10 +34,10 @@ abstract class SourceBenchmark {
     cadenzaTarget.call()
   }
 
-  val interpExpr by lazy { cadenza.interpreter.parse(source) }
+  val interpExpr by lazy {cadenza.interpreter.parse(source).subst { Const(initialEnv[it]) } }
   @Benchmark
   fun interpreter() {
-    interpExpr.eval(initialEnv)
+    interpExpr.eval(arrayOf())
   }
 }
 
