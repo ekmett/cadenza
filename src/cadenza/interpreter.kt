@@ -4,10 +4,7 @@ import cadenza.data.append
 import cadenza.data.drop
 import cadenza.data.map
 import cadenza.data.take
-import cadenza.jit.Builtin
-import cadenza.jit.FixNatF
-import cadenza.jit.Plus
-import cadenza.jit.initialCtx
+import cadenza.jit.*
 import cadenza.semantics.*
 import cadenza.syntax.*
 import com.oracle.truffle.api.source.Source
@@ -32,11 +29,58 @@ data class Const(val x: Any) : Expr() {
   override fun eval(env: Env): Any = x
 }
 
+sealed class Callable {
+  abstract fun call(args: Array<Any>): Any
+}
 
 // a env (total substitution to values) applied to Lam n f, as a value
-data class Closure(val n: Int, val b: Expr, val env: Env)
+data class Closure(val n: Int, val b: Expr, val env: Env) : Callable() {
+  override fun call(args: Array<Any>): Any = when {
+    args.size == n -> b.eval(env.consMany(args))
+    args.size < n -> Closure(n - args.size, b, env.consMany(args))
+    else -> call(
+      b.eval(env.consMany(take(n, args))),
+      drop(n, args) as Array<Any>
+    )
+  }
+}
+
 // a partially applied builtin, as a value
-data class BuiltinClosure(val builtin: Builtin, val papArgs: Array<Any>)
+data class BuiltinClosure(val builtin: Builtin, val papArgs: Array<Any>) : Callable() {
+  override fun call(args: Array<Any>): Any {
+    val ys: Array<Any> = if (papArgs.isEmpty()) args else append(papArgs, args) as Array<Any>
+
+    return when {
+      ys.size < builtin.arity -> BuiltinClosure(builtin, ys)
+      ys.size == builtin.arity -> callBuiltin(builtin, ys)
+      else -> call(
+        callBuiltin(builtin, take(builtin.arity, ys)),
+        drop(builtin.arity, ys) as Array<Any>
+      )
+    }!!
+  }
+}
+
+class FixNatF1(val f: Callable): Builtin1(natF) {
+  private val clos = BuiltinClosure(this, arrayOf())
+
+  override fun execute(x: Any?): Any? = f.call(arrayOf(clos, x as Any))
+}
+
+fun call(fn: Any, args: Array<Any>): Any = when(fn) {
+  is Callable -> fn.call(args)
+  else -> throw Exception("attempt to call $fn")
+}
+
+
+fun callBuiltin(builtin: Builtin, ys: Array<Any>): Any = when (builtin) {
+  is FixNatF -> {
+    assert(ys.size == 2)
+    FixNatF1(ys[0] as Callable).execute(ys[1])!!
+  }
+  else -> builtin.run(ys as Array<Any?>)!!
+}
+
 
 // singly linked list for environment
 data class InterpConsEnv(val v: Any, val e: InterpConsEnv?)
@@ -108,40 +152,5 @@ val initialEnv: Env by lazy {
 
 fun Env.consMany(ls: Array<Any>): Env = ls.fold(this) { r, x -> InterpConsEnv(x, r) }
 
-fun call(fn: Any, args: Array<Any>): Any = when(fn) {
-  is Closure -> fn.call(args)
-  is BuiltinClosure -> fn.call(args)
-  else -> TODO()
-}
-
-fun Closure.call(args: Array<Any>): Any = when {
-  args.size == n -> b.eval(env.consMany(args))
-  args.size < n -> Closure(n - args.size, b, env.consMany(args))
-  else -> call(
-    b.eval(env.consMany(take(n, args))),
-    drop(n, args) as Array<Any>
-  )
-}
-
-fun BuiltinClosure.call(args: Array<Any>): Any {
-  val ys: Array<Any> = if (papArgs.isEmpty()) args else append(papArgs, args) as Array<Any>
-
-  return when {
-    ys.size < builtin.arity -> BuiltinClosure(builtin, ys)
-    ys.size == builtin.arity -> callBuiltin(builtin, ys)
-    else -> call(
-      callBuiltin(builtin, take(builtin.arity, ys)),
-      drop(builtin.arity, ys) as Array<Any>
-    )
-  }!!
-}
-
-fun callBuiltin(builtin: Builtin, ys: Array<Any>): Any = when (builtin) {
-  is FixNatF -> {
-    val selfApp = BuiltinClosure(builtin, arrayOf(ys[0]))
-    call(ys[0], arrayOf(selfApp, ys[1]))
-  }
-  else -> builtin.run(ys as Array<Any?>)!!
-}
 
 

@@ -2,25 +2,28 @@
 
 ```
 Benchmark        Mode  Cnt   Score    Error  Units
-Add.cadenza      avgt    5   0.010 ±  0.001  ms/op
-Add.interpreter  avgt    5   0.123 ±  0.005  ms/op
-Add.kotlin       avgt    5  ≈ 10⁻⁶           ms/op
-Fib.cadenza      avgt    5   0.015 ±  0.001  ms/op
-Fib.interpreter  avgt    5   0.330 ±  0.088  ms/op
-Fib.kotlin       avgt    5   0.003 ±  0.001  ms/op
-```
+Add.cadenza      avgt    5   0.022 ±  0.027  ms/op
+Add.interpreter  avgt    5   0.169 ±  0.115  ms/op
+Add.kotlin       avgt    5  ≈ 10⁻⁵           ms/op
+Fib.cadenza      avgt    5   0.024 ±  0.008  ms/op
+Fib.interpreter  avgt    5   0.458 ±  0.159  ms/op
+Fib.kotlin       avgt    5   0.007 ±  0.001  ms/op
+``` 
 
 old version with recursive inlining + loop peeling:
 
 ```
 Benchmark        Mode  Cnt   Score    Error  Units
-Add.cadenza      avgt    5   0.015 ±  0.008  ms/op
-Add.interpreter  avgt    5   0.209 ±  0.024  ms/op
-Add.kotlin       avgt    5  ≈ 10⁻⁶           ms/op
-Fib.cadenza      avgt    5   0.059 ±  0.011  ms/op
-Fib.interpreter  avgt    5   0.434 ±  0.038  ms/op
-Fib.kotlin       avgt    5   0.003 ±  0.001  ms/op
+Add.cadenza      avgt    5   0.014 ±  0.005  ms/op
+Add.interpreter  avgt    5   0.124 ±  0.013  ms/op
+Add.kotlin       avgt    5  ≈ 10⁻⁵           ms/op
+Fib.cadenza      avgt    5   0.077 ±  0.002  ms/op
+Fib.interpreter  avgt    5   0.300 ±  0.014  ms/op
+Fib.kotlin       avgt    5   0.004 ±  0.001  ms/op
 ```
+
+i think fib is slower because it fails to inline a builtin (uses up inlining budget on recursive occs)
+is faster with "-Dgraal.TruffleMaximumRecursiveInlining=1"
 
 
 interpreter is not in a horribly slow style (i think?) but is also not optimized

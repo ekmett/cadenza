@@ -5,7 +5,6 @@ import org.openjdk.jmh.infra.Blackhole
 import java.util.concurrent.TimeUnit
 import cadenza.Language
 import cadenza.interpreter.initialEnv
-//import cadenza.jit.Builtin
 import com.oracle.truffle.api.CallTarget
 import com.oracle.truffle.api.source.Source
 import org.graalvm.polyglot.Context
@@ -26,6 +25,8 @@ abstract class SourceBenchmark {
     Language.currentLanguage().parse(source)
   }
   @Benchmark
+  // some extra warmup
+  @Warmup(iterations=30)
   fun cadenza() {
     cadenzaTarget.call()
   }
