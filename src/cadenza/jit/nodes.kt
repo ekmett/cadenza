@@ -108,7 +108,7 @@ open class ClosureRootNode(
     other.loc
   )
 
-  val mask : Long = hashCode().run {
+  val mask: Long = hashCode().run {
       1L shl and(0x3f) or
       (1L shl (shr(6) and 0x3f)) or
       (1L shl (shr(12) and 0x3f)) or
