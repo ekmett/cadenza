@@ -5,6 +5,7 @@ import cadenza.jit.*
 import cadenza.jit.Code.Companion.lam
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.FrameDescriptor
+import com.oracle.truffle.api.frame.FrameSlot
 import com.oracle.truffle.api.source.Source
 
 // TODO: should be data NameInfo = Local | Global GlobalNameInfo | Builtin Builtin
@@ -117,7 +118,7 @@ sealed class Term {
           val closureFd = FrameDescriptor()
           val closureCaptures = arrayListOf<FrameBuilder>();
           val envPreamble = arrayListOf<FrameBuilder>();
-          val argPreamble = arrayListOf<FrameBuilder>();
+          val argPreamble = arrayListOf<Pair<FrameSlot,Int>>();
           val captures = bodyFd.slots.any { slot -> names.find { it.first == slot.identifier } == null }
           for (slot in bodyFd.slots) {
             val name = slot.identifier
@@ -128,7 +129,7 @@ sealed class Term {
               closureCaptures += put(closureSlot, Code.`var`(parentSlot))
               envPreamble += put(slot, Code.`var`(closureSlot))
             } else {
-              argPreamble += put(slot, Code.Arg(if (captures) ix+1 else ix, loc!!))
+              argPreamble += Pair(slot, if (captures) ix+1 else ix)
             }
           }
 

@@ -73,7 +73,8 @@ class Closure (
   // only used for InteropLibrary execute
   private fun call(ys: Array<out Any?>): Any? {
     // TODO: need to catch TailCallException here
-    // or maybe we should have a special RootNode for InteropLibrary?
+    // or maybe we should have a special RootNode for InteropLibrary instead of closure?
+    // to deal w/ second level dispatch
     return when {
       ys.size < arity -> pap(ys)
       ys.size == arity -> {

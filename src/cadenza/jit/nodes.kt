@@ -4,10 +4,12 @@ import cadenza.Language
 import cadenza.Loc
 import cadenza.data.DataTypes
 import cadenza.section
+import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.TruffleLanguage
 import com.oracle.truffle.api.dsl.TypeSystemReference
 import com.oracle.truffle.api.frame.FrameDescriptor
+import com.oracle.truffle.api.frame.FrameSlot
 import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.instrumentation.*
@@ -89,7 +91,7 @@ open class ClosureRootNode(
   frameDescriptor: FrameDescriptor = FrameDescriptor(),
   val arity: Int,
   @field:Children val envPreamble: Array<FrameBuilder> = noFrameBuilders,
-  @field:Children val argPreamble: Array<FrameBuilder>,
+  @CompilerDirectives.CompilationFinal(dimensions = 1) val argPreamble: Array<Pair<FrameSlot, Int>>,
   @field:Child var body: ClosureBody,
   val source: Source,
   val loc: Loc? = null
@@ -120,13 +122,18 @@ open class ClosureRootNode(
   inline fun isSuperCombinator() = envPreamble.isNotEmpty()
 
   @ExplodeLoop
-  private fun preamble(frame: VirtualFrame): VirtualFrame {
-    val local = Truffle.getRuntime().createVirtualFrame(noArguments, frameDescriptor)
-    for (builder in argPreamble) builder.build(local, frame)
+  private fun buildFrame(arguments: Array<Any>, local: VirtualFrame) {
+    for ((slot, x) in argPreamble) local.setObject(slot, arguments[x])
     if (isSuperCombinator()) { // supercombinator, given environment
-      val env = frame.arguments[0] as MaterializedFrame
+      val env = arguments[0] as MaterializedFrame
       for (builder in envPreamble) builder.build(local, env)
     }
+  }
+
+  @ExplodeLoop
+  private fun preamble(frame: VirtualFrame): VirtualFrame {
+    val local = Truffle.getRuntime().createVirtualFrame(noArguments, frameDescriptor)
+    buildFrame(frame.arguments, local)
     return local
   }
 
