@@ -1,8 +1,12 @@
 package cadenza.jit
 
 import com.oracle.truffle.api.*
+import com.oracle.truffle.api.dsl.Cached
+import com.oracle.truffle.api.dsl.ReportPolymorphism
+import com.oracle.truffle.api.dsl.Specialization
 import com.oracle.truffle.api.frame.*
 import com.oracle.truffle.api.nodes.*
+import com.oracle.truffle.api.nodes.RepeatingNode.CONTINUE_LOOP_STATUS
 import com.oracle.truffle.api.profiles.BranchProfile
 import java.lang.Exception
 import java.lang.reflect.Method
@@ -74,35 +78,77 @@ class TailCallLoop() : Node() {
     if (loopNode == null) {
       CompilerDirectives.transferToInterpreterAndInvalidate()
       repeatingNode = TailCallRepeatingNode(rootNode.frameDescriptor)
-      val slots = arrayOf(repeatingNode!!.argsSlot, repeatingNode!!.functionSlot, repeatingNode!!.resultSlot)
-      loopNode = createOptimizedLoopNode(repeatingNode!!, slots, slots)
+      val slots = arrayOf(repeatingNode!!.functionSlot, repeatingNode!!.argsLenSlot)
+//      loopNode = createOptimizedLoopNode(repeatingNode!!, slots, slots)
+      loopNode = Truffle.getRuntime().createLoopNode(repeatingNode!!)
       adoptChildren()
     }
     val frame = Truffle.getRuntime().createVirtualFrame(null, repeatingNode!!.descriptor)
+    repeatingNode!!.setup(frame)
     repeatingNode!!.setNextCall(frame, tailCall.fn, tailCall.args)
-    loopNode!!.execute(frame)
-    return repeatingNode!!.getResult(frame)
+    return loopNode!!.execute(frame)
   }
 }
+
+// expects fully applied & doesn't trampoline
+// just an inline cache of DirectCallNodes & IndirectCallNodes
+@ReportPolymorphism
+abstract class DispatchCallTarget(val repeatingNode: TailCallRepeatingNode) : Node() {
+  abstract fun executeDispatch(frame: VirtualFrame, callTarget: CallTarget, ys: Array<Any?>): Any
+
+  @Specialization(guards = [
+    "callTarget == cachedCallTarget"
+  ], limit = "3")
+  fun callDirect(frame: VirtualFrame, callTarget: CallTarget, ys: Array<Any?>?,
+                 @Cached("callTarget") cachedCallTarget: CallTarget,
+                 @Cached("create(cachedCallTarget)") callNode: DirectCallNode): Any? {
+    try {
+      return CallUtils.callDirect(callNode, ys)
+    } catch (e: TailCallException) {
+      repeatingNode.setNextCall(frame, e.fn, e.args)
+      return CONTINUE_LOOP_STATUS
+    }
+  }
+
+  @Specialization
+  fun callIndirect(frame: VirtualFrame, callTarget: CallTarget, ys: Array<Any?>?,
+                   @Cached("create()") callNode: IndirectCallNode): Any? {
+    try {
+      return CallUtils.callIndirect(callNode, callTarget, ys)
+    } catch (e: TailCallException) {
+      repeatingNode.setNextCall(frame, e.fn, e.args)
+      return CONTINUE_LOOP_STATUS
+    }
+  }
+}
+
 
 // current version copied from
 // https://github.com/luna/enso/blob/master/engine/runtime/src/main/java/org/enso/interpreter/node/callable/dispatch/LoopingCallOptimiserNode.java
 class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), RepeatingNode {
-  val resultSlot = descriptor.findOrAddFrameSlot("<TCO Function>", FrameSlotKind.Object)
-  val functionSlot = descriptor.findOrAddFrameSlot("<TCO Result>", FrameSlotKind.Object)
-  val argsSlot = descriptor.findOrAddFrameSlot("<TCO Arguments>", FrameSlotKind.Object)
-  @Child var dispatchNode: DispatchCallTarget = DispatchCallTargetNodeGen.create()
+  val functionSlot = descriptor.findOrAddFrameSlot("<TCO Function>", FrameSlotKind.Object)
+  val argsLenSlot = descriptor.findOrAddFrameSlot("<TCO Args Len>", FrameSlotKind.Int)
+  @CompilerDirectives.CompilationFinal(dimensions = 1) var argsSlots: Array<FrameSlot> = arrayOf()
+  @Child var dispatchNode: DispatchCallTarget = DispatchCallTargetNodeGen.create(this)
 
+  fun setup(frame: VirtualFrame) {
+//    frame.setObject(argsSlot, arrayOfNulls<Any?>(maxArgsLen))
+  }
+
+  @ExplodeLoop
   fun setNextCall(
     frame: VirtualFrame,
     fn: CallTarget,
     arguments: Array<Any?>) {
     frame.setObject(functionSlot, fn)
-    frame.setObject(argsSlot, arguments)
-  }
-
-  fun getResult(frame: VirtualFrame): Any {
-    return FrameUtil.getObjectSafe(frame, resultSlot)
+    if (arguments.size > argsSlots.size) {
+      CompilerDirectives.transferToInterpreterAndInvalidate()
+      argsSlots = (0 until arguments.size).map { descriptor.findOrAddFrameSlot("<TCO Arg $it>") }.toTypedArray()
+    }
+    frame.setInt(argsLenSlot, arguments.size)
+    for (ix in 0 until argsSlots.size) {
+      frame.setObject(argsSlots[ix], if (ix < arguments.size) arguments[ix] else null)
+    }
   }
 
   private fun getNextFunction(frame: VirtualFrame): CallTarget {
@@ -111,22 +157,28 @@ class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), Repeating
     return result
   }
 
+  @ExplodeLoop
   private fun getNextArgs(frame: VirtualFrame): Array<Any?> {
-    val result = FrameUtil.getObjectSafe(frame, argsSlot) as Array<Any?>
-    frame.setObject(argsSlot, null)
-    return result
+    // making this be `frame.getInt(argsLenSlot)` breaks escape analysis??
+    val argsSize = argsSlots.size //frame.getInt(argsLenSlot)
+    val array = arrayOfNulls<Any?>(argsSize)
+    for (ix in 0 until argsSlots.size) {
+      if (ix < argsSize) {
+        array[ix] = frame.getObject(argsSlots[ix])
+      }
+      frame.setObject(argsSlots[ix], null)
+    }
+    return array
   }
 
-  override fun executeRepeating(frame: VirtualFrame): Boolean {
-    return try {
-      val fn = getNextFunction(frame)
-      val args = getNextArgs(frame)
-      frame.setObject(resultSlot, dispatchNode.executeDispatch(fn, args))
-      false
-    } catch (e: TailCallException) {
-      setNextCall(frame, e.fn, e.args)
-      true
-    }
+  override fun executeRepeating(frame: VirtualFrame?): Boolean {
+    throw Exception("executeRepeating called over executeRepeatingWithValue")
+  }
+
+  override fun executeRepeatingWithValue(frame: VirtualFrame): Any {
+    val fn = getNextFunction(frame)
+    val args = getNextArgs(frame)
+    return dispatchNode.executeDispatch(frame, fn, args)
   }
 }
 

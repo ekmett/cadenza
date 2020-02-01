@@ -54,13 +54,13 @@ open class Add : SourceBenchmark() {
 
 fun fib(x: Int): Int = if (x <= 1) x else fib (x - 1) + fib (x - 2)
 
-open class Fib : SourceBenchmark() {
-  override val text = "fixNatF (\\(f : Nat -> Nat) (x : Nat) -> if le x 1 then x else plus (f (minus x 1)) (f (minus x 2))) 15"
-
-  @Benchmark
-  fun kotlin(bh: Blackhole) {
-    bh.consume(fib(15))
-  }
-}
+//open class Fib : SourceBenchmark() {
+//  override val text = "fixNatF (\\(f : Nat -> Nat) (x : Nat) -> if le x 1 then x else plus (f (minus x 1)) (f (minus x 2))) 15"
+//
+//  @Benchmark
+//  fun kotlin(bh: Blackhole) {
+//    bh.consume(fib(15))
+//  }
+//}
 
 

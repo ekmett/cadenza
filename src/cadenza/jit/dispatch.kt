@@ -10,29 +10,6 @@ import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.nodes.*
 
 
-// expects fully applied & doesn't trampoline
-// just an inline cache of DirectCallNodes & IndirectCallNodes
-@ReportPolymorphism
-abstract class DispatchCallTarget : Node() {
-  abstract fun executeDispatch(callTarget: CallTarget, ys: Array<Any?>): Any
-
-  @Specialization(guards = [
-    "callTarget == cachedCallTarget"
-  ], limit = "3")
-  fun callDirect(callTarget: CallTarget, ys: Array<Any?>?,
-                 @Cached("callTarget") cachedCallTarget: CallTarget,
-                 @Cached("create(cachedCallTarget)") callNode: DirectCallNode): Any? {
-    return CallUtils.callDirect(callNode, ys)
-  }
-
-  @Specialization
-  fun callIndirect(callTarget: CallTarget, ys: Array<Any?>?,
-                   @Cached("create()") callNode: IndirectCallNode): Any? {
-    return CallUtils.callIndirect(callNode, callTarget, ys)
-  }
-}
-
-
 // TODO: dispatch on closure equality for static (no env or pap) closures?
 // (would need to statically allocate them)
 @ReportPolymorphism
