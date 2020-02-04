@@ -7,6 +7,7 @@ import com.oracle.truffle.api.dsl.Cached
 import com.oracle.truffle.api.dsl.ReportPolymorphism
 import com.oracle.truffle.api.dsl.Specialization
 import com.oracle.truffle.api.frame.MaterializedFrame
+import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.*
 
 
@@ -37,15 +38,14 @@ abstract class DispatchCallTarget : Node() {
 // (would need to statically allocate them)
 @ReportPolymorphism
 abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = false) : Node() {
-
   // pre: ys.size == argsSize
-  abstract fun executeDispatch(closure: Closure, ys: Array<Any?>): Any?
+  abstract fun executeDispatch(frame: VirtualFrame, fn: Closure, ys: Array<Any?>): Any?
 
   @Specialization(guards = [
     "fn.arity == argsSize",
     "fn.callTarget == cachedCallTarget"
   ], limit = "3")
-  fun callDirect(fn: Closure, ys: Array<Any?>?,
+  fun callDirect(frame: VirtualFrame, fn: Closure, ys: Array<Any?>?,
                  @Cached("fn.callTarget") cachedCallTarget: RootCallTarget,
                  // determined by fn.callTarget & fn.arity
                  @Cached("fn.papArgs.length") papSize: Int,
@@ -53,17 +53,12 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
                  @Cached("fn.env != null") hasEnv: Boolean,
                  @Cached("create(cachedCallTarget)") callerNode: DirectCallerNode
                  ): Any {
-    val args =
-      if (hasEnv) consAppendL(fn.env as MaterializedFrame, fn.papArgs, papSize, ys, argsSize)
-      else appendL(fn.papArgs, papSize, ys, argsSize)
+    val args = appendLSkip(if (hasEnv) 2 else 1, fn.papArgs, papSize, ys, argsSize)
+    if (hasEnv) { args[1] = fn.env as MaterializedFrame }
     // TODO: don't need to create callerNode if tail call
     // split DispatchTailCall out?
     // TODO: figure out how to avoid TailCallException if inlining
-    if (tail_call) {
-      throw TailCallException(cachedCallTarget, args)
-    } else {
-      return callerNode.call(args)
-    }
+    return callerNode.call(frame, args, tail_call)
   }
 
   @Specialization(guards = [
@@ -72,7 +67,7 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
     "fn.arity == arity",
     "fn.callTarget == cachedCallTarget"
   ])
-  fun callDirectOverapplied(fn: Closure, ys: Array<Any?>,
+  fun callDirectOverapplied(frame: VirtualFrame, fn: Closure, ys: Array<Any?>,
                             @Cached("fn.arity") arity: Int,
                             @Cached("fn.callTarget") cachedCallTarget: RootCallTarget,
                             // determined by fn.callTarget & fn.arity
@@ -81,13 +76,11 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
                             @Cached("fn.env != null") hasEnv: Boolean,
                             @Cached("create(cachedCallTarget)") callerNode: DirectCallerNode,
                             @Cached("createMinusTail(argsSize, arity)") dispatch: Dispatch): Any? {
-    val args =
-      if (hasEnv) consAppendL(fn.env as MaterializedFrame, fn.papArgs, papSize, ys, arity)
-      else appendL(fn.papArgs, papSize, ys, arity)
-
-    val y = callerNode.call(args)
+    val args = appendLSkip(if (hasEnv) 2 else 1, fn.papArgs, papSize, ys, arity)
+    if (hasEnv) { args[1] = fn.env as MaterializedFrame }
+    val y = callerNode.call(frame, args, false)
     val zs = ys.copyOfRange(arity, argsSize)
-    return dispatch.executeDispatch(y as Closure, zs)
+    return dispatch.executeDispatch(frame, y as Closure, zs)
   }
 
   @Specialization(guards = ["fn.arity > argsSize"])
@@ -100,33 +93,29 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
   // replaces => give up on callDirect once more than 3 variants
   // TODO: is replaces the right choice?
   @Specialization(guards = ["fn.arity == argsSize"], replaces = ["callDirect"])
-  fun callIndirect(fn: Closure, ys: Array<Any?>?,
+  fun callIndirect(frame: VirtualFrame, fn: Closure, ys: Array<Any?>?,
                    @Cached("create()") callerNode: IndirectCallerNode): Any? {
-    val args =
-      if (fn.env != null) consAppendL(fn.env, fn.papArgs, fn.papArgs.size, ys, argsSize)
-      else appendL(fn.papArgs, fn.papArgs.size, ys, argsSize)
-    if (tail_call) {
-      throw TailCallException(fn.callTarget, args)
-    } else {
-      return callerNode.call(fn.callTarget, args)
-    }
+    val hasEnv = fn.env != null
+    val args = appendLSkip(if (hasEnv) 2 else 1, fn.papArgs, fn.papArgs.size, ys, argsSize)
+    if (hasEnv) { args[1] = fn.env as MaterializedFrame }
+    return callerNode.call(frame, fn.callTarget, args, tail_call)
   }
 
   @Specialization(guards = [
     "fn.arity < argsSize",
     "arity == fn.arity"
   ], replaces = ["callDirectOverapplied"])
-  fun callIndirectOverapplied(fn: Closure, ys: Array<Any?>,
+  fun callIndirectOverapplied(frame: VirtualFrame, fn: Closure, ys: Array<Any?>,
                               @Cached("fn.arity") arity: Int,
                               @Cached("create()") callerNode: IndirectCallerNode,
                               @Cached("createMinusTail(argsSize, arity)") dispatch: Dispatch): Any? {
     val xs = ys.copyOf(fn.arity)
     val zs = ys.copyOfRange(fn.arity, ys.size)
-    val args =
-      if (fn.env != null) consAppendL(fn.env, fn.papArgs, fn.papArgs.size, xs, arity)
-      else appendL(fn.papArgs, fn.papArgs.size, xs, arity)
-    val y = callerNode.call(fn.callTarget, args)
-    return dispatch.executeDispatch(y as Closure, zs)
+    val hasEnv = fn.env != null
+    val args = appendLSkip(if (hasEnv) 2 else 1, fn.papArgs, fn.papArgs.size, xs, arity)
+    if (hasEnv) { args[1] = fn.env as MaterializedFrame }
+    val y = callerNode.call(frame, fn.callTarget, args, false)
+    return dispatch.executeDispatch(frame, y as Closure, zs)
   }
 
   fun createMinusTail(x: Int, y: Int): Dispatch = DispatchNodeGen.create(x - y, tail_call)

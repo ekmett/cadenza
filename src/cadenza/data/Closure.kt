@@ -112,10 +112,15 @@ fun appendL(xs: Array<out Any?>?, xsSize: Int, ys: Array<out Any?>?, ysSize: Int
 }
 
 fun consAppendL(x: Any, xs: Array<out Any?>?, xsSize: Int, ys: Array<out Any?>?, ysSize: Int): Array<Any?> {
-  val zs = arrayOfNulls<Any>(1 + xsSize + ysSize)
+  val zs = appendLSkip(1, xs, xsSize, ys, ysSize)
   zs[0] = x
-  System.arraycopy(xs, 0, zs, 1, xsSize)
-  System.arraycopy(ys, 0, zs, 1 + xsSize, ysSize)
+  return zs
+}
+
+fun appendLSkip(skip: Int, xs: Array<out Any?>?, xsSize: Int, ys: Array<out Any?>?, ysSize: Int): Array<Any?> {
+  val zs = arrayOfNulls<Any>(skip + xsSize + ysSize)
+  System.arraycopy(xs, 0, zs, skip, xsSize)
+  System.arraycopy(ys, 0, zs, skip + xsSize, ysSize)
   return zs
 }
 

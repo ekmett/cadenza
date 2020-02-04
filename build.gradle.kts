@@ -85,7 +85,7 @@ sourceSets {
     dependencies {
       "kaptBench"("org.openjdk.jmh:jmh-generator-annprocess:1.22")
     }
-//    java.srcDir("bench")
+    java.srcDir("bench")
     kotlin.srcDir("bench")
     kotlin {
       dependencies {
@@ -141,11 +141,13 @@ val graalArgs = listOf(
   "-XX:+EnableJVMCI",
   "--module-path=${compiler.asPath}",
   "--upgrade-module-path=${compiler.asPath}",
+//  "-XX:-UseJVMCIClassLoader",
+  "-Dgraalvm.locatorDisabled=true",
   "-Dtruffle.class.path.append=build/libs/cadenza-${project.version}.jar",
   "--add-opens=jdk.internal.vm.compiler/org.graalvm.compiler.truffle.runtime=ALL-UNNAMED",
   "--add-opens=org.graalvm.truffle/com.oracle.truffle.api.source=ALL-UNNAMED",
 
-  "-Dgraal.Dump=:1",
+  "-Dgraal.Dump=Truffle",
   "-Dgraal.PrintGraph=Network",
   "-Dgraal.CompilationFailureAction=ExitVM",
   "-Dgraal.TraceTruffleCompilation=true",
@@ -155,7 +157,7 @@ val graalArgs = listOf(
   "-Dgraal.TraceTruffleTransferToInterpreter=true",
   // limit size of graphs for easier visualization
   "-Dgraal.TruffleMaximumRecursiveInlining=0",
-  "-Dgraal.LoopPeeling=false",
+//  "-Dgraal.LoopPeeling=false",
   "-Xss32m"
 )
 
@@ -171,7 +173,7 @@ tasks.test {
 
 
 tasks.register("bench", JavaExec::class) {
-  dependsOn("benchClasses")
+  dependsOn("benchClasses", "jar")
 //  dependsOn(sourceSets["bench"].getJarTaskName())
   classpath = sourceSets["bench"].runtimeClasspath + sourceSets["bench"].compileClasspath
   main = "org.openjdk.jmh.Main"
@@ -287,20 +289,7 @@ tasks.replace("run", JavaExec::class.java).run {
   description = "Run cadenza directly from the working directory"
   dependsOn(":jar")
   classpath = sourceSets["main"].runtimeClasspath
-  jvmArgs = graalArgs + listOf(
-    "-Djansi.force=true"
-    ,"-Dgraal.Dump=:1",
-    "-Dgraal.PrintGraph=Network",
-    "-Dgraal.CompilationFailureAction=ExitVM",
-    "-Dgraal.TraceTruffleCompilation=true",
-    "-Dgraal.TraceTruffleSplitting=true",
-    "-Dgraal.TruffleTraceSplittingSummary=true",
-    "-Dgraal.TraceTruffleAssumptions=true",
-    "-Dgraal.TraceTruffleTransferToInterpreter=true",
-    // limit size of graphs for easier visualization
-    "-Dgraal.TruffleMaximumRecursiveInlining=0",
-    "-Dgraal.LoopPeeling=false"
-  )
+  jvmArgs = graalArgs
   main = "cadenza.Launcher"
 }
 

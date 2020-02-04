@@ -47,7 +47,7 @@ open class Add : SourceBenchmark() {
   @Benchmark
   fun kotlin(bh: Blackhole) {
     var x = 0
-    while (x <= 1000) { x++ }
+    while (x <= 1000) { x = Math.addExact(x,1) }
     bh.consume(x)
   }
 }

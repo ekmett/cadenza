@@ -71,7 +71,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
 
     private fun executeFn(frame: VirtualFrame, fn: Closure): Any? {
       // TODO: think about how foreign calltargets should work with nbe
-      return dispatch.executeDispatch(fn, executeRands(frame))
+      return dispatch.executeDispatch(frame, fn, executeRands(frame))
     }
 
     @Throws(NeutralException::class)
@@ -173,15 +173,15 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   @NodeInfo(shortName = "Read")
   abstract class Var protected constructor(private val slot: FrameSlot, loc: Loc? = null) : Code(loc) {
 
-    @Specialization(rewriteOn = [FrameSlotTypeException::class])
-    @Throws(FrameSlotTypeException::class)
-    protected fun readInt(frame: VirtualFrame): Int = frame.getInt(slot)
+//    @Specialization(rewriteOn = [FrameSlotTypeException::class])
+//    @Throws(FrameSlotTypeException::class)
+//    protected fun readInt(frame: VirtualFrame): Int = frame.getInt(slot)
+//
+//    @Specialization(rewriteOn = [FrameSlotTypeException::class])
+//    @Throws(FrameSlotTypeException::class)
+//    protected fun readBoolean(frame: VirtualFrame): Boolean = frame.getBoolean(slot)
 
-    @Specialization(rewriteOn = [FrameSlotTypeException::class])
-    @Throws(FrameSlotTypeException::class)
-    protected fun readBoolean(frame: VirtualFrame): Boolean = frame.getBoolean(slot)
-
-    @Specialization(replaces = ["readInt", "readBoolean"])
+    @Specialization() //(replaces = ["readInt", "readBoolean"])
     protected fun read(frame: VirtualFrame): Any? = frame.getValue(slot)
 
     override fun isAdoptable() = false
@@ -230,7 +230,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       if (neutral) {
         return NeutralValue(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.run(vals)
+        return builtin.run(frame, vals)
       }
     }
 
@@ -240,7 +240,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       if (neutral) {
         neutral(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.run(vals)
+        return builtin.run(frame, vals)
       }
     }
 
@@ -250,7 +250,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       if (neutral) {
         neutral(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.runInteger(vals)
+        return builtin.runInteger(frame, vals)
       }
     }
 
@@ -260,7 +260,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       if (neutral) {
         neutral(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.runUnit(vals)
+        return builtin.runUnit(frame, vals)
       }
     }
 
@@ -270,7 +270,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       if (neutral) {
         neutral(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.runBoolean(vals)
+        return builtin.runBoolean(frame, vals)
       }
     }
   }

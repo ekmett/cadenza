@@ -3,6 +3,7 @@ package cadenza.jit
 import cadenza.Language
 import cadenza.Loc
 import cadenza.data.DataTypes
+import cadenza.data.drop
 import cadenza.section
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.Truffle
@@ -14,6 +15,7 @@ import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.instrumentation.*
 import com.oracle.truffle.api.nodes.*
+import com.oracle.truffle.api.profiles.BranchProfile
 import com.oracle.truffle.api.source.Source
 import com.oracle.truffle.api.source.SourceSection
 
@@ -25,6 +27,19 @@ abstract class LocatedNode(val loc: Loc? = null) : Node(), InstrumentableNode {
   override fun isInstrumentable() = loc !== null
 }
 
+abstract class CadenzaRootNode(
+  language: Language,
+  fd: FrameDescriptor
+) : RootNode(language, fd) {
+  open val mask: Long = hashCode().run {
+    1L shl and(0x3f) or
+      (1L shl (shr(6) and 0x3f)) or
+      (1L shl (shr(12) and 0x3f)) or
+      (1L shl (shr(18) and 0x3f)) or
+      (1L shl (shr(24) and 0x3f))
+  }
+}
+
 @NodeInfo(language = "core", description = "A root of a core tree.")
 @TypeSystemReference(DataTypes::class)
 open class ProgramRootNode constructor(
@@ -32,7 +47,9 @@ open class ProgramRootNode constructor(
   @field:Child private var body: Code,
   fd: FrameDescriptor,
   val source: Source
-) : RootNode(language, fd) {
+) : CadenzaRootNode(language, fd) {
+  val target = Truffle.getRuntime().createCallTarget(this)
+
   @Child var tailCallLoop = TailCallLoop()
 
   override fun isCloningAllowed() = true
@@ -72,12 +89,12 @@ open class ClosureBody constructor(
 // might still be good to use this, since we could use this e.g. at gc time to do selector forwarding
 // todo: this doesn't work if one of the args is a neutral
 open class BuiltinRootNode(
-  private val language: TruffleLanguage<*>,
+  private val language: Language,
   @field:Child var builtin: Builtin
-) : RootNode(language, FrameDescriptor()) {
+) : CadenzaRootNode(language, FrameDescriptor()) {
   override fun execute(frame: VirtualFrame): Any? {
 //    assert(frame.arguments.size == builtin.arity) { "bad builtin application $builtin" }
-    return builtin.run(frame.arguments)
+    return builtin.run(frame, drop(1, frame.arguments))
   }
 
   override fun isCloningAllowed() = true
@@ -87,7 +104,7 @@ open class BuiltinRootNode(
 @GenerateWrapper
 @TypeSystemReference(DataTypes::class)
 open class ClosureRootNode(
-  private val language: TruffleLanguage<*>,
+  private val language: Language,
   frameDescriptor: FrameDescriptor = FrameDescriptor(),
   val arity: Int,
   @field:Children val envPreamble: Array<FrameBuilder> = noFrameBuilders,
@@ -95,7 +112,7 @@ open class ClosureRootNode(
   @field:Child var body: ClosureBody,
   val source: Source,
   val loc: Loc? = null
-) : RootNode(language, frameDescriptor), InstrumentableNode {
+) : CadenzaRootNode(language, frameDescriptor), InstrumentableNode {
 
   constructor(
     other: ClosureRootNode
@@ -110,22 +127,18 @@ open class ClosureRootNode(
     other.loc
   )
 
-  val mask: Long = hashCode().run {
-      1L shl and(0x3f) or
-      (1L shl (shr(6) and 0x3f)) or
-      (1L shl (shr(12) and 0x3f)) or
-      (1L shl (shr(18) and 0x3f)) or
-      (1L shl (shr(24) and 0x3f))
-  }
+  val bloomFilterSlot: FrameSlot = frameDescriptor.addFrameSlot("<TCO Bloom Filter>")
+  @field:Child var selfTailCallLoopNode = SelfTailCallLoop(body, this)
+  private val tailCallProfile: BranchProfile = BranchProfile.create()
 
   @Suppress("NOTHING_TO_INLINE")
   inline fun isSuperCombinator() = envPreamble.isNotEmpty()
 
   @ExplodeLoop
-  private fun buildFrame(arguments: Array<Any>, local: VirtualFrame) {
-    for ((slot, x) in argPreamble) local.setObject(slot, arguments[x])
+  fun buildFrame(arguments: Array<Any?>, local: VirtualFrame) {
+    for ((slot, x) in argPreamble) local.setObject(slot, arguments[x+1])
     if (isSuperCombinator()) { // supercombinator, given environment
-      val env = arguments[0] as MaterializedFrame
+      val env = arguments[1] as MaterializedFrame
       for (builder in envPreamble) builder.build(local, env)
     }
   }
@@ -133,11 +146,23 @@ open class ClosureRootNode(
   @ExplodeLoop
   private fun preamble(frame: VirtualFrame): VirtualFrame {
     val local = Truffle.getRuntime().createVirtualFrame(noArguments, frameDescriptor)
+    local.setLong(bloomFilterSlot, (frame.arguments[0] as Long) or mask)
     buildFrame(frame.arguments, local)
     return local
   }
 
-  override fun execute(frame: VirtualFrame) = body.execute(preamble(frame))
+  override fun execute(oldFrame: VirtualFrame): Any? {
+    val local = preamble(oldFrame)
+    // force loop peeling: this allows constant folding if recursive calls have const arguments
+    return try {
+      body.execute(local)
+    } catch (e: TailCallException) {
+      tailCallProfile.enter()
+      if (e.fn.rootNode !== this) { throw e }
+      buildFrame(e.args, local)
+      selfTailCallLoopNode.execute(local)
+    }
+  }
   override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java
   override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode = ClosureRootNodeWrapper(this, this, probeNode)
   override fun getSourceSection(): SourceSection? = loc?.let { source.section(it) }

@@ -7,6 +7,8 @@ import cadenza.data.take
 import cadenza.jit.*
 import cadenza.semantics.*
 import cadenza.syntax.*
+import com.oracle.truffle.api.Truffle
+import com.oracle.truffle.api.frame.FrameDescriptor
 import com.oracle.truffle.api.source.Source
 
 typealias Env = Array<Any>
@@ -71,13 +73,14 @@ fun call(fn: Any, args: Array<Any>): Any = when(fn) {
   else -> throw Exception("attempt to call $fn")
 }
 
+val emptyFrame = Truffle.getRuntime().createVirtualFrame(arrayOf(), FrameDescriptor())
 
 fun callBuiltin(builtin: Builtin, ys: Array<Any>): Any = when (builtin) {
   is FixNatF -> {
     assert(ys.size == 2)
     FixNatF1(ys[0] as Callable).execute(ys[1])!!
   }
-  else -> builtin.run(ys as Array<Any?>)!!
+  else -> builtin.run(emptyFrame, ys as Array<Any?>)!!
 }
 
 // assumes it typechecks (use Term.infer to typecheck)

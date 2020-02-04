@@ -6,10 +6,10 @@ import cadenza.semantics.ConsEnv
 import cadenza.semantics.Ctx
 import cadenza.semantics.NameInfo
 import cadenza.semantics.Type
-import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.dsl.*
+import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.*
 import java.io.Serializable
 
@@ -17,15 +17,15 @@ import java.io.Serializable
 @ReportPolymorphism
 abstract class Builtin(@Suppress("unused") open val type: Type, val arity: Int) : Node(), Serializable {
   @Throws(NeutralException::class)
-  abstract fun run(args: Array<Any?>): Any?
+  abstract fun run(frame: VirtualFrame, args: Array<Any?>): Any?
   @Throws(NeutralException::class)
-  abstract fun runUnit(args: Array<Any?>)
+  open fun runUnit(frame: VirtualFrame, args: Array<Any?>) { run(frame, args) }
   @Throws(NeutralException::class)
-  abstract fun runClosure(args: Array<Any?>): Closure
+  open fun runClosure(frame: VirtualFrame, args: Array<Any?>): Closure = DataTypesGen.expectClosure(run(frame, args))
   @Throws(NeutralException::class)
-  abstract fun runBoolean(args: Array<Any?>): Boolean
+  open fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean = DataTypesGen.expectBoolean(run(frame, args))
   @Throws(NeutralException::class)
-  abstract fun runInteger(args: Array<Any?>): Int
+  open fun runInteger(frame: VirtualFrame, args: Array<Any?>): Int = DataTypesGen.expectInteger(run(frame, args))
 }
 
 
@@ -40,15 +40,15 @@ abstract class Builtin2(type: Type) : Builtin(type, 2) {
   open fun executeInteger(left: Any?, right: Any?): Int = DataTypesGen.expectInteger(execute(left, right))
 
   @Throws(NeutralException::class)
-  override fun run(args: Array<Any?>): Any? { return execute(args[0], args[1]) }
+  override fun run(frame: VirtualFrame, args: Array<Any?>): Any? { return execute(args[0], args[1]) }
   @Throws(NeutralException::class)
-  override fun runUnit(args: Array<Any?>) { execute(args[0], args[1]) }
+  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { execute(args[0], args[1]) }
   @Throws(NeutralException::class)
-  override fun runBoolean(args: Array<Any?>): Boolean { return executeBoolean(args[0], args[1]) }
+  override fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean { return executeBoolean(args[0], args[1]) }
   @Throws(NeutralException::class)
-  override fun runClosure(args: Array<Any?>): Closure { return executeClosure(args[0], args[1]) }
+  override fun runClosure(frame: VirtualFrame, args: Array<Any?>): Closure { return executeClosure(args[0], args[1]) }
   @Throws(NeutralException::class)
-  override fun runInteger(args: Array<Any?>): Int { return executeInteger(args[0], args[1]) }
+  override fun runInteger(frame: VirtualFrame, args: Array<Any?>): Int { return executeInteger(args[0], args[1]) }
 }
 
 abstract class Builtin1(type: Type) : Builtin(type, 1) {
@@ -62,15 +62,15 @@ abstract class Builtin1(type: Type) : Builtin(type, 1) {
   open fun executeInteger(x: Any?): Int = DataTypesGen.expectInteger(execute(x))
 
   @Throws(NeutralException::class)
-  override fun run(args: Array<Any?>): Any? { return execute(args[0]) }
+  override fun run(frame: VirtualFrame, args: Array<Any?>): Any? { return execute(args[0]) }
   @Throws(NeutralException::class)
-  override fun runUnit(args: Array<Any?>) { execute(args[0]) }
+  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { execute(args[0]) }
   @Throws(NeutralException::class)
-  override fun runBoolean(args: Array<Any?>): Boolean { return executeBoolean(args[0]) }
+  override fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean { return executeBoolean(args[0]) }
   @Throws(NeutralException::class)
-  override fun runClosure(args: Array<Any?>): Closure { return executeClosure(args[0]) }
+  override fun runClosure(frame: VirtualFrame, args: Array<Any?>): Closure { return executeClosure(args[0]) }
   @Throws(NeutralException::class)
-  override fun runInteger(args: Array<Any?>): Int { return executeInteger(args[0]) }
+  override fun runInteger(frame: VirtualFrame, args: Array<Any?>): Int { return executeInteger(args[0]) }
 }
 
 abstract class Le : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Bool))) {
@@ -144,21 +144,26 @@ val natFF = Type.Arr(natF, natF)
 //}
 
 // fixNatF f x = f (fixNatF f) x
-abstract class FixNatF : Builtin2(Type.Arr(natFF, natF)) {
+// fix f = let r = f r in r
+abstract class FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
+  abstract fun execute(frame: VirtualFrame, l: Any?, r: Any?): Any?
+
+  override fun run(frame: VirtualFrame, args: Array<Any?>) = execute(frame, args[0], args[1])
+
   @Specialization(guards = ["f.equals(cachedF)"], limit = "100000")
-  fun fixNatF(f: Closure, right: Any?,
+  fun fixNatF(frame: VirtualFrame, f: Closure, right: Any?,
               @CachedLanguage language: Language,
               @Cached("f") cachedF: Closure,
               @Cached("mkFix(f, language)") fix: FixNatF1
               ): Any? {
-    return fix.execute(right)
+    return fix.run(frame, arrayOf(right))
   }
   fun mkFix(f: Closure, language: Language) = FixNatF1(f, language)
 }
 
 // fixNatF with a known function
 // inlines possibly up to graal.TruffleMaximumRecursiveInlining (default 2)
-class FixNatF1(private val f: Closure, language: Language) : Builtin1(natF) {
+class FixNatF1(private val f: Closure, language: Language) : Builtin(natF, 1) {
   // TODO: make this instrumentable?
   private val target: RootCallTarget = Truffle.getRuntime().createCallTarget(BuiltinRootNode(language, this))
   private val self = Closure(null, arrayOf(), 1, type, target)
@@ -166,10 +171,11 @@ class FixNatF1(private val f: Closure, language: Language) : Builtin1(natF) {
   // TODO: this is wrong when using CallBuiltin
   @Child var dispatch: Dispatch = DispatchNodeGen.create(2, true)
 
-  override fun execute(x: Any?):  Any? {
+  override fun run(frame: VirtualFrame, xs: Array<Any?>):  Any? {
+    val x = xs[0]
     // still need to use a dispatch since calling w/ multiple args => might need to call twice
     // but actually it's impossible to branch on values of function types, so this is avoidable?
-    return dispatch.executeDispatch(f, arrayOf(self, x))
+    return dispatch.executeDispatch(frame, f, arrayOf(self, x))
   }
 }
 
