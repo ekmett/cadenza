@@ -209,26 +209,10 @@ fun ByteArray.loadClass(className: String) : Class<*> {
   }.loadClass(className)
 }
 
-
 val frameCache: HashMap<String, Class<DataFrame>> = HashMap()
-//
-//// broken
-//fun buildFrame(fields: Array<Any>): DataFrame {
-//  val types = fields.map { FieldInfo.from(it) }
-//  val signature = types.map { it.sig }.joinToString("")
-//  var klass = frameCache[signature]
-//  if (klass == null) {
-//    CompilerDirectives.transferToInterpreterAndInvalidate()
-//    klass = frame(signature).loadClass("cadenza.frame.dynamic.$signature") as Class<DataFrame>
-//    frameCache[signature] = klass
-//  }
-//  val cstr = klass.getConstructor(*(Array(fields.size) { Object::class.java }))
-//  val inst = cstr.newInstance(*fields)
-//  return inst
-//}
 
 abstract class BuildFrame : Node() {
-  var lookup = MethodHandles.publicLookup()
+  var lookup: MethodHandles.Lookup = MethodHandles.publicLookup()
 
   abstract fun execute(fields: Array<Any>): DataFrame
 

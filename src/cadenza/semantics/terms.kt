@@ -117,29 +117,27 @@ sealed class Term {
           val envPreamble = arrayListOf<Pair<FrameSlot,Int>>();
           val argPreamble = arrayListOf<Pair<FrameSlot,Int>>();
 
-          // TODO: don't capture builtins, as we will force inline them
-          val fvs = body.fvs()
-          val captures = fvs.any { name -> names.find { it.first == name } == null }
+          val namesSet = names.map { it.first }.toSet()
+          // we force inline when builtin != nulls, so those vars aren't actually used
+          val fvs = body.fvs().filter { namesSet.contains(it) || ctx.lookup(it).builtin == null }
 
-          for (name in fvs) {
+          for (name in fvs - namesSet) {
+            val slot = bodyFd.addFrameSlot(name)
+            val closureSlot = closureCaptures.size
+            val parentSlot = fd.findOrAddFrameSlot(name)
+            closureCaptures += parentSlot
+            envPreamble += Pair(slot, closureSlot)
+          }
+          for (name in fvs intersect namesSet) {
             val ix = names.indexOfLast { it.first == name }
             val slot = bodyFd.addFrameSlot(name)
-            if (ix == -1) {
-              val closureSlot = closureCaptures.size
-              val parentSlot = fd.findOrAddFrameSlot(name)
-              closureCaptures += parentSlot
-              envPreamble += Pair(slot, closureSlot)
-            } else {
-              argPreamble += Pair(slot, if (captures) ix+1 else ix)
-            }
+            argPreamble += Pair(slot, ix)
           }
 
           val bodyCode = bodyw.compile(ci, bodyFd)
 
-          assert((!captures) || envPreamble.isNotEmpty())
-
           return Code.lam(
-            if (captures) closureFd else null,
+            closureFd,
             closureCaptures.toTypedArray(),
             names.size,
             Truffle.getRuntime().createCallTarget(

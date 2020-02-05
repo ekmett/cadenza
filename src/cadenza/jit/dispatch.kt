@@ -56,8 +56,6 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
                  ): Any? {
     val args = appendLSkip(if (hasEnv) 2 else 1, fn.papArgs, papSize, ys, argsSize)
     if (hasEnv) { args[1] = fn.env as DataFrame }
-    // TODO: don't need to create callerNode if tail call
-    // split DispatchTailCall out?
     // TODO: figure out how to avoid TailCallException if inlining
     return callerNode.call(frame, args, tail_call)
   }

@@ -138,7 +138,8 @@ open class ClosureRootNode(
 
   @ExplodeLoop
   fun buildFrame(arguments: Array<Any?>, local: VirtualFrame) {
-    for ((slot, x) in argPreamble) local.setObject(slot, arguments[x+1])
+    val offset = if (isSuperCombinator()) 2 else 1
+    for ((slot, x) in argPreamble) local.setObject(slot, arguments[x+offset])
     if (isSuperCombinator()) { // supercombinator, given environment
       val env = arguments[1] as DataFrame
       // TODO: cache based on env type that does right read + write sequences?

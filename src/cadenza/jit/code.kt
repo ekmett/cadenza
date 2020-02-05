@@ -297,7 +297,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       }
 
       val indir = Indirection()
-      val clos = Closure(null, arrayOf(indir), 0, type, readTarget!!)
+      val clos = Closure(null, arrayOf(indir), 0, Type.Arr(Type.Obj,type), readTarget!!)
       // need to set it here in case a lambda in value captures it
       frame.setObject(slot, clos)
       val x = value.executeAny(frame)
