@@ -52,7 +52,7 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
                  // determined by fn.callTarget
                  @Cached("fn.env != null") hasEnv: Boolean,
                  @Cached("create(cachedCallTarget)") callerNode: DirectCallerNode
-                 ): Any {
+                 ): Any? {
     val args = appendLSkip(if (hasEnv) 2 else 1, fn.papArgs, papSize, ys, argsSize)
     if (hasEnv) { args[1] = fn.env as MaterializedFrame }
     // TODO: don't need to create callerNode if tail call

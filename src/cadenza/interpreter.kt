@@ -93,6 +93,7 @@ fun elab(ctx: List<Pair<String,NameInfo>>, tm: Term): Expr = when (tm) {
     lam(tm.names.size, elab(ctx2, tm.body))
   }
   is Term.TLitNat -> Const(tm.it)
+  is Term.TLet -> TODO()
 }
 
 val initialCtxElab: List<Pair<String,NameInfo>> by lazy {

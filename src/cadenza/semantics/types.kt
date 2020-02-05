@@ -28,7 +28,7 @@ class TypeError(
 
 // eventually move to a more hindley-milner style model with quantifiers, but then we need subsumption, unification, etc.
 // also this doesn't presuppose if we're heading towards dependently typed languages or towards haskell right now
-abstract class Type protected constructor(@Suppress("unused") val rep: FrameSlotKind) {
+abstract class Type protected constructor() {
   open val arity: Int
     get() = 0
 
@@ -46,7 +46,7 @@ abstract class Type protected constructor(@Suppress("unused") val rep: FrameSlot
     throw UnsupportedTypeException.create(objects, msg)
 
   @CompilerDirectives.ValueType
-  data class Arr(val argument: Type, val result: Type) : Type(FrameSlotKind.Object) {
+  data class Arr(val argument: Type, val result: Type) : Type() {
     override val arity: Int = result.arity + 1
     @Throws(UnsupportedTypeException::class)
     // TODO: support for builtins? or native functions?
@@ -59,29 +59,29 @@ abstract class Type protected constructor(@Suppress("unused") val rep: FrameSlot
 
   // IO actions represented ML-style as nullary functions
   @CompilerDirectives.ValueType
-  data class IO(val result: Type) : Type(FrameSlotKind.Object) {
+  data class IO(val result: Type) : Type() {
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) = todo
   }
 
-  object Bool : Type(FrameSlotKind.Boolean) {
+  object Bool : Type() {
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) { if (t !is Boolean) unsupported("expected boolean", t)
     }
   }
 
   @Suppress("unused")
-  object Obj : Type(FrameSlotKind.Object) {
+  object Obj : Type() {
     override fun validate(@Suppress("UNUSED_PARAMETER") t: Any?) {}
   }
 
-  object UnitTy : Type(FrameSlotKind.Object) {
+  object UnitTy : Type() {
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) { if (Unit != t) unsupported("expected unit", t)
     }
   }
 
-  object Nat : Type(FrameSlotKind.Int) {
+  object Nat : Type() {
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) {
       if (!(t is Int && t >= 0 || t is BigInt && t.isNatural())) unsupported("expected nat", t)

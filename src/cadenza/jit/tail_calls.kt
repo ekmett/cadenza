@@ -56,7 +56,7 @@ class DirectCallerNode(val callTarget: RootCallTarget) : Node() {
   private val normalCallProfile = BranchProfile.create()
   private val tailCallProfile = BranchProfile.create()
 
-  fun call(frame: VirtualFrame, args: Array<Any?>, tail_call: Boolean): Any {
+  fun call(frame: VirtualFrame, args: Array<Any?>, tail_call: Boolean): Any? {
     return if (tail_call) {
       tailCheck.tailCheck(frame, callTarget, args)
       CallUtils.callDirect(callNode, args)
@@ -88,7 +88,7 @@ class IndirectCallerNode() : Node() {
   private val normalCallProfile = BranchProfile.create()
   private val tailCallProfile = BranchProfile.create()
 
-  fun call(frame: VirtualFrame, callTarget: RootCallTarget, args: Array<Any?>, tail_call: Boolean): Any {
+  fun call(frame: VirtualFrame, callTarget: RootCallTarget, args: Array<Any?>, tail_call: Boolean): Any? {
     return if (tail_call) {
       tailCheck.tailCheck(frame, callTarget, args)
       CallUtils.callIndirect(callNode, callTarget, args)

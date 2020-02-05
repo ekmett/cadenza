@@ -172,3 +172,30 @@ open class ClosureRootNode(
   override fun isCloningAllowed() = true
 }
 
+@CompilerDirectives.ValueType
+class Indirection {
+  var set: Boolean = false
+  var value: Any? = null
+}
+
+// used for let rec
+open class ReadIndirectionRootNode(
+  val language: Language
+): CadenzaRootNode(language, FrameDescriptor()) {
+//  override val mask: Long = 0L
+
+  override fun execute(frame: VirtualFrame): Any? {
+    val indir = frame.arguments[1] as Indirection
+    if (CompilerDirectives.isPartialEvaluationConstant(indir) && CompilerDirectives.inCompiledCode()) {
+
+    }
+
+    if (!indir.set) {
+      CompilerDirectives.transferToInterpreter()
+      throw Exception("let rec loop (demanded variable while evaluating it)")
+    }
+    return indir.value
+  }
+}
+
+

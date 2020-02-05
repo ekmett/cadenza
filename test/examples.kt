@@ -15,6 +15,12 @@ class ExampleTests {
     assert(x.asInt() == 100)
   }
 
+  @Test fun fib2() {
+    val x = ctx.eval("cadenza", "let fib : Nat -> Nat = \\(x : Nat) -> if le x 1 then x else plus (fib (minus x 1)) (fib (minus x 2)) in fib 15")
+    println(x)
+    assert(x.asInt() == 610)
+  }
+
   @Test fun wat() {
     val f = frame("OI")
   }

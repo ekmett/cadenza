@@ -104,25 +104,25 @@ sealed class Term {
   }
 
   class TLam(val names: Array<Pair<Name,Type>>, val body: Term, val loc: Loc? = null): Term() {
-    override fun fvs(): Set<String> = body.fvs().filter { x -> names.find { it.first == x } == null }.toSet()
+    override fun fvs(): Set<String> = body.fvs() - names.map { it.first }
     override fun infer(ctx: Ctx): Witness {
       val ctx2 = names.fold(ctx) { x, (n, ty) -> ConsEnv(n, NameInfo(ty, null), x) }
       val bodyw = body.infer(ctx2)
       val aty = names.foldRight(bodyw.type) { (_,ty), x -> Type.Arr(ty, x) }
       return object : Witness(aty) {
-        // looks at what vars the body adds to it's FrameDescriptor to decide what to capture
-        // TODO: maybe should calculate fvs instead?
         override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
           val bodyFd = FrameDescriptor()
-          val bodyCode = bodyw.compile(ci, bodyFd)
           val closureFd = FrameDescriptor()
           val closureCaptures = arrayListOf<FrameBuilder>();
           val envPreamble = arrayListOf<FrameBuilder>();
           val argPreamble = arrayListOf<Pair<FrameSlot,Int>>();
-          val captures = bodyFd.slots.any { slot -> names.find { it.first == slot.identifier } == null }
-          for (slot in bodyFd.slots) {
-            val name = slot.identifier
+
+          val fvs = body.fvs()
+          val captures = fvs.any { name -> names.find { it.first == name } == null }
+
+          for (name in fvs) {
             val ix = names.indexOfLast { it.first == name }
+            val slot = bodyFd.addFrameSlot(name)
             if (ix == -1) {
               val closureSlot = closureFd.addFrameSlot(name)
               val parentSlot = fd.findOrAddFrameSlot(name)
@@ -132,6 +132,8 @@ sealed class Term {
               argPreamble += Pair(slot, if (captures) ix+1 else ix)
             }
           }
+
+          val bodyCode = bodyw.compile(ci, bodyFd)
 
           assert((!captures) || envPreamble.isNotEmpty())
 
@@ -154,6 +156,23 @@ sealed class Term {
             aty,
             loc
           )
+        }
+      }
+    }
+  }
+
+  class TLet(val name: Name, val type: Type, val value: Term, val body: Term, val loc: Loc? = null): Term() {
+    override fun fvs(): Set<String> = (value.fvs() + body.fvs()) - name
+    override fun infer(ctx: Ctx): Witness {
+      val ctx2: Ctx = ConsEnv(name, NameInfo(type, null), ctx)
+      val vw = value.infer(ctx2)
+      val bw = body.infer(ctx2)
+      return object : Witness(bw.type) {
+        override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
+          val slot = fd.findOrAddFrameSlot(name)
+          val vc = vw.compile(ci, fd)
+          val bc = bw.compile(ci, fd)
+          return Code.LetRec(slot, type, vc, bc, loc)
         }
       }
     }

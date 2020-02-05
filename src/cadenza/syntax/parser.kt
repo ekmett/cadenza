@@ -1,12 +1,13 @@
 package cadenza.syntax
 
+import cadenza.Loc
 import cadenza.semantics.Name
 import cadenza.semantics.Term
 import cadenza.semantics.Term.*
 import cadenza.semantics.Type
 import org.intelligence.parser.*
 
-val reserved = arrayOf("if","then","else","Nat")
+val reserved = arrayOf("if","then","else","Nat","=","in")
 
 
 val Parse.type: Type get() {
@@ -55,6 +56,17 @@ val Parse.grammar: Term get() = choice(
   tok("else")
   val else_ = grammar
   TIf(cond, then, else_)
+},{
+  val start = pos
+  tok("let")
+  val nm = token { ident }
+  tok(":")
+  val ty = type
+  tok("=")
+  val vl = grammar
+  tok("in")
+  val bd = grammar
+  TLet(nm, ty, vl, bd, Loc.Range(start, pos-start))
 },{
   val (x, loc) = spanned { some {
     choice(

@@ -1,10 +1,12 @@
 package cadenza.jit
 
+import cadenza.Language
 import cadenza.Loc
 import cadenza.data.*
 import cadenza.panic
 import cadenza.section
 import cadenza.semantics.Type
+import com.oracle.truffle.api.CallTarget
 import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
@@ -272,6 +274,37 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       } else {
         return builtin.runBoolean(frame, vals)
       }
+    }
+  }
+
+  class LetRec(
+    val slot: FrameSlot,
+    val type: Type,
+    @field:Child var value: Code,
+    @field:Child var body: Code,
+    loc: Loc?
+  ): Code(loc) {
+    @CompilerDirectives.CompilationFinal var readTarget: RootCallTarget? = null
+
+    override fun execute(frame: VirtualFrame): Any? {
+      if (readTarget === null) {
+        CompilerDirectives.transferToInterpreterAndInvalidate()
+        val language = lookupLanguageReference(Language::class.java).get()
+        readTarget = Truffle.getRuntime().createCallTarget(ReadIndirectionRootNode(language))
+      }
+
+      val indir = Indirection()
+      val clos = Closure(null, arrayOf(indir), 0, type, readTarget!!)
+      // need to set it here in case a lambda in value captures it
+      frame.setObject(slot, clos)
+      val x = value.executeAny(frame)
+      // ... but if not, we can avoid the indirection
+      // and need to set it here anyways in case value shadows us with a let
+//      frame.setObject(slot, x)
+      frame.setObject(slot, clos)
+      indir.value = x
+      indir.set = true
+      return body.execute(frame)
     }
   }
 
