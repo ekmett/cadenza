@@ -52,6 +52,11 @@ open class Add : SourceBenchmark() {
   }
 }
 
+
+open class AddLet : SourceBenchmark() {
+  override val text = "let add : Nat -> Nat = \\(x : Nat) -> if le 1000 x then x else add (plus x 1) in add 0"
+}
+
 fun fib(x: Int): Int = if (x <= 1) x else fib (x - 1) + fib (x - 2)
 
 open class Fib : SourceBenchmark() {
