@@ -22,7 +22,7 @@ class ArrayMappedDataFrame(
   val adata: Array<Any?>,
   val idata: Array<Int>,
   val obj : Mask // anything in adata
-) : DataFrame() {
+) : DataFrame {
   val int: Mask get() = obj.inv()
   override fun isInteger(slot: Slot) = slot.mask isa int
   override fun isObject(slot: Slot) = slot.mask isa obj

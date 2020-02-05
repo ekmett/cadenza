@@ -3,6 +3,9 @@ package cadenza.jit
 import cadenza.Language
 import cadenza.Loc
 import cadenza.data.*
+import cadenza.frame.BuildFrame
+import cadenza.frame.BuildFrameNodeGen
+import cadenza.frame.DataFrame
 import cadenza.panic
 import cadenza.section
 import cadenza.semantics.Type
@@ -142,13 +145,14 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   @NodeInfo(shortName = "Lambda")
   class Lam(
     private val closureFrameDescriptor: FrameDescriptor?,
-    @field:Children internal val captureSteps: Array<FrameBuilder>,
+    @CompilerDirectives.CompilationFinal(dimensions = 1) val captures: Array<FrameSlot>,
     private val arity: Int,
     @field:CompilerDirectives.CompilationFinal
     internal var callTarget: RootCallTarget,
     internal val type: Type,
     loc: Loc? = null
   ) : Code(loc) {
+    @Child var builder: BuildFrame = BuildFrameNodeGen.create()
 
     // do we need to capture an environment?
     private inline fun isSuperCombinator() = closureFrameDescriptor != null
@@ -160,11 +164,10 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), arrayOf(), arity, type, callTarget)
 
     @ExplodeLoop
-    private fun captureEnv(frame: VirtualFrame): MaterializedFrame? {
+    private fun captureEnv(frame: VirtualFrame): DataFrame? {
       if (!isSuperCombinator()) return null
-      val env = Truffle.getRuntime().createMaterializedFrame(arrayOf(), closureFrameDescriptor)
-      captureSteps.forEach { it.build(env, frame) }
-      return env.materialize()
+      val cs = map(captures) { frame.getValue(it) }
+      return builder.execute(cs)
     }
 
     // root to render capture steps opaque
@@ -350,34 +353,34 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   companion object {
     fun `var`(slot: FrameSlot, loc: Loc? = null): Var = CodeFactory.VarNodeGen.create(slot, loc)
 
-    // invariant callTarget points to a native function body with known arity
-    @Suppress("UNUSED")
-    fun lam(callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
-      val root = callTarget.rootNode
-      assert(root is ClosureRootNode)
-      return lam((root as ClosureRootNode).arity, callTarget, type, loc)
-    }
-
+//    // invariant callTarget points to a native function body with known arity
+//    @Suppress("UNUSED")
+//    fun lam(callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
+//      val root = callTarget.rootNode
+//      assert(root is ClosureRootNode)
+//      return lam((root as ClosureRootNode).arity, callTarget, type, loc)
+//    }
+//
     // package a foreign root call target with known arity
     fun lam(arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
-      return lam(null, noFrameBuilders, arity, callTarget, type, loc)
+      return lam(null, arrayOf(), arity, callTarget, type, loc)
     }
-
-    //@Suppress("unused")
-    fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
-      val root = callTarget.rootNode
-      assert(root is ClosureRootNode)
-      return lam(closureFrameDescriptor, captureSteps, (root as ClosureRootNode).arity, callTarget, type, loc)
-    }
+//
+//    //@Suppress("unused")
+//    fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
+//      val root = callTarget.rootNode
+//      assert(root is ClosureRootNode)
+//      return lam(closureFrameDescriptor, captureSteps, (root as ClosureRootNode).arity, callTarget, type, loc)
+//    }
 
     // ensures that all the invariants for the constructor are satisfied
-    fun lam(closureFrameDescriptor: FrameDescriptor?, captureSteps: Array<FrameBuilder>, arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
+    fun lam(closureFrameDescriptor: FrameDescriptor?, captures: Array<FrameSlot>, arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       assert(arity > 0)
-      val hasCaptureSteps = captureSteps.isNotEmpty()
+      val hasCaptureSteps = captures.isNotEmpty()
       assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }
       return Lam(
         if (!hasCaptureSteps) null else closureFrameDescriptor ?: FrameDescriptor(),
-        captureSteps,
+        captures,
         arity,
         callTarget,
         type,

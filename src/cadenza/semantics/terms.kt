@@ -113,10 +113,11 @@ sealed class Term {
         override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
           val bodyFd = FrameDescriptor()
           val closureFd = FrameDescriptor()
-          val closureCaptures = arrayListOf<FrameBuilder>();
-          val envPreamble = arrayListOf<FrameBuilder>();
+          val closureCaptures = arrayListOf<FrameSlot>()
+          val envPreamble = arrayListOf<Pair<FrameSlot,Int>>();
           val argPreamble = arrayListOf<Pair<FrameSlot,Int>>();
 
+          // TODO: don't capture builtins, as we will force inline them
           val fvs = body.fvs()
           val captures = fvs.any { name -> names.find { it.first == name } == null }
 
@@ -124,10 +125,10 @@ sealed class Term {
             val ix = names.indexOfLast { it.first == name }
             val slot = bodyFd.addFrameSlot(name)
             if (ix == -1) {
-              val closureSlot = closureFd.addFrameSlot(name)
+              val closureSlot = closureCaptures.size
               val parentSlot = fd.findOrAddFrameSlot(name)
-              closureCaptures += put(closureSlot, Code.`var`(parentSlot))
-              envPreamble += put(slot, Code.`var`(closureSlot))
+              closureCaptures += parentSlot
+              envPreamble += Pair(slot, closureSlot)
             } else {
               argPreamble += Pair(slot, if (captures) ix+1 else ix)
             }

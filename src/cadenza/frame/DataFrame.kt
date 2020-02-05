@@ -6,7 +6,7 @@ typealias Slot = Int
 
 // these are all the distinctions the JVM cares about
 // TODO: add rest of prim fields
-abstract class DataFrame {
+interface DataFrame {
   abstract fun getValue(slot: Slot): Any?
 
   @Throws(FrameSlotTypeException::class)

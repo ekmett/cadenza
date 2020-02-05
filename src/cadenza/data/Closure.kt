@@ -1,5 +1,6 @@
 package cadenza.data
 
+import cadenza.frame.DataFrame
 import cadenza.jit.CallUtils
 import cadenza.jit.ClosureRootNode
 import cadenza.semantics.Type
@@ -23,7 +24,7 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 @CompilerDirectives.ValueType
 @ExportLibrary(InteropLibrary::class)
 class Closure (
-  @JvmField val env: MaterializedFrame? = null,
+  @JvmField val env: DataFrame? = null,
   @JvmField @CompilerDirectives.CompilationFinal(dimensions = 1) val papArgs: Array<Any?>,
   @JvmField val arity: Int,
   private val targetType: Type,
