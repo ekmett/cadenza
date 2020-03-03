@@ -3,8 +3,10 @@ package cadenza.jit
 import cadenza.data.*
 import cadenza.frame.DataFrame
 import com.oracle.truffle.api.CallTarget
+import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.dsl.Cached
+import com.oracle.truffle.api.dsl.Fallback
 import com.oracle.truffle.api.dsl.ReportPolymorphism
 import com.oracle.truffle.api.dsl.Specialization
 import com.oracle.truffle.api.frame.MaterializedFrame
@@ -34,6 +36,28 @@ abstract class DispatchCallTarget : Node() {
   }
 }
 
+
+abstract class Whnf() : Node() {
+  abstract fun execute(x: Any?): Any?
+
+  abstract fun executeClosure(x: Any?): Closure
+
+  @Specialization
+  fun whnfIndirection(x: Indirection, @Cached("create()") whnf: Whnf): Any? {
+    // this lets Indirection's fields be CompilationFinal
+    if (!x.set) {
+      CompilerDirectives.transferToInterpreterAndInvalidate()
+      if (!x.set) throw Exception("whnf unset indirection")
+    }
+    val r = whnf.execute(x.value)
+    // TODO: is this worth it? maybe only do it in interpreter?
+    if (r !== x.value) x.value = r
+    return r
+  }
+
+  @Fallback
+  fun whnfId(x: Any?) = x
+}
 
 // TODO: dispatch on closure equality for static (no env or pap) closures?
 // (would need to statically allocate them)

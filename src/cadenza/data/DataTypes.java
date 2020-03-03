@@ -1,5 +1,6 @@
 package cadenza.data;
 
+import cadenza.jit.Indirection;
 import com.oracle.truffle.api.CompilerDirectives;
 import com.oracle.truffle.api.dsl.ImplicitCast;
 import com.oracle.truffle.api.dsl.TypeCast;
@@ -13,6 +14,7 @@ import kotlin.Unit;
   boolean.class,
   int.class,
   BigInt.class,
+  Indirection.class,
   NeutralValue.class,
   Unit.class
 })

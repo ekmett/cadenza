@@ -70,6 +70,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     tail_call: Boolean = false
   ) : Code(loc) {
     @Child private var dispatch: Dispatch = DispatchNodeGen.create(rands.size, tail_call)
+    @Child private var whnf: Whnf = WhnfNodeGen.create()
 
     @ExplodeLoop
     private fun executeRands(frame: VirtualFrame): Array<Any?> = rands.map { it.executeAny(frame) }.toTypedArray()
@@ -82,7 +83,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     @Throws(NeutralException::class)
     override fun execute(frame: VirtualFrame): Any? {
       val fn = try {
-        rator.executeClosure(frame)
+        whnf.executeClosure(rator.execute(frame))
       } catch (e: UnexpectedResultException) {
         panic("closure expected, got ${e.result}", e)
       } catch (e: NeutralException) {
@@ -207,7 +208,6 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
 
   // a fully saturated call to a builtin
 // invariant: builtins themselves do not return neutral values, other than through evaluating their argument
-  @Suppress("unused")
   class CallBuiltin(
     // type of whole application
     val type: Type,
@@ -215,13 +215,15 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     @field:Children internal var args: Array<Code>,
     loc: Loc? = null
   ) : Code(loc) {
+    @Child private var whnfs: Array<Whnf> = Array(args.size) { WhnfNodeGen.create() }
+
     @ExplodeLoop
     private fun executeArgs(frame: VirtualFrame): Pair<Array<Any?>,Boolean> {
       var neutral = false
       val vals: Array<Any?> = arrayOfNulls(args.size)
       args.forEachIndexed { ix, x ->
         vals[ix] = try {
-          x.execute(frame)
+          whnfs[ix].execute(x.execute(frame))
         } catch (n: NeutralException) {
           neutral = true
           n.get()
@@ -287,26 +289,15 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     @field:Child var body: Code,
     loc: Loc?
   ): Code(loc) {
-    @CompilerDirectives.CompilationFinal var readTarget: RootCallTarget? = null
-
     override fun execute(frame: VirtualFrame): Any? {
-      if (readTarget === null) {
-        CompilerDirectives.transferToInterpreterAndInvalidate()
-        val language = lookupLanguageReference(Language::class.java).get()
-        readTarget = Truffle.getRuntime().createCallTarget(ReadIndirectionRootNode(language))
-      }
-
       val indir = Indirection()
-      val clos = Closure(null, arrayOf(indir), 0, Type.Arr(Type.Obj,type), readTarget!!)
-      // need to set it here in case a lambda in value captures it
-      frame.setObject(slot, clos)
+      // need to set it here in case a lambda in value captures it (let rec)
+      frame.setObject(slot, indir)
       val x = value.executeAny(frame)
-      // ... but if not, we can avoid the indirection
-      // and need to set it here anyways in case value shadows us with a let
-//      frame.setObject(slot, x)
-      frame.setObject(slot, clos)
-      indir.value = x
-      indir.set = true
+      indir.set(x)
+      // need to set it here again in case value shadows us with a let binding the same variable
+      // setting slot to x here confuses escape analysis, so we set it to indir and rely on escape analysis
+      frame.setObject(slot, indir)
       return body.execute(frame)
     }
   }

@@ -86,7 +86,7 @@ open class ClosureBody constructor(
   override fun getSourceSection(): SourceSection? = parent.sourceSection
 }
 
-// todo: should this get removed & always inline?
+// todo: should this get removed & always inline? yep
 // might still be good to use this, since we could use this e.g. at gc time to do selector forwarding
 // todo: this doesn't work if one of the args is a neutral
 open class BuiltinRootNode(
@@ -177,29 +177,15 @@ open class ClosureRootNode(
 }
 
 @CompilerDirectives.ValueType
-class Indirection {
-  var set: Boolean = false
-  var value: Any? = null
-}
-
-// used for let rec
-open class ReadIndirectionRootNode(
-  val language: Language
-): CadenzaRootNode(language, FrameDescriptor()) {
-//  override val mask: Long = 0L
-
-  override fun execute(frame: VirtualFrame): Any? {
-    val indir = frame.arguments[1] as Indirection
-    if (CompilerDirectives.isPartialEvaluationConstant(indir) && CompilerDirectives.inCompiledCode()) {
-
-    }
-
-    if (!indir.set) {
-      CompilerDirectives.transferToInterpreter()
-      throw Exception("let rec loop (demanded variable while evaluating it)")
-    }
-    return indir.value
+class Indirection (
+  // TODO: should these be CompilationFinal?
+  @CompilerDirectives.CompilationFinal var set: Boolean = false,
+  @CompilerDirectives.CompilationFinal var value: Any? = null
+) {
+  fun set(value_: Any?) {
+    if (set) throw Exception("indirection set twice")
+    set = true
+    value = value_
   }
 }
-
 
