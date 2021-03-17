@@ -102,7 +102,7 @@ open class BuiltinRootNode(
   override fun getName() = "builtin"
 }
 
-@GenerateWrapper
+// TODO: instrumentable body prelude node w/ RootTag?
 @TypeSystemReference(DataTypes::class)
 open class ClosureRootNode(
   private val language: Language,
@@ -114,7 +114,7 @@ open class ClosureRootNode(
   @field:Child var body: ClosureBody,
   val source: Source,
   val loc: Loc? = null
-) : CadenzaRootNode(language, frameDescriptor), InstrumentableNode {
+) : CadenzaRootNode(language, frameDescriptor) {
 
   constructor(
     other: ClosureRootNode
@@ -129,7 +129,7 @@ open class ClosureRootNode(
     other.loc
   )
 
-  val bloomFilterSlot: FrameSlot = frameDescriptor.addFrameSlot("<TCO Bloom Filter>")
+  val bloomFilterSlot: FrameSlot = frameDescriptor.findOrAddFrameSlot("<TCO Bloom Filter>")
   @field:Child var selfTailCallLoopNode = SelfTailCallLoop(body, this)
   private val tailCallProfile: BranchProfile = BranchProfile.create()
 
@@ -167,8 +167,7 @@ open class ClosureRootNode(
       selfTailCallLoopNode.execute(local)
     }
   }
-  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java
-  override fun createWrapper(probeNode: ProbeNode): InstrumentableNode.WrapperNode = ClosureRootNodeWrapper(this, this, probeNode)
+
   override fun getSourceSection(): SourceSection? = loc?.let { source.section(it) }
   override fun isInstrumentable() = loc !== null
   override fun getName() = "closure"

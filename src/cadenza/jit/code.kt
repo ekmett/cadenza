@@ -18,7 +18,9 @@ import com.oracle.truffle.api.dsl.Specialization
 import com.oracle.truffle.api.dsl.TypeSystemReference
 import com.oracle.truffle.api.frame.*
 import com.oracle.truffle.api.instrumentation.*
+import com.oracle.truffle.api.interop.NodeLibrary
 import com.oracle.truffle.api.interop.UnsupportedMessageException
+import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.profiles.ConditionProfile
 import com.oracle.truffle.api.source.SourceSection

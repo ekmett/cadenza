@@ -243,9 +243,10 @@ fun createOptimizedLoopNode(repeatingNode: RepeatingNode, readFrameSlots: Array<
 //    return loopNode
 //  }
   val m = createOSRLoop
-  return if (m == null) {
-    loopNode
-  } else {
-    m.invoke(null, repeatingNode, 3, 100_000, readFrameSlots, writtenFrameSlots) as LoopNode
+  if (m != null) {
+    try {
+      return m.invoke(null, repeatingNode, 3, 100_000, readFrameSlots, writtenFrameSlots) as LoopNode
+    } catch (e: Exception) {}
   }
+  return loopNode
 }

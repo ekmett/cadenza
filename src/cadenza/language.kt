@@ -1,7 +1,10 @@
 package cadenza
 
 import cadenza.data.Closure
-import cadenza.jit.*
+import cadenza.jit.Code
+import cadenza.jit.InlineCode
+import cadenza.jit.ProgramRootNode
+import cadenza.jit.initialCtx
 import cadenza.semantics.CompileInfo
 import cadenza.semantics.Term
 import cadenza.semantics.Type
@@ -10,7 +13,6 @@ import cadenza.semantics.Type.Nat
 import cadenza.syntax.*
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
-import com.oracle.truffle.api.TruffleLanguage.getCurrentLanguage
 import com.oracle.truffle.api.debug.DebuggerTags
 import com.oracle.truffle.api.frame.FrameDescriptor
 import com.oracle.truffle.api.instrumentation.ProvidedTags
@@ -19,11 +21,10 @@ import com.oracle.truffle.api.interop.InteropLibrary
 import com.oracle.truffle.api.interop.TruffleObject
 import com.oracle.truffle.api.interop.UnsupportedMessageException
 import com.oracle.truffle.api.nodes.NodeInfo
+import com.oracle.truffle.api.source.Source
 import com.oracle.truffle.api.source.SourceSection
 import org.graalvm.options.OptionDescriptors
 import org.graalvm.options.OptionValues
-import com.oracle.truffle.api.source.Source
-import org.graalvm.compiler.truffle.runtime.OptimizedCallTarget
 import java.io.IOException
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -145,6 +146,7 @@ class Language : TruffleLanguage<Language.Context>() {
     return true
   }
 
+
   // stubbed: for now inline parsing requests just return 'const'
   override fun parse(request: InlineParsingRequest?): InlineCode {
     val body = k(Nat, Nat)
@@ -175,12 +177,7 @@ class Language : TruffleLanguage<Language.Context>() {
     }
   }
 
-  @Suppress("unused")
-  fun findExportedSymbol(
-    @Suppress("UNUSED_PARAMETER") context: org.graalvm.polyglot.Context,
-    globalName: String,
-    @Suppress("UNUSED_PARAMETER") onlyExplicit: Boolean
-  ): Any? =
+  override fun findExportedSymbol(context: Context?, globalName: String?, onlyExplicit: Boolean): Any? =
     when (globalName) {
       "S" -> s(Arr(Nat, Arr(Nat, Nat)), Arr(Nat, Nat), Nat)
       "K" -> k(Nat, Nat)
@@ -205,3 +202,4 @@ class Language : TruffleLanguage<Language.Context>() {
 
   }
 }
+

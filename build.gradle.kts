@@ -15,7 +15,7 @@ buildscript {
     maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
   }
   dependencies {
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.61")
+    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30")
     classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
   }
 }
@@ -41,7 +41,7 @@ plugins {
 
 val compiler: Configuration by configurations.creating
 
-val graalVersion = "19.3.0"
+val graalVersion = "21.0.0"
 
 dependencies {
   implementation(kotlin("stdlib"))
@@ -57,7 +57,7 @@ dependencies {
   "kapt"("org.graalvm.truffle:truffle-api:$graalVersion")
   "kapt"("org.graalvm.truffle:truffle-dsl-processor:$graalVersion")
   testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
-  implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.3.61")
+  implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.4.30")
 }
 
 java {
@@ -150,13 +150,13 @@ val graalArgs = listOf(
   "-Dgraal.Dump=Truffle",
   "-Dgraal.PrintGraph=Network",
   "-Dgraal.CompilationFailureAction=ExitVM",
-  "-Dgraal.TraceTruffleCompilation=true",
+//  "-Dgraal.TraceTruffleCompilation=true",
 //  "-Dgraal.TraceTruffleSplitting=true",
 //  "-Dgraal.TruffleTraceSplittingSummary=true",
-  "-Dgraal.TraceTruffleAssumptions=true",
-  "-Dgraal.TraceTruffleTransferToInterpreter=true",
+//  "-Dgraal.TraceTruffleAssumptions=true",
+//  "-Dgraal.TraceTruffleTransferToInterpreter=true",
   // limit size of graphs for easier visualization
-  "-Dgraal.TruffleMaximumRecursiveInlining=0",
+//  "-Dgraal.TruffleMaximumRecursiveInlining=0",
 //  "-Dgraal.LoopPeeling=false",
   "-Xss32m"
 )
@@ -355,4 +355,9 @@ if (graalHome != null) {
       "cadenza"
     )
   }
+}
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+  freeCompilerArgs = listOf("-Xinline-classes")
 }
