@@ -1,4 +1,3 @@
-import java.net.URL
 import java.util.Properties
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.jetbrains.dokka.gradle.DokkaTask
@@ -9,13 +8,13 @@ import org.gradle.api.internal.HasConvention
 group = project.properties["group"].toString()
 version = project.properties["version"].toString()
 
+
 buildscript {
   repositories {
     mavenCentral()
     maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
   }
   dependencies {
-    classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30")
     classpath("org.jetbrains.dokka:dokka-gradle-plugin:0.10.0")
   }
 }
@@ -27,16 +26,14 @@ repositories {
   maven { url = uri("http://palantir.bintray.com/releases") }
 }
 
-
-apply(plugin = "kotlin")
-apply(plugin = "kotlin-kapt")
-
 plugins {
   application
   `build-scan`
   idea
   id("org.jetbrains.dokka") version "0.9.17"
   id("org.ajoberstar.git-publish") version "2.1.1"
+  kotlin("jvm") version "1.4.30"
+  kotlin("kapt") version "1.4.30"
 }
 
 val compiler: Configuration by configurations.creating
@@ -58,6 +55,7 @@ dependencies {
   "kapt"("org.graalvm.truffle:truffle-dsl-processor:$graalVersion")
   testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
   implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.4.30")
+  implementation("org.jetbrains.kotlin:kotlin-reflect:1.4.30")
 }
 
 java {
@@ -355,9 +353,4 @@ if (graalHome != null) {
       "cadenza"
     )
   }
-}
-
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-  freeCompilerArgs = listOf("-Xinline-classes")
 }

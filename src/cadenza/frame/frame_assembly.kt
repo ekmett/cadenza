@@ -235,7 +235,7 @@ abstract class BuildFrame : Node() {
     val arrayClass = arrayOf<Any>().javaClass
     val ctor = klass.getConstructor(arrayClass)
     val ctorH = lookup.unreflectConstructor(ctor)
-    return ctorH.asType(ctorH.type().changeReturnType(Object::class.java))
+    return ctorH.asType(ctorH.type().changeReturnType(DataFrame::class.java))
   }
 
   @ExplodeLoop
