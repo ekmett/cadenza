@@ -9,15 +9,6 @@ import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 import java.math.BigInteger
 
-private const val LONG_MAX_SAFE_DOUBLE = 9007199254740991L // 2 ** 53 - 1
-private const val INT_MAX_SAFE_FLOAT = 16777215 // 2 ** 24 - 1
-
-private fun inSafeDoubleRange(l: Long): Boolean =
-  l >= -LONG_MAX_SAFE_DOUBLE && l <= LONG_MAX_SAFE_DOUBLE
-
-private fun inSafeFloatRange(i: Int): Boolean =
-  i >= -INT_MAX_SAFE_FLOAT && i <= INT_MAX_SAFE_FLOAT
-
 @ValueType
 @ExportLibrary(InteropLibrary::class)
 class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
@@ -64,11 +55,20 @@ class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
 
   @ExportMessage
   @TruffleBoundary
-  fun fitsInFloat() = fitsInInt() && inSafeFloatRange(value.toInt())
+  fun fitsInFloat() = fitsInBinaryFloat(24, java.lang.Float.MAX_EXPONENT)
 
   @ExportMessage
   @TruffleBoundary
-  fun fitsInDouble() = fitsInLong() && inSafeDoubleRange(value.toLong())
+  fun fitsInDouble() = fitsInBinaryFloat(53, java.lang.Double.MAX_EXPONENT)
+
+  private fun fitsInBinaryFloat(precision: Int, maxExponent: Int): Boolean {
+    val magnitude = value.abs()
+    val bits = magnitude.bitLength()
+    // Trailing zeroes consume exponent range, not significand precision. Check
+    // the magnitude because BigInteger.bitLength uses two's complement for negatives.
+    return bits <= maxExponent + 1 &&
+      (bits == 0 || bits - magnitude.lowestSetBit <= precision)
+  }
 
   @ExportMessage
   @TruffleBoundary

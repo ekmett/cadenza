@@ -118,10 +118,9 @@ class Language : TruffleLanguage<Language.Context>() {
   }
 
   fun parse(source: Source): CallTarget {
-    val result = source.parse { grammar }
+    val result = source.parse { program }
     when (result) {
       is Failure -> {
-        print(result)
         throw SyntaxError(result)
       }
       is Success -> {

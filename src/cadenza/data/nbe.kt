@@ -6,6 +6,8 @@ import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.interop.ArityException
 import com.oracle.truffle.api.interop.InteropLibrary
 import com.oracle.truffle.api.interop.TruffleObject
+import com.oracle.truffle.api.interop.UnsupportedMessageException
+import com.oracle.truffle.api.interop.UnsupportedTypeException
 import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 
@@ -38,16 +40,21 @@ sealed class Neutral {
 @ExportLibrary(InteropLibrary::class)
 class NeutralValue(val type: Type, val term : Neutral) : TruffleObject {
   @ExportMessage
-  fun isExecutable(): Boolean = true
+  fun isExecutable(): Boolean = type is Type.Arr
 
   @ExportMessage
-  @Throws(ArityException::class)
-  fun execute(vararg arguments: Any?) = NeutralValue(
-    arguments.indices.fold(type) { resultType, i ->
-      (resultType as Type.Arr? ?: throw ArityException.create(0, i, arguments.size)).result
-    },
-    term.apply(arguments)
-  )
+  @Throws(ArityException::class, UnsupportedMessageException::class, UnsupportedTypeException::class)
+  fun execute(vararg arguments: Any?): NeutralValue {
+    if (!isExecutable()) throw UnsupportedMessageException.create()
+    if (arguments.size > type.arity) throw ArityException.create(0, type.arity, arguments.size)
+    var resultType = type
+    for (argument in arguments) {
+      val functionType = resultType as Type.Arr
+      functionType.argument.validate(argument)
+      resultType = functionType.result
+    }
+    return NeutralValue(resultType, term.apply(arguments))
+  }
 
   // assumes this has been built legally. fails via unchecked null pointer exception
   @Suppress("unused")

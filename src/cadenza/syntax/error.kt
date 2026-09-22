@@ -7,7 +7,7 @@ import com.oracle.truffle.api.library.ExportLibrary
 import com.oracle.truffle.api.library.ExportMessage
 
 @ExportLibrary(InteropLibrary::class)
-class SyntaxError(val failure: Failure) : AbstractTruffleException(failure.message) {
+class SyntaxError(val failure: Failure) : AbstractTruffleException(failure.diagnostic) {
   override fun toString(): String = failure.toString()
   @ExportMessage fun getExceptionType(): ExceptionType = ExceptionType.PARSE_ERROR
   @ExportMessage fun hasSourceLocation(): Boolean = true

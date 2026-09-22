@@ -62,6 +62,10 @@ class BytecodeCompiler(private val language: Language, private val source: Sourc
         val value = term.it
         Expression { it.builder.emitLoadConstant(value) }
       }
+      is Term.TLitBigNat -> {
+        val value = term.it
+        Expression { it.builder.emitLoadConstant(value) }
+      }
       is Term.TVar -> scope[term.name]?.let { read(it) } ?: run {
         val builtin = ctx.lookup(term.name).builtin!!.invoke()
         val target = BuiltinRootNode(language, builtin).callTarget
@@ -153,6 +157,7 @@ class BytecodeCompiler(private val language: Language, private val source: Sourc
     }
     val loc = when (term) {
       is Term.TLitNat -> term.loc
+      is Term.TLitBigNat -> term.loc
       is Term.TVar -> term.loc
       is Term.TIf -> term.loc
       is Term.TApp -> term.loc

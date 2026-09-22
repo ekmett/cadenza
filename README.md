@@ -26,7 +26,12 @@ export PATH="$JAVA_HOME/bin:$PATH"
 ```
 
 `./gradlew run` defaults to `examples/add.za`, which counts to 20,000,000.
-The launcher prints `Result: ...`. The language is still a prototype: use the
+The launcher prints `Result: ...` for integers, Booleans, and functions. Integer
+literals can be arbitrarily large; returned functions display as `<function/N>`
+without being invoked. Diagnostics go to stderr and failures return a nonzero
+exit status. Use `--` before a filename that begins with a dash.
+
+The language is still a prototype: use the
 explicitly typed syntax in `add.za`, `fib.za`, and `collatz.za`; `fibRec.za`
 contains an older, untyped syntax that the current parser does not accept.
 

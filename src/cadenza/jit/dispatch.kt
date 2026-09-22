@@ -84,6 +84,7 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
     if (hasEnv) { args[1] = fn.env }
     val y = callerNode.call(frame, args, false)
     val zs = ys.copyOfRange(arity, argsSize)
+    if (y is NeutralValue) return y.apply(zs)
     return dispatch.executeDispatch(frame, y as Closure, zs)
   }
 
@@ -143,8 +144,10 @@ abstract class GenericDispatch : Node() {
         if (exact.profile(node, count == remaining)) {
           return caller.call(frame, function.callTarget, args, tail)
         }
-        function = caller.call(frame, function.callTarget, args, false) as Closure
+        val result = caller.call(frame, function.callTarget, args, false)
         offset += count
+        if (result is NeutralValue) return result.apply(arguments.copyOfRange(offset, arguments.size))
+        function = result as Closure
       }
     }
   }

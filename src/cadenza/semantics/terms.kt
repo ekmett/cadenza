@@ -1,6 +1,7 @@
 package cadenza.semantics
 
 import cadenza.*
+import cadenza.data.BigInt
 import cadenza.jit.*
 import cadenza.jit.Code.Companion.lam
 import cadenza.frame.CaptureLayout
@@ -187,6 +188,16 @@ sealed class Term {
         override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
           return Code.LitInt(it, loc)
         }
+      }
+    }
+  }
+
+  class TLitBigNat(val it: BigInt, val loc: Loc? = null): Term() {
+    override fun fvs(): Set<String> = emptySet()
+    override fun infer(ctx: Ctx): Witness {
+      Type.Nat.validate(it)
+      return object : Witness(Type.Nat) {
+        override fun compile(ci: CompileInfo, fd: FrameLayout): Code = Code.LitBigInt(it, loc)
       }
     }
   }

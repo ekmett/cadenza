@@ -28,3 +28,52 @@ with 93 tests. New regressions cover mixed capture fields and contexts, retained
 recursive self identity, saturated fixpoint caches, alternating tail calls,
 lexical shadowing, recursive initialization errors, declared-type checking, and
 context-local output. This batch changes no source-level numeric semantics.
+
+## Longer Fibonacci validation
+
+A follow-up on runtime `3d9ee9a` used five forks, ten one-second warmups and five
+one-second measurements per fork. It stabilized at **14.529 ± 0.218 µs/op** and
+**62,145 bytes/op** (25 measurement samples). That is about 4.49× faster than the
+original 65.205 µs baseline, with 91.7% less allocation. The longer warmup also
+reduced allocation from the first follow-up; the original comparison and its
+settings remain above rather than silently replacing those samples. Raw data
+is recorded under `fib-stability` in the accompanying JSON.
+
+## Noncapturing closure reuse
+
+The next follow-up caches an immutable closure on each noncapturing lambda node.
+`NoncapturingClosure.select` alternates between two returned functions using a
+runtime argument, so the returned value varies and escapes. With the standard
+two-fork settings, allocation fell from **72 to 40 bytes/op** against `3d9ee9a`
+using the same new harness. The remaining allocation includes the benchmark's
+boxed input and call argument array. Capturing lambdas still allocate their own
+environment and closure.
+
+The new version measured **6.19 ± 0.08 ns/op**. Baseline timing was unstable
+(23.46 ± 35.30 ns/op), so this run establishes the 32-byte allocation reduction
+without supporting a precise throughput speedup. Both raw runs are included as
+`noncapturing-before` and `noncapturing-after` in the accompanying JSON.
+
+## Correctness follow-up checks
+
+The second batch passes 275 tests and a clean distribution build. It fixes parser
+boundaries and diagnostics, large literals, complete integer arithmetic and
+overflow handling, launcher result rendering, exact floating-point interop, and
+neutral propagation through overapplication, conditionals, and builtin results.
+The exceptional neutral protocol is preserved.
+
+With ten one-second warmups and five measurements in each of two forks, the
+modular accumulator measured 3.108 ± 0.251 µs/op at 56 bytes/op. The fixed-point
+counter measured 22.248 ± 2.149 µs/op at 110,961 bytes/op. An immediate control
+run of the previous commit `3d9ee9a` with the identical harness and settings was
+also slower than the earlier session: 21.703 ± 3.620 µs/op at approximately
+110,962 bytes/op. These overlapping intervals do not isolate a counter slowdown
+caused by this batch; the session's timing shift limits comparisons with earlier
+runs. Allocation remains unchanged. Raw runs are `batch2-loops` and
+`batch2-add-control`.
+
+Fibonacci shows the same session shift in a matched check: **28.822 ± 1.150 µs**
+for the new batch versus **29.099 ± 2.100 µs** for `3d9ee9a`, both approximately
+64,406 bytes/op. These results likewise show no resolved timing difference
+between the two revisions under current conditions. The runs appear as
+`batch2-fib` and `batch2-fib-control`.

@@ -35,8 +35,10 @@ The prototype targets **closed terms with concrete runtime values**. Normalizati
 and neutral values remains an AST feature; its `SlowPathException` mechanism is unchanged. Bytecode
 debugger/instrumentation tags are not implemented yet. Captured values currently travel in the
 closure's partial-argument array; the AST backend uses the Static Object Model capture layout.
-Arithmetic follows the existing builtin behavior, including promotion of addition/subtraction to
-`BigInt` on integer overflow. It does not broaden the numeric semantics of other builtins.
+Arithmetic follows the AST builtins: integer literals have arbitrary precision, and addition,
+subtraction, multiplication, division, remainder, and comparisons support `BigInt`. Overflow
+promotes to `BigInt`; division and remainder by zero produce guest errors. Subtraction retains
+its existing signed result behavior despite the source type being named `Nat`.
 
 `BytecodeTests` compares both backends on arithmetic, conditionals, captured closures, partial and
 overapplication, builtin fixpoints, and long tail recursion. It also exercises the Polyglot boundary,

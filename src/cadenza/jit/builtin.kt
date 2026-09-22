@@ -1,6 +1,7 @@
 package cadenza.jit
 
 import cadenza.Language
+import cadenza.RuntimeError
 import cadenza.data.*
 import cadenza.semantics.ConsEnv
 import cadenza.semantics.Ctx
@@ -20,13 +21,13 @@ abstract class Builtin(@Suppress("unused") open val type: Type, val arity: Int) 
   @Throws(NeutralException::class)
   abstract fun run(frame: VirtualFrame, args: Array<Any?>): Any?
   @Throws(NeutralException::class)
-  open fun runUnit(frame: VirtualFrame, args: Array<Any?>) { run(frame, args) }
+  open fun runUnit(frame: VirtualFrame, args: Array<Any?>) { throwIfNeutralValue(run(frame, args)) }
   @Throws(NeutralException::class)
-  open fun runClosure(frame: VirtualFrame, args: Array<Any?>): Closure = DataTypesGen.expectClosure(run(frame, args))
+  open fun runClosure(frame: VirtualFrame, args: Array<Any?>): Closure = DataTypesGen.expectClosure(throwIfNeutralValue(run(frame, args)))
   @Throws(NeutralException::class)
-  open fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean = DataTypesGen.expectBoolean(run(frame, args))
+  open fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean = DataTypesGen.expectBoolean(throwIfNeutralValue(run(frame, args)))
   @Throws(NeutralException::class)
-  open fun runInteger(frame: VirtualFrame, args: Array<Any?>): Int = DataTypesGen.expectInteger(run(frame, args))
+  open fun runInteger(frame: VirtualFrame, args: Array<Any?>): Int = DataTypesGen.expectInteger(throwIfNeutralValue(run(frame, args)))
 }
 
 
@@ -34,16 +35,16 @@ abstract class Builtin2(type: Type) : Builtin(type, 2) {
   @Throws(NeutralException::class)
   abstract fun execute(left: Any?, right: Any?): Any?
   @Throws(NeutralException::class)
-  open fun executeBoolean(left: Any?, right: Any?): Boolean = DataTypesGen.expectBoolean(execute(left, right))
+  open fun executeBoolean(left: Any?, right: Any?): Boolean = DataTypesGen.expectBoolean(throwIfNeutralValue(execute(left, right)))
   @Throws(NeutralException::class)
-  open fun executeClosure(left: Any?, right: Any?): Closure = DataTypesGen.expectClosure(execute(left, right))
+  open fun executeClosure(left: Any?, right: Any?): Closure = DataTypesGen.expectClosure(throwIfNeutralValue(execute(left, right)))
   @Throws(NeutralException::class)
-  open fun executeInteger(left: Any?, right: Any?): Int = DataTypesGen.expectInteger(execute(left, right))
+  open fun executeInteger(left: Any?, right: Any?): Int = DataTypesGen.expectInteger(throwIfNeutralValue(execute(left, right)))
 
   @Throws(NeutralException::class)
   override fun run(frame: VirtualFrame, args: Array<Any?>): Any? { return execute(args[0], args[1]) }
   @Throws(NeutralException::class)
-  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { execute(args[0], args[1]) }
+  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { throwIfNeutralValue(execute(args[0], args[1])) }
   @Throws(NeutralException::class)
   override fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean { return executeBoolean(args[0], args[1]) }
   @Throws(NeutralException::class)
@@ -56,16 +57,16 @@ abstract class Builtin1(type: Type) : Builtin(type, 1) {
   @Throws(NeutralException::class)
   abstract fun execute(x: Any?): Any?
   @Throws(NeutralException::class)
-  open fun executeBoolean(x: Any?): Boolean = DataTypesGen.expectBoolean(execute(x))
+  open fun executeBoolean(x: Any?): Boolean = DataTypesGen.expectBoolean(throwIfNeutralValue(execute(x)))
   @Throws(NeutralException::class)
-  open fun executeClosure(x: Any?): Closure = DataTypesGen.expectClosure(execute(x))
+  open fun executeClosure(x: Any?): Closure = DataTypesGen.expectClosure(throwIfNeutralValue(execute(x)))
   @Throws(NeutralException::class)
-  open fun executeInteger(x: Any?): Int = DataTypesGen.expectInteger(execute(x))
+  open fun executeInteger(x: Any?): Int = DataTypesGen.expectInteger(throwIfNeutralValue(execute(x)))
 
   @Throws(NeutralException::class)
   override fun run(frame: VirtualFrame, args: Array<Any?>): Any? { return execute(args[0]) }
   @Throws(NeutralException::class)
-  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { execute(args[0]) }
+  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { throwIfNeutralValue(execute(args[0])) }
   @Throws(NeutralException::class)
   override fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean { return executeBoolean(args[0]) }
   @Throws(NeutralException::class)
@@ -77,11 +78,17 @@ abstract class Builtin1(type: Type) : Builtin(type, 1) {
 abstract class Le : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Bool))) {
   @Specialization
   internal fun leInt(left: Int, right: Int): Boolean = left <= right
+  @Specialization
+  @CompilerDirectives.TruffleBoundary
+  internal fun leBigInt(left: BigInt, right: BigInt): Boolean = left.value <= right.value
 }
 
 abstract class Eq : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Bool))) {
   @Specialization
   internal fun eqInt(left: Int, right: Int): Boolean = left == right
+  @Specialization
+  @CompilerDirectives.TruffleBoundary
+  internal fun eqBigInt(left: BigInt, right: BigInt): Boolean = left.value == right.value
 }
 
 
@@ -89,22 +96,45 @@ abstract class Plus : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat))) 
   @Specialization(rewriteOn = [ArithmeticException::class])
   internal fun addInt(left: Int, right: Int): Int = Math.addExact(left, right)
   @Specialization
+  @CompilerDirectives.TruffleBoundary
   internal fun addBigInt(left: BigInt, right: BigInt): BigInt = BigInt(left.value.add(right.value))
 }
 
 abstract class Mod : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat))) {
   @Specialization
-  internal fun modInt(x: Int, y: Int): Int = x.rem(y)
+  internal fun modInt(x: Int, y: Int): Int {
+    if (y == 0) throw RuntimeError("modulo by zero")
+    return x.rem(y)
+  }
+  @Specialization
+  @CompilerDirectives.TruffleBoundary
+  internal fun modBigInt(x: BigInt, y: BigInt): BigInt {
+    if (y.value.signum() == 0) throw RuntimeError("modulo by zero")
+    // Match Int.rem, including the sign of negative intermediate values.
+    return BigInt(x.value.remainder(y.value))
+  }
 }
 
 abstract class Div : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat))) {
+  @Specialization(rewriteOn = [ArithmeticException::class])
+  internal fun divInt(x: Int, y: Int): Int {
+    if (y == 0) throw RuntimeError("division by zero")
+    return Math.divideExact(x, y)
+  }
   @Specialization
-  internal fun divInt(x: Int, y: Int): Int = x.div(y)
+  @CompilerDirectives.TruffleBoundary
+  internal fun divBigInt(x: BigInt, y: BigInt): BigInt {
+    if (y.value.signum() == 0) throw RuntimeError("division by zero")
+    return BigInt(x.value.divide(y.value))
+  }
 }
 
 abstract class Mult : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat))) {
+  @Specialization(rewriteOn = [ArithmeticException::class])
+  internal fun multInt(x: Int, y: Int): Int = Math.multiplyExact(x, y)
   @Specialization
-  internal fun multInt(x: Int, y: Int): Int = x * y
+  @CompilerDirectives.TruffleBoundary
+  internal fun multBigInt(x: BigInt, y: BigInt): BigInt = BigInt(x.value.multiply(y.value))
 }
 
 
@@ -116,6 +146,7 @@ abstract class Minus : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat)))
   }
 
   @Specialization
+  @CompilerDirectives.TruffleBoundary
   internal fun subBigInt(left: BigInt, right: BigInt): BigInt {
     return BigInt(left.value.subtract(right.value))
   }

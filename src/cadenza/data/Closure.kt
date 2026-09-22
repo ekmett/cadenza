@@ -61,6 +61,10 @@ class Closure (
   @ExportMessage
   fun isExecutable() = true
 
+  @ExportMessage
+  @CompilerDirectives.TruffleBoundary
+  fun toDisplayString(@Suppress("UNUSED_PARAMETER") allowSideEffects: Boolean): String = "<function/$arity>"
+
   // allow the use of our closures from other polyglot languages
   @ExportMessage
   @ExplodeLoop
@@ -149,4 +153,3 @@ inline fun<S, reified T> map(xs: Array<out S>, f: (x: S) -> T): Array<T> {
   xs.forEachIndexed { ix, x -> ys[ix] = f(x) }
   return ys as Array<T>
 }
-

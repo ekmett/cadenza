@@ -93,6 +93,7 @@ fun elab(ctx: List<Pair<String,NameInfo>>, tm: Term): Expr = when (tm) {
     lam(tm.names.size, elab(ctx2, tm.body))
   }
   is Term.TLitNat -> Const(tm.it)
+  is Term.TLitBigNat -> Const(tm.it)
   is Term.TLet -> TODO()
 }
 
@@ -111,9 +112,8 @@ val initialEnv: Env = initialCtxElab.map {
 }.toTypedArray()
 
 fun parse(source: Source): Expr =
-  when (val result = source.parse { grammar }) {
+  when (val result = source.parse { program }) {
     is Failure -> {
-      print(result)
       throw SyntaxError(result)
     }
     is Success -> {
@@ -144,4 +144,3 @@ fun Expr.subst(s: (x: Int) -> Expr): Expr = when (this) {
   is If -> If(cond.subst(s), then.subst(s), else_.subst(s))
   is Const -> this
 }
-

@@ -138,6 +138,13 @@ open class CapturedClosure : BackendBenchmark() {
   @Benchmark fun allocate(): Any? = target.call(nextInput(base))
 }
 
+/** Runtime selection prevents the entire operation from folding to one constant result. */
+open class NoncapturingClosure : BackendBenchmark() {
+  @Param("100", "1000") @JvmField var base: Int = 0
+  override val text = "\\(selector : Nat) -> if eq (mod selector 2) 0 then (\\(x : Nat) -> plus x 1) else (\\(x : Nat) -> plus x 2)"
+  @Benchmark fun select(): Any? = target.call(nextInput(base))
+}
+
 /** Measure the intentional exceptional neutral path separately from ordinary evaluation. */
 open class NeutralNormalization : GuestBenchmark() {
   override val text = "\\(x : Nat) -> plus x 1"

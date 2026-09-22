@@ -22,9 +22,11 @@ import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.FrameSlotKind
 import com.oracle.truffle.api.frame.FrameSlotTypeException
 import org.graalvm.polyglot.Context
+import org.graalvm.polyglot.Engine
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
+import java.io.ByteArrayOutputStream
 
 class StorageTests {
   @Test fun localSlotsSpecializeAndRetainOlderFrameValuesAfterWidening() {
@@ -133,6 +135,62 @@ class StorageTests {
         for (index in slots.indices) assertEquals(values[index], environment.getValue(index))
       } finally {
         context.leave()
+      }
+    }
+  }
+
+  @Test fun clonedClosureRootAcceptsItsExistingCapturedEnvironment() {
+    Context.create("cadenza").use { context ->
+      context.initialize("cadenza")
+      context.enter()
+      try {
+        val maker = Language.currentLanguage().parse(Source.newBuilder("cadenza",
+          "\\(x : Nat) -> \\(y : Nat) -> plus x y", "clone-captures.za").build()).call() as Closure
+        val closure = maker.callTarget.call(0L, 40) as Closure
+        assertEquals(41, closure.callTarget.call(0L, closure.env, 1))
+        val clone = NodeUtil.cloneNode(closure.callTarget.rootNode)
+        assertTrue(NodeUtil.verify(clone))
+        assertEquals(42, clone.callTarget.call(0L, closure.env, 2))
+        assertEquals(43, closure.callTarget.call(0L, closure.env, 3))
+      } finally {
+        context.leave()
+      }
+    }
+  }
+
+  @Test fun noncapturingClosuresFromSharedCodeUseTheCurrentContext() {
+    Engine.create().use { engine ->
+      val firstOutput = ByteArrayOutputStream()
+      val secondOutput = ByteArrayOutputStream()
+      Context.newBuilder("cadenza").engine(engine).out(firstOutput).build().use { first ->
+        Context.newBuilder("cadenza").engine(engine).out(secondOutput).build().use { second ->
+          first.initialize("cadenza")
+          second.initialize("cadenza")
+          first.enter()
+          val maker = try {
+            Language.currentLanguage().parse(Source.newBuilder("cadenza",
+              "\\(ignored : Nat) -> \\(x : Nat) -> printId x", "shared-constant.za").build()).call() as Closure
+          } finally {
+            first.leave()
+          }
+
+          fun printIn(context: Context, argument: Int) {
+            context.enter()
+            try {
+              // Invoke exactly the same AST in both contexts. The returned closure captures nothing.
+              val print = maker.callTarget.call(0L, argument) as Closure
+              assertNull(print.env)
+              assertEquals(argument, print.callTarget.call(0L, argument))
+            } finally {
+              context.leave()
+            }
+          }
+          printIn(first, 11)
+          printIn(second, 22)
+          printIn(first, 33)
+          assertEquals("11\n33\n", firstOutput.toString(Charsets.UTF_8))
+          assertEquals("22\n", secondOutput.toString(Charsets.UTF_8))
+        }
       }
     }
   }

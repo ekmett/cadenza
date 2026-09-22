@@ -114,6 +114,22 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     loc: Loc? = null
   ) : Code(loc) {
     private val conditionProfile = ConditionProfile.createBinaryProfile()
+    @Child private var neutralTailCallLoop: TailCallLoop? = null
+
+    // These branches are tail positions during ordinary execution, but each is a
+    // separate computation while constructing NIf. Keep its tail calls contained.
+    private fun normalizeBranch(frame: VirtualFrame, branch: Code): Any? =
+      try {
+        branch.executeAny(frame)
+      } catch (call: TailCallException) {
+        if (neutralTailCallLoop == null) {
+          CompilerDirectives.transferToInterpreterAndInvalidate()
+          atomic(Runnable {
+            if (neutralTailCallLoop == null) neutralTailCallLoop = insert(TailCallLoop())
+          })
+        }
+        neutralTailCallLoop!!.execute(call)
+      }
 
     @Throws(NeutralException::class)
     private fun branch(frame: VirtualFrame): Boolean =
@@ -122,7 +138,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       } catch (e: UnexpectedResultException) {
         panic("non-boolean branch", e)
       } catch (e: NeutralException) {
-        neutral(type, Neutral.NIf(e.term, thenNode.executeAny(frame), elseNode.executeAny(frame)))
+        neutral(type, Neutral.NIf(e.term, normalizeBranch(frame, thenNode), normalizeBranch(frame, elseNode)))
       }
 
     @Throws(NeutralException::class)
@@ -149,19 +165,20 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     private val captureLayout: CaptureLayout?,
     @CompilerDirectives.CompilationFinal(dimensions = 1) val captures: Array<Int>,
     private val arity: Int,
-    @field:CompilerDirectives.CompilationFinal
-    internal var callTarget: RootCallTarget,
+    internal val callTarget: RootCallTarget,
     internal val type: Type,
     loc: Loc? = null
   ) : Code(loc) {
     // do we need to capture an environment?
     private inline fun hasEnvironment() = captureLayout != null
 
-    // TODO: statically allocate the Closure when possible (when no env)
-    // split between capturing Lam and not?
-    // might help escape analysis w/ App
-    override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), noPapArguments, arity, type, callTarget)
-    override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), noPapArguments, arity, type, callTarget)
+    // These closures contain only immutable code and type data, independent of a context.
+    private val constantClosure = if (hasEnvironment()) null else
+      Closure(null, noPapArguments, arity, type, callTarget)
+
+    override fun execute(frame: VirtualFrame): Closure = executeClosure(frame)
+    override fun executeClosure(frame: VirtualFrame): Closure = constantClosure ?:
+      Closure(captureEnv(frame), noPapArguments, arity, type, callTarget)
 
     @ExplodeLoop
     private fun captureEnv(frame: VirtualFrame): DataFrame? {
@@ -244,7 +261,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       if (neutral) {
         neutral(type, Neutral.NCallBuiltin(builtin, vals))
       } else {
-        return builtin.run(frame, vals)
+        return throwIfNeutralValue(builtin.run(frame, vals))
       }
     }
 
