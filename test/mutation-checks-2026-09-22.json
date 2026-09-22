@@ -43,5 +43,21 @@
         "message": "org.opentest4j.AssertionFailedError: ast ==> expected: <10\n20\n22\n30\n> but was: <10\n22\n20\n30\n>"
       }
     ]
+  },
+  {
+    "mutation": "backend-source-cache-compatibility",
+    "baseline": "d1cdd30f57c9829f94cde068917e37f97cc3440a with strengthened public SDK cache test",
+    "file": "src/cadenza/language.kt",
+    "old": "a?.get(BytecodeOptions.BACKEND) == b?.get(BytecodeOptions.BACKEND)",
+    "new": "true",
+    "filter": "BytecodeTests.backendSelectionIsIsolatedWithinASharedEngine",
+    "rejectedByAssertion": true,
+    "failures": [
+      {
+        "test": "BytecodeTests.backendSelectionIsIsolatedWithinASharedEngine()",
+        "type": "org.opentest4j.AssertionFailedError",
+        "message": "org.opentest4j.AssertionFailedError: cached source executed the wrong backend in context 1 ==> expected: <true> but was: <false>"
+      }
+    ]
   }
 ]

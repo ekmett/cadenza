@@ -72,20 +72,40 @@ class BytecodeTests {
 
   @Test fun backendSelectionIsIsolatedWithinASharedEngine() {
     Engine.create().use { engine ->
-      for (backend in listOf("ast", "bytecode", "ast", "bytecode")) {
+      val probe = engine.instruments.getValue("cadenza-bytecode-tags-test")
+        .lookup(cadenza.tests.BytecodeTagProbe::class.java)
+      // Keep one cached Source alive and enter through the SDK: calling Language.parse
+      // directly would bypass the cache whose backend compatibility we need to check.
+      val source = org.graalvm.polyglot.Source.newBuilder("cadenza",
+        "\\(offset : Nat) -> \\(x : Nat) -> plus offset x", "shared-backend.za").cached(true).build()
+      val backends = listOf("ast", "bytecode", "ast", "bytecode")
+      val contexts = backends.map { backend ->
         Context.newBuilder("cadenza").engine(engine).allowExperimentalOptions(true)
-          .option("cadenza.Backend", backend).build().use { context ->
-            context.initialize("cadenza")
-            context.enter()
-            try {
-              val source = com.oracle.truffle.api.source.Source.newBuilder("cadenza", "42", "same.za").build()
-              val target = Language.currentLanguage().parse(source) as com.oracle.truffle.api.RootCallTarget
-              assertEquals(if (backend == "bytecode") "bytecode program root" else "program root", target.rootNode.name)
-              assertEquals(42, target.call())
-            } finally {
-              context.leave()
-            }
+          .option("cadenza.Backend", backend).build()
+      }
+      try {
+        val retained = contexts.mapIndexed { index, context ->
+          probe.trace(source.name).use { trace ->
+            val closure = context.eval(source).execute(1000 + index)
+            assertEquals(1042 + index, closure.execute(42).asInt())
+            assertTrue(trace.entries.isNotEmpty())
+            assertTrue(trace.entries.all { (it.root is BytecodeRoot) == (backends[index] == "bytecode") },
+              "cached source executed the wrong backend in context $index")
+            closure
           }
+        }
+        // Revisit cached code after both backend families and separate capture values exist.
+        for (index in listOf(3, 0, 2, 1, 0, 3)) {
+          probe.trace(source.name).use { trace ->
+            assertEquals(1020 + index, retained[index].execute(20).asInt())
+            assertEquals(42, contexts[index].eval(source).execute(40, 2).asInt())
+            assertTrue(trace.entries.isNotEmpty())
+            assertTrue(trace.entries.all { (it.root is BytecodeRoot) == (backends[index] == "bytecode") },
+              "re-entering cached source changed backend in context $index")
+          }
+        }
+      } finally {
+        contexts.asReversed().forEach { it.close() }
       }
     }
   }

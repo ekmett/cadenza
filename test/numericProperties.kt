@@ -1,6 +1,7 @@
 import cadenza.data.BigInt
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.PolyglotException
+import org.graalvm.polyglot.Source
 import org.graalvm.polyglot.Value
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -52,10 +53,10 @@ class NumericPropertyTests {
     return cases
   }
 
-  private fun signedFunction(context: Context, expression: String): Value = context.eval("cadenza",
+  private fun signedFunction(context: Context, expression: String, cached: Boolean = true): Value = context.eval(Source.newBuilder("cadenza",
     "\\(ap : Nat) (an : Nat) (at : Nat) (bp : Nat) (bn : Nat) (bt : Nat) -> " +
       "let a : Nat = minus (minus ap an) at in " +
-      "let b : Nat = minus (minus bp bn) bt in $expression")
+      "let b : Nat = minus (minus bp bn) bt in $expression", "numeric-property.za").cached(cached).build())
 
   /** Build signed values inside the guest; the public Nat boundary must remain nonnegative. */
   private fun arguments(operands: Operands, forceBig: Boolean = false): Array<Any> {
@@ -132,6 +133,47 @@ class NumericPropertyTests {
           assertEquals(values.left, reconstruct.execute(*input).asBigInteger(), "guest reconstruction: $location")
           assertTrue(residual.abs() < values.right.abs(), "remainder bound: $location")
           assertTrue(residual.signum() == 0 || residual.signum() == values.left.signum(), "remainder sign: $location")
+        }
+      }
+    }
+  }
+
+  @Test fun eachIntegerEdgeWorksBeforeAndAfterTheSiteHasSeenBigIntegers() {
+    val minimum = BigInteger.valueOf(Int.MIN_VALUE.toLong())
+    val zero = BigInteger.ZERO
+    data class Operation(val name: String, val oracle: (BigInteger, BigInteger) -> BigInteger,
+                         val cases: List<Operands>)
+    val operations = listOf(
+      Operation("plus", BigInteger::add, listOf(Operands(intMaximum, one), Operands(minimum, -one),
+        Operands(intMaximum, zero), Operands(minimum, one))),
+      Operation("minus", BigInteger::subtract, listOf(Operands(minimum, one), Operands(intMaximum, -one),
+        Operands(minimum, -one), Operands(intMaximum, one))),
+      Operation("mult", BigInteger::multiply, listOf(Operands(BigInteger.valueOf(46340), BigInteger.valueOf(46340)),
+        Operands(BigInteger.valueOf(46341), BigInteger.valueOf(46341)), Operands(minimum, -one),
+        Operands(minimum, one), Operands(intMaximum, zero))),
+      Operation("div", BigInteger::divide, listOf(Operands(minimum, -one), Operands(minimum, one),
+        Operands(BigInteger.valueOf(-7), BigInteger.valueOf(3)), Operands(BigInteger.valueOf(7), BigInteger.valueOf(-3)))),
+      Operation("mod", BigInteger::remainder, listOf(Operands(minimum, -one), Operands(minimum, one),
+        Operands(BigInteger.valueOf(-7), BigInteger.valueOf(3)), Operands(BigInteger.valueOf(7), BigInteger.valueOf(-3))))
+    )
+    val ordinary = Operands(BigInteger.valueOf(7), BigInteger.valueOf(3))
+    val large = Operands(one.shiftLeft(100) + one, one.shiftLeft(70) + one)
+    for (backend in listOf("ast", "bytecode")) context(backend).use { context ->
+      for (operation in operations) for (edge in operation.cases) {
+        // A long property sequence promotes early. Give every edge its own uncached
+        // source so SDK parse caching cannot silently reuse an already promoted node.
+        for (promoted in listOf(false, true)) {
+          val function = signedFunction(context, "${operation.name} a b", cached = false)
+          fun check(values: Operands) {
+            assertEquals(operation.oracle(values.left, values.right),
+              function.execute(*arguments(values)).asBigInteger(),
+              "$backend ${operation.name} edge=$edge promoted=$promoted input=$values")
+          }
+          check(ordinary)
+          if (promoted) check(large)
+          check(edge)
+          check(ordinary)
+          check(edge)
         }
       }
     }

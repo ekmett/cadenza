@@ -1,11 +1,19 @@
+import cadenza.Language
+import cadenza.data.BigInt
+import cadenza.data.Closure
+import com.oracle.truffle.api.interop.InteropLibrary
+import com.oracle.truffle.api.source.Source
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.Value
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.math.BigInteger
 import java.util.Random
 
-/** Independent, simply typed source generator and semantic oracle; no production evaluator. */
+/** Independent, simply typed, pure and total source generator; no production evaluator.
+ * No print, recursive let, neutral term, or zero divisor is generated. Observable effects
+ * and failures have separate oracles in EvaluationOrderTests and RuntimeTransitionTests.
+ */
 class DifferentialTests {
   private sealed interface Ty {
     data object Nat : Ty
@@ -59,11 +67,12 @@ class DifferentialTests {
       .firstOrNull { mismatch(context, it)?.signature == failure.signature } ?: original
   }
 
-  private class Generator(seed: Long) {
+  private class Generator(seed: Long, smallLiterals: Boolean = false) {
     private val random = Random(seed)
     private var nextName = 0
-    private val numbers = listOf("0", "1", "2", "7", "42", "46341", "2147483647", "2147483648",
-      "9223372036854775808", "1267650600228229401496703205376").map(::BigInteger)
+    private val numbers = (if (smallLiterals) listOf("0", "1", "2", "3") else
+      listOf("0", "1", "2", "7", "42", "46341", "2147483647", "2147483648",
+        "9223372036854775808", "1267650600228229401496703205376")).map(::BigInteger)
     private val argumentTypes = listOf(Ty.Nat, Ty.Bool, Ty.Arrow(Ty.Nat, Ty.Nat))
 
     private fun <T> choose(values: List<T>): T = values[random.nextInt(values.size)]
@@ -132,7 +141,10 @@ class DifferentialTests {
       }
       return Expression(resultType, "(${function.source} ${arguments.joinToString(" ") { "(${it.source})" }})",
         children = listOf(function) + arguments) { env ->
-        arguments.fold(function.eval(env)) { value, argument -> (value as Function).apply(argument.eval(env)) }
+        val callable = function.eval(env)
+        // A flat application evaluates all of its arguments before entering a body.
+        val values = arguments.map { it.eval(env) }
+        values.fold(callable) { value, argument -> (value as Function).apply(argument) }
       }
     }
 
@@ -240,6 +252,162 @@ class DifferentialTests {
         }
       }
     } }
+  }
+
+  private data class HistoryInput(
+    val captured: BigInteger = BigInteger.ZERO,
+    val choose: Boolean = true,
+    val x: BigInteger = BigInteger.ZERO,
+    val y: BigInteger = BigInteger.ZERO
+  )
+
+  private class HistoryProgram(val seed: Long, val yes: Expression, val no: Expression) {
+    private fun branch(expression: Expression, tag: Int) =
+      "plus (mult 128 (${expression.source})) " +
+        "(plus (mult 32 captured) (plus (mult 8 y) (plus (mult 2 x) $tag)))"
+
+    // The inner target is shared by different captures and branch choices. Supplying x
+    // alone really creates a PAP: the innermost physical lambda has two parameters.
+    val source = "\\(captured : Nat) -> \\(choose : Bool) -> \\(x : Nat) (y : Nat) -> " +
+      "if choose then ${branch(yes, 0)} else ${branch(no, 1)}"
+
+    fun expected(input: HistoryInput): BigInteger {
+      val environment = mapOf<String, Any>("captured" to input.captured, "x" to input.x, "y" to input.y)
+      val generated = (if (input.choose) yes else no).eval(environment) as BigInteger
+      return generated * BigInteger.valueOf(128) + input.captured * BigInteger.valueOf(32) +
+        input.y * BigInteger.valueOf(8) + input.x * BigInteger.TWO +
+        if (input.choose) BigInteger.ZERO else BigInteger.ONE
+    }
+
+    fun location(input: HistoryInput) = "seed=$seed $input\n$source"
+  }
+
+  private fun historyPrograms(): List<HistoryProgram> =
+    listOf(0xCA_DE_2201L, 0xCA_DE_2202L, 0xCA_DE_2203L, 0xCA_DE_2204L).map { seed ->
+      val generator = Generator(seed, smallLiterals = true)
+      val scope = mapOf("captured" to Ty.Nat, "x" to Ty.Nat, "y" to Ty.Nat)
+      val program = HistoryProgram(seed, generator.expression(Ty.Nat, 3, scope), generator.expression(Ty.Nat, 3, scope))
+      // Weighted residues guarantee each of these changes is observable even if a
+      // random subexpression ignores a variable or cancels another term. Thus varying
+      // arguments cannot accidentally amount to repeatedly compiling a constant.
+      val initial = HistoryInput()
+      val expected = program.expected(initial)
+      for (changed in listOf(initial.copy(x = BigInteger.ONE), initial.copy(y = BigInteger.ONE),
+        initial.copy(captured = BigInteger.ONE), initial.copy(choose = false))) {
+        assertNotEquals(expected, program.expected(changed), program.location(changed))
+      }
+      program
+    }
+
+  private val historyHuge = BigInteger.ONE.shiftLeft(80) + BigInteger.valueOf(17)
+
+  private fun historyArgument(value: BigInteger): Any =
+    if (value <= BigInteger.valueOf(Int.MAX_VALUE.toLong())) value.toInt() else BigInt(value)
+
+  @Test fun generatedFunctionsReplayCapturesAndPartialsAcrossNumericHistories() {
+    val base = HistoryInput(BigInteger.TWO, true, BigInteger.ONE, BigInteger.TWO)
+    val history = listOf(base, base.copy(x = BigInteger.valueOf(3)), base.copy(x = historyHuge),
+      base.copy(captured = historyHuge), base.copy(choose = false),
+      base.copy(captured = historyHuge + BigInteger.ONE, choose = false, y = historyHuge),
+      base.copy(captured = BigInteger.ONE, y = BigInteger.ZERO), base)
+    for (backend in listOf("ast", "bytecode")) context(backend).use { context ->
+      for (program in historyPrograms()) {
+        val make = context.eval("cadenza", program.source)
+        val retained = mutableListOf<Pair<Value, HistoryInput>>()
+        for (input in history) {
+          val captured = historyArgument(input.captured)
+          val x = historyArgument(input.x)
+          val y = historyArgument(input.y)
+          val function = make.execute(captured, input.choose)
+          val partial = function.execute(x)
+          val expected = program.expected(input)
+          val location = "$backend ${program.location(input)}"
+          assertEquals(expected, function.execute(x, y).asBigInteger(), "full: $location")
+          assertEquals(expected, partial.execute(y).asBigInteger(), "partial: $location")
+          assertEquals(expected, make.execute(captured, input.choose, x, y).asBigInteger(), "overapplication: $location")
+          retained += partial to input
+        }
+        // Replay old captures and old bound x values with new y values after all later
+        // calls have changed the same body target's numeric and branch profiles.
+        for ((partial, input) in retained.reversed()) {
+          for (y in listOf(BigInteger.ZERO, historyHuge + BigInteger.TWO, BigInteger.valueOf(3))) {
+            val replay = input.copy(y = y)
+            assertEquals(program.expected(replay), partial.execute(historyArgument(y)).asBigInteger(),
+              "$backend retained partial ${program.location(replay)}")
+          }
+        }
+      }
+    }
+  }
+
+  @Test fun selectedGeneratedFunctionsReplayAfterVerifiedGraalCompilation() {
+    CompilationTestSupport.requireOptimizingRuntime()
+    CompilationTestSupport.context().use { context ->
+      context.initialize("cadenza")
+      context.enter()
+      try {
+        // Only two reviewed seeds compile here. The 160/10,000-program generator and
+        // the portable history test above keep their ordinary runtime-independent scope.
+        for (program in historyPrograms().take(2)) {
+          val factory = Language.currentLanguage().parse(
+            Source.newBuilder("cadenza", program.source, "generated-history-${program.seed}.za").build()
+          ).call() as Closure
+          fun call(function: Closure, vararg arguments: Any): Any? {
+            assertEquals(function.arity, arguments.size)
+            val prefix = if (function.env == null) arrayOf<Any?>(0L) else arrayOf<Any?>(0L, function.env)
+            return function.callTarget.call(*cadenza.data.append(
+              cadenza.data.append(prefix, function.papArgs), arguments))
+          }
+          fun make(input: HistoryInput): Closure =
+            call(call(factory, historyArgument(input.captured)) as Closure, input.choose) as Closure
+          fun integer(result: Any?): BigInteger = when (result) {
+            is Int -> BigInteger.valueOf(result.toLong())
+            is BigInt -> result.value
+            else -> error("Expected concrete generated result, got $result")
+          }
+          val base = HistoryInput(BigInteger.TWO, true, BigInteger.ONE, BigInteger.TWO)
+          val original = make(base)
+          val target = original.callTarget
+          val retained = InteropLibrary.getUncached().execute(original, historyArgument(base.x)) as Closure
+          assertSame(target, retained.callTarget)
+          fun warm(includeOtherBranch: Boolean, requirePrimitive: Boolean) {
+            repeat(24) { index ->
+              val input = HistoryInput(BigInteger.valueOf((index % 3).toLong()),
+                !includeOtherBranch || index % 2 == 0,
+                BigInteger.valueOf(((index + 1) % 3).toLong()), BigInteger.valueOf(((index + 2) % 3).toLong()))
+              val function = make(input)
+              assertSame(target, function.callTarget, "History must reuse the generated body target")
+              val result = call(function, historyArgument(input.x), historyArgument(input.y))
+              if (requirePrimitive) assertInstanceOf(Int::class.javaObjectType, result,
+                "Small warmup must precede promotion: ${program.location(input)}")
+              assertEquals(program.expected(input), integer(result), program.location(input))
+            }
+          }
+          warm(includeOtherBranch = false, requirePrimitive = true)
+          val promoted = base.copy(x = historyHuge)
+          CompilationTestSupport.compileAndVerify(target)
+          assertEquals(program.expected(promoted), integer(call(original,
+            historyArgument(promoted.x), historyArgument(promoted.y))), program.location(promoted))
+
+          // Prepare the changed environment/PAP before requesting compilation, so the
+          // immediately following call enters the exact target whose code was verified.
+          val changed = base.copy(captured = historyHuge, choose = false, y = historyHuge + BigInteger.ONE)
+          val changedFunction = make(changed)
+          val changedPartial = InteropLibrary.getUncached().execute(changedFunction, historyArgument(changed.x)) as Closure
+          assertSame(target, changedPartial.callTarget)
+          warm(includeOtherBranch = true, requirePrimitive = false)
+          CompilationTestSupport.compileAndVerify(target)
+          assertEquals(program.expected(changed), integer(call(changedPartial, historyArgument(changed.y))),
+            program.location(changed))
+          val replay = base.copy(y = BigInteger.valueOf(3))
+          assertEquals(program.expected(replay), integer(call(retained, historyArgument(replay.y))), program.location(replay))
+          assertEquals(program.expected(base), integer(call(original, historyArgument(base.x), historyArgument(base.y))),
+            program.location(base))
+        }
+      } finally {
+        context.leave()
+      }
+    }
   }
 
   /** All compositions of n enumerate every possible placement of application boundaries. */

@@ -39,3 +39,17 @@ Bytecode currently exposes statement entry events for these budgets, but does
 not emit root/root-body events: the generated interpreter does not balance
 tail-transfer entry and exit callbacks. Use AST for root-based profiling and
 unwind/re-entry tooling. See [bytecode's coverage notes](bytecode.md).
+
+Runtime failures, including zero divisors and recursive values read before their
+initialization, report the failing operation or variable through
+`PolyglotException.sourceLocation`. Locations retain the original file offsets,
+including leading whitespace and a script's shebang. When one source calls a
+closure defined in another, the failure keeps the callee's location. A caller
+supplies its application location only when a builtin has no source of its own;
+this fallback also survives a tail-call transfer.
+
+Guest stack traces describe the frames retained by execution. Tail-call
+optimization can remove caller frames; Cadenza does not reconstruct a logical
+recursion history. Builtins invoked directly by a host, without a sourced guest
+caller, can legitimately have no source location. Static type errors identify
+the offending term, while malformed source reports its parsing position.

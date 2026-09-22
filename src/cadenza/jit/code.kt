@@ -78,7 +78,11 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
 
     private fun executeFn(frame: VirtualFrame, fn: Closure): Any? {
       // TODO: think about how foreign calltargets should work with nbe
-      return dispatch.executeDispatch(frame, fn, executeRands(frame))
+      return try {
+        dispatch.executeDispatch(frame, fn, executeRands(frame))
+      } catch (error: RuntimeError) {
+        throw error.at(sourceSection)
+      }
     }
 
     @Throws(NeutralException::class)
@@ -196,7 +200,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       if (value !is Indirection) return value
       if (!value.set) {
         CompilerDirectives.transferToInterpreter()
-        throw RuntimeError("recursive binding read before initialization")
+        throw RuntimeError("recursive binding read before initialization", this)
       }
       return value.value
     }

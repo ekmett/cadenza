@@ -9,15 +9,21 @@ import cadenza.jit.CadenzaRootNode;
 import cadenza.jit.Dispatch;
 import cadenza.jit.DispatchNodeGen;
 import cadenza.jit.Indirection;
+import cadenza.jit.BuiltinTailCallException;
 import cadenza.semantics.Type;
 import com.oracle.truffle.api.RootCallTarget;
 import com.oracle.truffle.api.CompilerDirectives.TruffleBoundary;
 import com.oracle.truffle.api.bytecode.BytecodeRootNode;
+import com.oracle.truffle.api.bytecode.BytecodeNode;
+import com.oracle.truffle.api.exception.AbstractTruffleException;
 import com.oracle.truffle.api.bytecode.ConstantOperand;
 import com.oracle.truffle.api.bytecode.GenerateBytecode;
 import com.oracle.truffle.api.bytecode.Operation;
 import com.oracle.truffle.api.bytecode.Variadic;
 import com.oracle.truffle.api.dsl.Cached;
+import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.nodes.Node;
+import com.oracle.truffle.api.nodes.ControlFlowException;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.dsl.TypeSystemReference;
 import com.oracle.truffle.api.frame.FrameDescriptor;
@@ -38,6 +44,25 @@ public abstract class BytecodeRoot extends CadenzaRootNode implements BytecodeRo
     @Override
     public String getName() {
         return "bytecode";
+    }
+
+    @Override
+    public AbstractTruffleException interceptTruffleException(AbstractTruffleException exception,
+            VirtualFrame frame, BytecodeNode bytecodeNode, int bytecodeIndex) {
+        if (exception instanceof RuntimeError error && error.getEncapsulatingSourceSection() == null) {
+            // Source loading may replace the interpreter; the location translates its index.
+            error.at(bytecodeNode.getBytecodeLocation(bytecodeIndex).ensureSourceInformation().getSourceLocation());
+        }
+        return exception;
+    }
+
+    @Override
+    public Object interceptControlFlowException(ControlFlowException exception, VirtualFrame frame,
+            BytecodeNode bytecodeNode, int bytecodeIndex) {
+        if (exception instanceof BuiltinTailCallException call) {
+            call.atBytecode(bytecodeNode, bytecodeIndex);
+        }
+        throw exception;
     }
 
     /** Captures precede explicit parameters in papArgs, using the ordinary guest ABI. */
@@ -88,9 +113,9 @@ public abstract class BytecodeRoot extends CadenzaRootNode implements BytecodeRo
     @Operation
     public static final class ReadCell {
         @Specialization
-        public static Object read(Indirection cell) {
+        public static Object read(Indirection cell, @Bind("$node") Node node) {
             if (!cell.getSet()) {
-                throw new cadenza.RuntimeError("recursive binding read before initialization");
+                throw new RuntimeError("recursive binding read before initialization", node, null);
             }
             return cell.getValue();
         }
@@ -141,15 +166,15 @@ public abstract class BytecodeRoot extends CadenzaRootNode implements BytecodeRo
     @Operation
     public static final class Divide {
         @Specialization(rewriteOn = ArithmeticException.class)
-        public static int ints(int left, int right) {
-            if (right == 0) throw new RuntimeError("division by zero");
+        public static int ints(int left, int right, @Bind("$node") Node node) {
+            if (right == 0) throw new RuntimeError("division by zero", node, null);
             return Math.divideExact(left, right);
         }
 
         @Specialization
         @TruffleBoundary
-        public static BigInt bigInts(BigInt left, BigInt right) {
-            if (right.getValue().signum() == 0) throw new RuntimeError("division by zero");
+        public static BigInt bigInts(BigInt left, BigInt right, @Bind("$node") Node node) {
+            if (right.getValue().signum() == 0) throw new RuntimeError("division by zero", node, null);
             return new BigInt(left.getValue().divide(right.getValue()));
         }
     }
@@ -157,15 +182,15 @@ public abstract class BytecodeRoot extends CadenzaRootNode implements BytecodeRo
     @Operation
     public static final class Remainder {
         @Specialization
-        public static int ints(int left, int right) {
-            if (right == 0) throw new RuntimeError("modulo by zero");
+        public static int ints(int left, int right, @Bind("$node") Node node) {
+            if (right == 0) throw new RuntimeError("modulo by zero", node, null);
             return left % right;
         }
 
         @Specialization
         @TruffleBoundary
-        public static BigInt bigInts(BigInt left, BigInt right) {
-            if (right.getValue().signum() == 0) throw new RuntimeError("modulo by zero");
+        public static BigInt bigInts(BigInt left, BigInt right, @Bind("$node") Node node) {
+            if (right.getValue().signum() == 0) throw new RuntimeError("modulo by zero", node, null);
             return new BigInt(left.getValue().remainder(right.getValue()));
         }
     }

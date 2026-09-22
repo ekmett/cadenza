@@ -10,6 +10,10 @@ an independent evaluator using immutable lexical maps, Kotlin closures, and
 `BigInteger`. Agreement between the two production backends alone is insufficient:
 they share the parser, type checker, and calling convention, so they can share bugs.
 Failures include the deterministic case index, seed, and guest source.
+The random language is deliberately pure and total: it excludes output, recursive
+initializers, neutral terms, and division by zero. Its application oracle evaluates
+each flat group of arguments before invoking a body. Effects and failures use the
+separate trace and runtime-transition tests below.
 For a generated failure, the diagnostic also searches up to 64 smaller, closed,
 same-typed subexpressions for the same failure. This is a bounded reduction aid,
 not a guarantee of a globally minimal program.
@@ -19,6 +23,19 @@ higher-order state, mutual recursion, all application groupings, and retained
 partials after dispatch caches saturate. Numeric properties use independent
 `BigInteger` operations and quotient/remainder identities, including signed
 intermediates and promotion boundaries.
+
+Numeric edge checks also create an uncached source for each boundary case and
+compare fresh primitive sites with sites that have already seen large integers.
+This prevents early promotion in a long property sequence from hiding bugs in
+the original integer specialization. Both histories replay ordinary values and
+the boundary case on the same function.
+
+Four fixed generated function bodies are also replayed through one parsed factory
+per backend, with changing numeric representations, branch choices, captures, and
+retained partial applications. Weighted result terms make each input observably
+relevant even when a random subexpression ignores it. Two of those bodies have a
+separate Graal-specific test that verifies installed last-tier code before numeric
+and captured-environment transitions. This does not compile every soak program.
 
 The regular suite samples 160 generated programs. A larger run is a separate
 Gradle task, with its own results and bounded test heap:
@@ -49,7 +66,7 @@ Truffle storage or AST identity should explain the runtime contract they protect
 `RuntimeTransitionTests` includes one Graal-specific compilation test. It requests
 synchronous compilation and verifies installed last-tier code before exercising
 BigInt promotion, a neutral result, and a guest exception, then checks recovery.
-Only this test is skipped on a nonoptimizing Truffle runtime; the portable
+The explicit compilation tests are skipped on a nonoptimizing Truffle runtime; the portable
 semantic tests still run. This provides targeted compiled-code coverage, not a
 claim that every regression test runs compiled.
 
@@ -65,6 +82,12 @@ backends, including infinite recursion with a bounded watchdog. Bytecode tests
 check that unsupported root events are absent rather than accepting unmatched
 entries as valid profiler data; ordinary statement returns and guest-error exits
 are checked separately from the documented tail-transfer limitation.
+
+Concurrency tests enter one context from four threads and synchronize before
+calling shared functions. Independent weighted and triangular-number oracles
+check recursive results, captures and retained partials through concurrent
+specialization changes. Workers and failure cleanup are bounded so a broken
+runtime cannot indefinitely block the test JVM.
 
 Use the separate JMH workloads to measure allocation and throughput changes.
 
@@ -83,3 +106,11 @@ All three compiled successfully and failed the intended assertions. The working
 runtime was never mutated. [Exact mutations and assertion failures](mutation-checks-2026-09-22.json)
 are retained as evidence of these specific tests' sensitivity; this is not an
 exhaustive mutation score for the suite.
+
+A later source-cache check reused one cached SDK `Source` across live AST and
+bytecode contexts, inspected the executing roots through instrumentation, and
+revisited retained closures. Deliberately treating all backend options as
+compatible caused this test to reject the first bytecode context executing AST
+code. The older test called `Language.parse` directly and bypassed this cache;
+the replacement checks the public path that hosts actually use. This fourth
+mutation was also built only in an isolated temporary copy.

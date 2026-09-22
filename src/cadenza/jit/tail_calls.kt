@@ -1,6 +1,8 @@
 package cadenza.jit
 
+import cadenza.RuntimeError
 import com.oracle.truffle.api.*
+import com.oracle.truffle.api.bytecode.BytecodeNode
 import com.oracle.truffle.api.frame.*
 import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.nodes.RepeatingNode.CONTINUE_LOOP_STATUS
@@ -8,16 +10,41 @@ import com.oracle.truffle.api.profiles.BranchProfile
 import java.lang.Exception
 
 
-class TailCallException(val fn: RootCallTarget, val args: Array<Any?>) : ControlFlowException() {}
+open class TailCallException(val fn: RootCallTarget, val args: Array<Any?>) : ControlFlowException()
+
+/** Only unsourced builtin targets need a fallback after their caller has tail-returned. */
+class BuiltinTailCallException(fn: RootCallTarget, args: Array<Any?>, private var origin: Node) :
+  TailCallException(fn, args) {
+  private var bytecodeIndex = -1
+
+  fun atBytecode(node: BytecodeNode, index: Int) {
+    if (bytecodeIndex < 0) {
+      origin = node
+      bytecodeIndex = index
+    }
+  }
+
+  @CompilerDirectives.TruffleBoundary
+  fun locate(error: RuntimeError): RuntimeError {
+    // Retained bytecode positions must follow any interpreter replacement during source loading.
+    val source = if (bytecodeIndex >= 0) (origin as BytecodeNode).getBytecodeLocation(bytecodeIndex)
+      .ensureSourceInformation().sourceLocation else origin.encapsulatingSourceSection
+    return error.at(source)
+  }
+}
 
 class TailCheck : Node() {
   private val tailCallProfile: BranchProfile = BranchProfile.create()
   private val unrollProfile: BranchProfile = BranchProfile.create()
 
+  private fun bounce(fn: RootCallTarget, args: Array<Any?>): TailCallException =
+    if (fn.rootNode is BuiltinRootNode) BuiltinTailCallException(fn, args, this)
+    else TailCallException(fn, args)
+
   fun tailCheck(frame: VirtualFrame, fn: RootCallTarget, args: Array<Any?>) {
     val root = rootNode
     if (root !is CadenzaRootNode || !root.hasTailCallFrame) {
-      throw TailCallException(fn, args)
+      throw bounce(fn, args)
     }
     val mask = frame.getLong(FrameLayout.BLOOM_FILTER)
     if (fn.rootNode !is CadenzaRootNode) {
@@ -27,7 +54,7 @@ class TailCheck : Node() {
     if (mask and targetMask == targetMask) {
       tailCallProfile.enter()
       // hit, throw a tail call
-      throw TailCallException(fn, args)
+      throw bounce(fn, args)
     } else {
       unrollProfile.enter()
       args[0] = mask
@@ -105,7 +132,7 @@ class TailCallLoop : Node() {
   fun execute(tailCall: TailCallException): Any? {
     val repeating = loopNode.repeatingNode as TailCallRepeatingNode
     val frame = Truffle.getRuntime().createVirtualFrame(emptyArray(), repeating.descriptor)
-    repeating.setNextCall(frame, tailCall.fn, tailCall.args)
+    repeating.setNextCall(frame, tailCall)
     loopNode.execute(frame)
     return repeating.getResult(frame)
   }
@@ -121,10 +148,9 @@ class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), Repeating
 
   fun setNextCall(
     frame: VirtualFrame,
-    fn: CallTarget,
-    arguments: Array<Any?>) {
-    frame.setObject(functionSlot, fn)
-    frame.setObject(argsSlot, arguments)
+    call: TailCallException) {
+    frame.setObject(functionSlot, call.fn)
+    frame.setObject(argsSlot, call)
   }
 
   fun getResult(frame: VirtualFrame): Any? {
@@ -137,8 +163,8 @@ class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), Repeating
     return result
   }
 
-  private fun getNextArgs(frame: VirtualFrame): Array<Any?> {
-    val result = frame.getObject(argsSlot) as Array<Any?>
+  private fun getNextCall(frame: VirtualFrame): TailCallException {
+    val result = frame.getObject(argsSlot) as TailCallException
     frame.setObject(argsSlot, null)
     return result
   }
@@ -146,12 +172,18 @@ class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), Repeating
   override fun executeRepeating(frame: VirtualFrame): Boolean {
     return try {
       val fn = getNextFunction(frame)
-      val args = getNextArgs(frame)
+      val call = getNextCall(frame)
+      val args = call.args
       args[0] = 0L
-      frame.setObject(resultSlot, dispatchNode.executeDispatch(this, fn, args))
+      val result = try {
+        dispatchNode.executeDispatch(this, fn, args)
+      } catch (error: RuntimeError) {
+        throw if (call is BuiltinTailCallException) call.locate(error) else error
+      }
+      frame.setObject(resultSlot, result)
       false
     } catch (e: TailCallException) {
-      setNextCall(frame, e.fn, e.args)
+      setNextCall(frame, e)
       true
     }
   }

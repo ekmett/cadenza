@@ -122,6 +122,30 @@ open class Accumulate : BackendBenchmark() {
   @Benchmark fun cadenza(): Any? = target.call(nextInput(size))
 }
 
+/** Alternating roots exercise the general tail trampoline rather than the self-tail loop. */
+open class MutualAccumulate : BackendBenchmark() {
+  @Param("1000") @JvmField var size: Int = 0
+  override val text = """
+    \(limit : Nat) ->
+      let even : Nat -> Nat -> Nat =
+        let odd : Nat -> Nat -> Nat = \(x : Nat) (sum : Nat) ->
+          if le limit x then sum else even (plus x 1) (mod (plus sum x) 65521)
+        in \(x : Nat) (sum : Nat) ->
+          if le limit x then sum else odd (plus x 1) (mod (plus sum x) 65521)
+      in even 0 0
+  """.trimIndent()
+
+  override fun prepareBaseline() {
+    repeat(16) { offset ->
+      val limit = size + offset
+      val expected = (limit.toLong() * (limit - 1) / 2 % 65521).toInt()
+      check(target.call(limit) == expected)
+    }
+  }
+
+  @Benchmark fun cadenza(): Any? = target.call(nextInput(size))
+}
+
 private fun fib(x: Int): Int = if (x <= 1) x else fib(x - 1) + fib(x - 2)
 
 open class Fib : ComparedBenchmark() {

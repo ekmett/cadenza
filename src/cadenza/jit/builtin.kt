@@ -103,13 +103,13 @@ abstract class Plus : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat))) 
 abstract class Mod : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat))) {
   @Specialization
   internal fun modInt(x: Int, y: Int): Int {
-    if (y == 0) throw RuntimeError("modulo by zero")
+    if (y == 0) throw RuntimeError("modulo by zero", this)
     return x.rem(y)
   }
   @Specialization
   @CompilerDirectives.TruffleBoundary
   internal fun modBigInt(x: BigInt, y: BigInt): BigInt {
-    if (y.value.signum() == 0) throw RuntimeError("modulo by zero")
+    if (y.value.signum() == 0) throw RuntimeError("modulo by zero", this)
     // Match Int.rem, including the sign of negative intermediate values.
     return BigInt(x.value.remainder(y.value))
   }
@@ -118,13 +118,13 @@ abstract class Mod : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat))) {
 abstract class Div : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat))) {
   @Specialization(rewriteOn = [ArithmeticException::class])
   internal fun divInt(x: Int, y: Int): Int {
-    if (y == 0) throw RuntimeError("division by zero")
+    if (y == 0) throw RuntimeError("division by zero", this)
     return Math.divideExact(x, y)
   }
   @Specialization
   @CompilerDirectives.TruffleBoundary
   internal fun divBigInt(x: BigInt, y: BigInt): BigInt {
-    if (y.value.signum() == 0) throw RuntimeError("division by zero")
+    if (y.value.signum() == 0) throw RuntimeError("division by zero", this)
     return BigInt(x.value.divide(y.value))
   }
 }

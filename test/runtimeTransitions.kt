@@ -10,12 +10,10 @@ import cadenza.jit.Plus
 import cadenza.jit.PlusNodeGen
 import cadenza.semantics.Type
 import com.oracle.truffle.api.source.Source
-import com.oracle.truffle.api.Truffle
 import org.graalvm.polyglot.Context
 import org.graalvm.polyglot.PolyglotException
 import org.graalvm.polyglot.Value
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
@@ -242,21 +240,8 @@ class RuntimeTransitionTests {
   }
 
   @Test fun graalCompiledRecursionRecoversAfterPromotionNeutralAndGuestFailure() {
-    // Truffle's portable API intentionally has no compilation control. Use the installed
-    // optimizing runtime's public methods reflectively, keeping runtimeOnly a runtime
-    // dependency. Other runtimes skip this one test, not the semantic histories above.
-    val runtimeType = runCatching { Class.forName("com.oracle.truffle.runtime.OptimizedTruffleRuntime") }.getOrNull()
-    assumeTrue(runtimeType?.isInstance(Truffle.getRuntime()) == true, "Requires the optimizing Graal runtime")
-    val targetType = Class.forName("com.oracle.truffle.runtime.OptimizedCallTarget")
-    val compile = targetType.getMethod("compile", Boolean::class.javaPrimitiveType)
-    val isValid = targetType.getMethod("isValidLastTier")
-    Context.newBuilder("cadenza").allowExperimentalOptions(true)
-      .option("cadenza.Backend", "ast")
-      .option("engine.BackgroundCompilation", "false")
-      .option("engine.MultiTier", "false")
-      .option("engine.SingleTierCompilationThreshold", "20")
-      .option("engine.CompilationFailureAction", "Throw")
-      .build().use { context ->
+    CompilationTestSupport.requireOptimizingRuntime()
+    CompilationTestSupport.context().use { context ->
         context.initialize("cadenza")
         context.enter()
         try {
@@ -267,7 +252,6 @@ class RuntimeTransitionTests {
             in go
           """.trimIndent())
           val target = function.callTarget
-          assertTrue(targetType.isInstance(target))
           fun call(n: Int, seed: Any, divisor: Int = 1): Any? {
             val prefix = if (function.env == null) arrayOf<Any?>(0L) else arrayOf<Any?>(0L, function.env)
             val arguments = cadenza.data.append(cadenza.data.append(prefix, function.papArgs),
@@ -278,8 +262,7 @@ class RuntimeTransitionTests {
             repeat(24) { n ->
               assertEquals(BigInteger.valueOf(1000).add(triangular(n)), integer(call(n, 1000)))
             }
-            compile.invoke(target, true)
-            assertEquals(true, isValid.invoke(target), "The following transition must start with installed last-tier code")
+            CompilationTestSupport.compileAndVerify(target)
           }
           compileConcretePath()
           assertEquals(huge.add(triangular(17)), integer(call(17, BigInt(huge))))

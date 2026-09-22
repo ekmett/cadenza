@@ -29,6 +29,9 @@ recursive let independently because the reference interpreter does not support
 that construct. Its simple counter can be optimized nearly to returning the limit;
 do not interpret that workload as general interpreter throughput. `Accumulate`
 performs a modular sum on every recursive step to measure a loop with useful work.
+`MutualAccumulate` performs the same sum through two alternating recursive roots,
+exercising the general tail-call trampoline rather than only frame reuse in a
+self-tail loop. Its setup checks the result against a closed-form sum.
 
 `CapturedClosure` measures escaping closure creation; use JMH's GC profiler to
 compare bytes allocated per operation as well as throughput. Its `base` parameter
@@ -72,3 +75,7 @@ why switching to per-frame slot kinds did not improve the warmed accumulator.
 
 [AST tooling performance gate](results/2026-09-22/tooling-ast.md) checks ordinary
 execution after adding invocation wrappers and statement tags.
+
+[Runtime diagnostic performance gate](results/2026-09-22/runtime-diagnostics.md)
+includes an alternating-root accumulator to check the general tail trampoline,
+alongside the existing AST workloads, after preserving runtime error locations.
