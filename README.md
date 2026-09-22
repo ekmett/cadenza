@@ -12,7 +12,7 @@ Kotlin code tends to be considerably long, if not so long as the Java code I sta
 ## Running
 
 Use **GraalVM 25.3.4.1 (JDK 25)** with the matching Truffle 25.3.4.1 libraries.
-The build uses the checked-in Gradle 9.3.0 wrapper and Kotlin 2.3.21; dependencies
+The build uses the checked-in Gradle 9.7.1 wrapper and Kotlin 2.4.20; dependencies
 come from Maven Central.
 
 Download GraalVM for your platform from [GraalVM downloads](https://www.graalvm.org/downloads/)

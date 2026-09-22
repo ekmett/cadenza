@@ -2,8 +2,9 @@ package org.intelligence.asm
 
 import org.objectweb.asm.Opcodes.*
 
-// access modifiers, if inline classes break or get removed, make this a data class
-inline class Mod(val access: Int) {
+// JVM access modifiers.
+@JvmInline
+value class Mod(val access: Int) {
   infix fun and(other: Mod) = Mod(this.access or other.access)
 }
 

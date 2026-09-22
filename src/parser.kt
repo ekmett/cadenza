@@ -36,7 +36,8 @@ fun Parse.Expected?.toList() : List<Any> {
 typealias Parser<T> = Parse.() -> T
 
 // mark/release support
-inline class Mark(val pos: Int)
+@JvmInline
+value class Mark(val pos: Int)
 val Parse.mark: Mark get() = Mark(pos)
 fun Parse.release(mark: Mark) { pos = mark.pos }
 

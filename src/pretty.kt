@@ -107,6 +107,7 @@ class Pretty(
 ) {
   fun tell(a: Out) = output.add(a)
 
+  @PublishedApi
   internal object Bad : RuntimeException() { override fun fillInStackTrace() = this }
   internal val bad: Nothing get() { assert(canFail); throw Bad }
 
@@ -384,4 +385,3 @@ fun<A> Pretty.italic(f: D<A>): A =
     }
     annotate(ann, f)
   }
-

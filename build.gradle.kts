@@ -1,8 +1,8 @@
 plugins {
   application
   idea
-  kotlin("jvm") version "2.3.21"
-  kotlin("kapt") version "2.3.21"
+  kotlin("jvm") version "2.4.20"
+  kotlin("kapt") version "2.4.20"
 }
 
 repositories { mavenCentral() }
@@ -34,7 +34,7 @@ sourceSets {
   test { kotlin.setSrcDirs(listOf("test")) }
 }
 
-val bench by sourceSets.creating {
+val bench = sourceSets.create("bench") {
   java.setSrcDirs(listOf("bench"))
   kotlin.setSrcDirs(listOf("bench"))
   compileClasspath += sourceSets.main.get().output
