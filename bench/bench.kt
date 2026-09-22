@@ -16,6 +16,7 @@ import cadenza.jit.FrameLayout
 import cadenza.semantics.Type
 import com.oracle.truffle.api.CallTarget
 import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.interop.InteropLibrary
 import com.oracle.truffle.api.nodes.Node.Child
 import com.oracle.truffle.api.source.Source
 import org.graalvm.polyglot.Context
@@ -143,6 +144,37 @@ open class NoncapturingClosure : BackendBenchmark() {
   @Param("100", "1000") @JvmField var base: Int = 0
   override val text = "\\(selector : Nat) -> if eq (mod selector 2) 0 then (\\(x : Nat) -> plus x 1) else (\\(x : Nat) -> plus x 2)"
   @Benchmark fun select(): Any? = target.call(nextInput(base))
+}
+
+/** Four targets force the shared call site to handle overapplication generically. */
+open class PartialApplication : BackendBenchmark() {
+  @Param("1000") @JvmField var base: Int = 0
+  override val text = """
+    \(x : Nat) ->
+      let selected : Nat -> Nat -> Nat -> Nat -> Nat -> Nat =
+        if eq (mod x 4) 0 then
+          (\(a : Nat) -> \(b : Nat) (c : Nat) (d : Nat) (e : Nat) -> plus a (plus b (plus c (plus d e))))
+        else if eq (mod x 4) 1 then
+          (\(a : Nat) (b : Nat) -> \(c : Nat) (d : Nat) (e : Nat) -> plus 1 (plus a (plus b (plus c (plus d e)))))
+        else if eq (mod x 4) 2 then
+          (\(a : Nat) -> \(b : Nat) (c : Nat) (d : Nat) (e : Nat) -> plus 2 (plus a (plus b (plus c (plus d e)))))
+        else
+          (\(a : Nat) (b : Nat) -> \(c : Nat) (d : Nat) (e : Nat) -> plus 3 (plus a (plus b (plus c (plus d e)))))
+      in selected x 1 2
+  """.trimIndent()
+
+  override fun prepareBaseline() {
+    // Complete escaping partials outside measurement, checking both argument ranges
+    // and populating the four-target cache before JMH warmup starts.
+    val interop = InteropLibrary.getUncached()
+    repeat(16) { offset ->
+      val input = base + offset
+      val partial = target.call(input)
+      check(interop.execute(partial, 3, 4) == input + 10 + input % 4)
+    }
+  }
+
+  @Benchmark fun allocate(): Any? = target.call(nextInput(base))
 }
 
 /** Measure the intentional exceptional neutral path separately from ordinary evaluation. */

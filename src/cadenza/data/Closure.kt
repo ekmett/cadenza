@@ -86,11 +86,15 @@ class Closure (
   override fun hashCode(): Int =
     31 * (31 * (31 * callTarget.hashCode() + arity) + papArgs.contentHashCode()) + (env?.hashCode() ?: 0)
 
-  // construct a partial application node, which should check that it is a PAP itself
+  fun pap(arguments: Array<out Any?>): Closure = pap(arguments, 0, arguments.size)
+
+  /** Copy a checked argument range directly into the escaping partial application. */
   @CompilerDirectives.TruffleBoundary
-  fun pap(@Suppress("UNUSED_PARAMETER") arguments: Array<out Any?>): Closure {
-    val len = arguments.size
-    return Closure(env, append(papArgs, arguments), arity - len, targetType, callTarget)
+  fun pap(arguments: Array<out Any?>, offset: Int, length: Int): Closure {
+    val combined = arrayOfNulls<Any>(papArgs.size + length)
+    System.arraycopy(papArgs, 0, combined, 0, papArgs.size)
+    System.arraycopy(arguments, offset, combined, papArgs.size, length)
+    return Closure(env, combined, arity - length, targetType, callTarget)
   }
 }
 

@@ -12,6 +12,7 @@ import cadenza.data.Neutral
 import cadenza.semantics.after
 import cadenza.section
 import com.oracle.truffle.api.CompilerDirectives
+import com.oracle.truffle.api.RootCallTarget
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.TruffleLanguage
 import com.oracle.truffle.api.dsl.TypeSystemReference
@@ -121,6 +122,9 @@ open class ClosureRootNode(
   private val captureLayout: CaptureLayout? = null
 ) : CadenzaRootNode(language, frameDescriptor) {
 
+  // Truffle copies this identity when splitting a root. Recursive closures still point at
+  // the original call target, but its clones have the same body and calling convention.
+  private val bodyIdentity = Any()
   override val hasTailCallFrame: Boolean = true
   val bloomFilterSlot: Int = FrameLayout.BLOOM_FILTER
   @field:Child var selfTailCallLoopNode = SelfTailCallLoop(body)
@@ -129,10 +133,13 @@ open class ClosureRootNode(
   @Suppress("NOTHING_TO_INLINE")
   inline fun hasEnvironment() = envPreamble.isNotEmpty()
 
+  fun isSelfCall(target: RootCallTarget): Boolean =
+    (target.rootNode as? ClosureRootNode)?.bodyIdentity === bodyIdentity
+
   @ExplodeLoop
   fun buildFrame(arguments: Array<Any?>, local: VirtualFrame) {
     val offset = if (hasEnvironment()) 2 else 1
-    for ((slot, x) in argPreamble) FrameAccess.write(local, slot, arguments[x+offset])
+    for ((slot, x) in argPreamble) FrameAccess.write(local, slot, resolveFixedArgument(arguments[x+offset]))
     if (hasEnvironment()) { // Closure receives its captured environment.
       val env = arguments[1] as DataFrame
       for ((slot, ix) in envPreamble) FrameAccess.write(local, slot, captureLayout!!.read(env, ix))
@@ -154,7 +161,7 @@ open class ClosureRootNode(
       selfTailCallLoopNode.executeOnce(local)
     } catch (e: TailCallException) {
       tailCallProfile.enter()
-      if (e.fn.rootNode !== this) { throw e }
+      if (!isSelfCall(e.fn)) { throw e }
       buildFrame(e.args, local)
       selfTailCallLoopNode.execute(local)
     }

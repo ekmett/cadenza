@@ -186,20 +186,31 @@ abstract class FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
 
 /**
  * The knot is tied once, before this value becomes visible outside its constructor.
- * Both fields are immutable; recursive calls reuse the same closure and capture array.
+ * Every field is immutable; recursive calls reuse the same closure and capture array.
  */
-private class FixedFunction(val function: Closure, target: RootCallTarget) {
-  val self = Closure(null, arrayOf(this), 1, fixedFunctionType, target)
+private class FixedFunction(val function: Closure, private val owner: RootCallTarget) {
+  // A two-argument AST body can receive its own fixed closure directly. Keep the
+  // cell in papArgs so structural equality never follows a self-referential array.
+  // ClosureRootNode resolves that private token before exposing a parameter.
+  val self = if (function.arity == 2 && function.callTarget.rootNode is ClosureRootNode)
+    function.pap(arrayOf(this))
+  else
+    Closure(null, arrayOf(this), 1, fixedFunctionType, owner)
 
-  // Match the structural equality of the former partial application of function.
-  // In particular, never compare self: that would follow the recursive knot.
-  override fun equals(other: Any?): Boolean = other is FixedFunction && function == other.function
-  override fun hashCode(): Int = function.hashCode()
+  // The former wrapper target distinguished different fixNatF sites. Retain
+  // that owner identity even when self now calls function's target directly.
+  override fun equals(other: Any?): Boolean = this === other ||
+    other is FixedFunction && owner === other.owner && function == other.function
+  override fun hashCode(): Int = 31 * owner.hashCode() + function.hashCode()
 
   companion object {
     private val fixedFunctionType = Type.Arr(Type.Obj, natF)
   }
 }
+
+/** Fixed-point tokens exist only in the physical argument array, never guest locals. */
+internal fun resolveFixedArgument(argument: Any?): Any? =
+  if (argument is FixedFunction) argument.self else argument
 
 /** The recursive function partially applies this shared body to its immutable knot. */
 class FixApplyRootNode(language: Language) : CadenzaRootNode(language, FrameLayout().build()) {

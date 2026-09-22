@@ -180,7 +180,7 @@ class SelfTailCallRepeatingNode(
       executeOnce(frame)
     } catch (e: TailCallException) {
       val closureRoot = rootNode as ClosureRootNode
-      if (e.fn.rootNode === closureRoot) {
+      if (closureRoot.isSelfCall(e.fn)) {
         closureRoot.buildFrame(e.args, frame)
         CONTINUE_LOOP_STATUS
       } else { throw e }

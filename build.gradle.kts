@@ -11,9 +11,7 @@ val graalVersion = "25.3.4.1"
 
 dependencies {
   implementation(kotlin("stdlib"))
-  implementation(kotlin("reflect"))
-  implementation(kotlin("script-runtime"))
-  arrayOf("asm", "asm-tree", "asm-commons").forEach { implementation("org.ow2.asm:$it:9.8") }
+  arrayOf("asm", "asm-tree").forEach { implementation("org.ow2.asm:$it:9.8") }
   implementation("org.fusesource.jansi:jansi:2.4.2")
   implementation("org.graalvm.polyglot:polyglot:$graalVersion")
   implementation("org.graalvm.sdk:launcher-common:$graalVersion")

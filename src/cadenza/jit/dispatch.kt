@@ -132,7 +132,7 @@ abstract class GenericDispatch : Node() {
       while (true) {
         val remaining = arguments.size - offset
         if (underapplied.profile(node, function.arity > remaining)) {
-          return function.pap(arguments.copyOfRange(offset, arguments.size))
+          return function.pap(arguments, offset, remaining)
         }
         val count = function.arity
         val hasEnv = function.env != null

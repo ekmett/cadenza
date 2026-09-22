@@ -40,6 +40,11 @@ source parsing, execution, and shutdown. Its single-shot timings are distinct
 from the warm steady-state timings; they are JVM-process-warm, not operating
 system process startup measurements.
 
+`NoncapturingClosure` selects between two escaping functions using a runtime
+argument. `PartialApplication` selects among four differently curried functions,
+saturates the direct-call cache, and returns an escaping partial application;
+setup checks each input variant by completing that function.
+
 Small `-wi 0 -i 1 -w 100ms -r 100ms -f 0` runs are smoke tests, not performance
 measurements. For comparisons record the GraalVM build, CPU, OS, commit, JMH
 arguments, and GC profiler output, and use multiple forks. Context/host-entry
@@ -53,3 +58,7 @@ include raw JMH samples, allocation data, and reproducible settings.
 
 [First AST allocation follow-up](results/2026-09-22/ast-followup.md) records the
 capture regression fix and fixed-point allocation reductions.
+
+[AST calling follow-up](results/2026-09-22/ast-calls.md) measures direct fixed-point
+calls, split-root self loops, and partial-application allocation with matched,
+bounded-heap runs.
