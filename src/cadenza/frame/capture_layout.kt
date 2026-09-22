@@ -4,6 +4,7 @@ import cadenza.Language
 import cadenza.jit.FrameAccess
 import cadenza.semantics.Type
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
+import com.oracle.truffle.api.frame.Frame
 import com.oracle.truffle.api.frame.FrameSlotKind
 import com.oracle.truffle.api.frame.FrameSlotTypeException
 import com.oracle.truffle.api.frame.VirtualFrame
@@ -32,6 +33,13 @@ class CaptureLayout(language: Language, types: Array<Type>) {
     val captured = environment as CapturedFrame
     assert(captured.layout === this)
     return fields[slot].read(captured)
+  }
+
+  /** Keep primitive reads in the same branch as their frame writes. */
+  fun restore(environment: DataFrame, index: Int, frame: Frame, slot: Int) {
+    val captured = environment as CapturedFrame
+    assert(captured.layout === this)
+    fields[index].restore(captured, frame, slot)
   }
 
   private class CaptureField(private val index: Int, val type: Type) {
@@ -74,6 +82,16 @@ class CaptureLayout(language: Language, types: Array<Type>) {
       !isPrimitive || !hasPrimitive.getBoolean(storage) -> objectValue.getObject(storage)
       type == Type.Nat -> primitiveValue.getInt(storage)
       else -> primitiveValue.getBoolean(storage)
+    }
+    fun restore(storage: Any, frame: Frame, slot: Int) {
+      when {
+        !isPrimitive || !hasPrimitive.getBoolean(storage) ->
+          FrameAccess.write(frame, slot, objectValue.getObject(storage))
+        type == Type.Nat ->
+          FrameAccess.write(frame, slot, primitiveValue.getInt(storage))
+        else ->
+          FrameAccess.write(frame, slot, primitiveValue.getBoolean(storage))
+      }
     }
     fun readInt(storage: Any): Int {
       if (!isInt(storage)) throw FrameSlotTypeException.create(index, FrameSlotKind.Int, kind(storage))

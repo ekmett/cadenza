@@ -122,6 +122,27 @@ open class Accumulate : BackendBenchmark() {
   @Benchmark fun cadenza(): Any? = target.call(nextInput(size))
 }
 
+/** A fixed point with useful work per tail step; Nat-only fixNatF packs two state values. */
+open class FixedAccumulate : BackendBenchmark() {
+  @Param("1000") @JvmField var size: Int = 0
+  override val text = """
+    \(limit : Nat) -> fixNatF (\(self : Nat -> Nat) (state : Nat) ->
+      let x : Nat = div state 65536 in
+      let sum : Nat = mod state 65536 in
+      if le limit x then sum else
+        self (plus (mult (plus x 1) 65536) (mod (plus sum x) 65521))) 0
+  """.trimIndent()
+
+  override fun prepareBaseline() {
+    repeat(16) { offset ->
+      val limit = size + offset
+      check(target.call(limit) == (limit.toLong() * (limit - 1) / 2 % 65521).toInt())
+    }
+  }
+
+  @Benchmark fun cadenza(): Any? = target.call(nextInput(size))
+}
+
 /** Alternating roots exercise the general tail trampoline rather than the self-tail loop. */
 open class MutualAccumulate : BackendBenchmark() {
   @Param("1000") @JvmField var size: Int = 0

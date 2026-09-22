@@ -193,7 +193,7 @@ open class ClosureRootNode(
     for ((slot, x) in argPreamble) FrameAccess.write(local, slot, resolveFixedArgument(arguments[x+offset]))
     if (hasEnvironment()) { // Closure receives its captured environment.
       val env = arguments[1] as DataFrame
-      for ((slot, ix) in envPreamble) FrameAccess.write(local, slot, captureLayout!!.read(env, ix))
+      for ((slot, ix) in envPreamble) captureLayout!!.restore(env, ix, local, slot)
     }
   }
 
