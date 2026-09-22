@@ -74,7 +74,11 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     @Child private var dispatch: Dispatch = DispatchNodeGen.create(rands.size, tail_call)
 
     @ExplodeLoop
-    private fun executeRands(frame: VirtualFrame): Array<Any?> = rands.map { it.executeAny(frame) }.toTypedArray()
+    private fun executeRands(frame: VirtualFrame): Array<Any?> {
+      val arguments = arrayOfNulls<Any>(rands.size)
+      for (index in rands.indices) arguments[index] = rands[index].executeAny(frame)
+      return arguments
+    }
 
     private fun executeFn(frame: VirtualFrame, fn: Closure): Any? {
       // TODO: think about how foreign calltargets should work with nbe

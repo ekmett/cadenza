@@ -42,6 +42,7 @@ private class BenchmarkApplyRoot(language: Language, private val function: Closu
 abstract class GuestBenchmark {
   abstract val text: String
   protected open val selectedBackend = "ast"
+  protected open val guestCompilationEnabled: Boolean? = null
   private lateinit var context: Context
   protected lateinit var target: CallTarget
   protected lateinit var source: Source
@@ -49,8 +50,10 @@ abstract class GuestBenchmark {
 
   @Setup(Level.Trial)
   fun openContext() {
-    context = Context.newBuilder("cadenza").allowExperimentalOptions(true)
-      .option("cadenza.Backend", selectedBackend).build()
+    val builder = Context.newBuilder("cadenza").allowExperimentalOptions(true)
+      .option("cadenza.Backend", selectedBackend)
+    guestCompilationEnabled?.let { builder.option("engine.Compilation", it.toString()) }
+    context = builder.build()
     context.enter()
     try {
       context.initialize("cadenza")

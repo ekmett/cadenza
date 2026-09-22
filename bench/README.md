@@ -105,6 +105,15 @@ warmed JFR sampling, an explicit recording-start weight correction, and an isola
 array-size probe. It identifies surviving call arrays before further optimization;
 Fibonacci setup also checks its varying inputs against an independent host oracle.
 
+`GuestInterpretedFib.cadenza` runs the same checked Fibonacci workload with
+`engine.Compilation=false`. This measures a warm JVM running the guest interpreter;
+it does not disable the JVM's own JIT. Compare it separately from `Fib.cadenza`,
+which retains the normal Graal guest-compilation settings. The inherited `kotlin`
+and reference `interpreter` methods do not measure the Truffle guest interpreter.
+
+[Direct argument-array filling](results/2026-09-22/argument-array.md) reduces
+guest-interpreter allocation, with matched compiled and fresh-context controls.
+
 [Rejected fixed-self identity profiling](results/2026-09-22/fixed-self-profile.md)
 records an experiment that preserved allocation and slowed small Fibonacci calls;
 the candidate patch is retained as evidence but is not applied to the runtime.
