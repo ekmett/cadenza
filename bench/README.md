@@ -78,9 +78,15 @@ capture regression fix and fixed-point allocation reductions.
 calls, split-root self loops, and partial-application allocation with matched,
 bounded-heap runs.
 
-[Restoration-to-current comparison](results/2026-09-22/restoration-comparison.md)
-measures the total change since the restored old runtime, with identical workloads
-and bounded heaps, and distinguishes failed baseline workloads from speedups.
+[Earlier restoration comparison](results/2026-09-22/restoration-comparison.md)
+measures the restored old runtime against `f0a954d`, with identical workloads and
+bounded heaps, and distinguishes failed baseline workloads from speedups.
+
+[Final three-checkpoint comparison](results/2026-09-22/final-comparison.md)
+separates restoration, the six-hour goal's starting revision, and its final runtime
+using one identical checked harness, with raw results and source retained.
+The [six-hour impact report](results/2026-09-22/six-hour-impact.md) collects the
+runtime changes, correctness work, rejected experiments and remaining limitations.
 
 [Rejected frame-recovery experiment](results/2026-09-22/frame-recovery.md) records
 why switching to per-frame slot kinds did not improve the warmed accumulator.

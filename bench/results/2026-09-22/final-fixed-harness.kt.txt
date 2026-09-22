@@ -1,0 +1,163 @@
+package cadenza.bench
+
+import cadenza.Language
+import cadenza.data.Closure
+import cadenza.jit.CadenzaRootNode
+import cadenza.jit.DispatchNodeGen
+import cadenza.jit.FrameLayout
+import com.oracle.truffle.api.CallTarget
+import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.interop.InteropLibrary
+import com.oracle.truffle.api.nodes.Node.Child
+import com.oracle.truffle.api.source.Source
+import org.graalvm.polyglot.Context
+import org.openjdk.jmh.annotations.*
+import java.util.concurrent.TimeUnit
+import java.math.BigInteger
+
+/** The same rooted guest dispatch entry works on restored and current runtimes. */
+private class RestorationApplyRoot(language: Language, private val function: Closure) :
+  CadenzaRootNode(language, FrameLayout().build()) {
+  @Child private var dispatch = DispatchNodeGen.create(1, false)
+  override fun execute(frame: VirtualFrame): Any? =
+    dispatch.executeDispatch(frame, function, frame.arguments)
+}
+
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@Warmup(iterations = 10, time = 1)
+@Measurement(iterations = 5, time = 1)
+@Fork(2)
+@State(Scope.Thread)
+abstract class RestorationGuestBenchmark {
+  protected abstract val text: String
+  protected lateinit var target: CallTarget
+  private lateinit var context: Context
+  private var cursor = 0
+
+  @Setup(Level.Trial)
+  fun openContext() {
+    // Both revisions use their default AST backend. The restored runtime has no
+    // cadenza.Backend option, so neither side receives that option or parameter.
+    context = Context.newBuilder("cadenza").allowExperimentalOptions(true).build()
+    context.enter()
+    try {
+      context.initialize("cadenza")
+      val language = Language.currentLanguage()
+      val source = Source.newBuilder("cadenza", text, "restoration-bench.za").build()
+      val function = language.parse(source).call() as Closure
+      target = RestorationApplyRoot(language, function).callTarget
+      checkAllInputs(language)
+      cursor = 0
+    } catch (failure: Throwable) {
+      context.leave()
+      context.close()
+      throw failure
+    }
+  }
+
+  protected abstract fun checkAllInputs(language: Language)
+
+  @TearDown(Level.Trial)
+  fun closeContext() {
+    try { context.leave() } finally { context.close() }
+  }
+
+  protected fun nextInput(base: Int): Int {
+    val offset = cursor
+    cursor = (cursor + 1) and 15
+    return base + offset
+  }
+}
+
+/** The guest program and 1000..1015 runtime inputs match the earlier comparison. */
+open class Accumulate : RestorationGuestBenchmark() {
+  @Param("1000") @JvmField var size: Int = 1000
+  override val text = "\\(limit : Nat) -> let go : Nat -> Nat -> Nat = \\(x : Nat) (sum : Nat) -> if le limit x then sum else go (plus x 1) (mod (plus sum x) 65521) in go 0 0"
+
+  override fun checkAllInputs(language: Language) {
+    repeat(16) { offset ->
+      val limit = size + offset
+      // Independent closed form for sum(0 until limit), reduced modulo 65521.
+      val expected = (limit.toLong() * (limit - 1L) / 2L % 65521L).toInt()
+      val actual = target.call(limit)
+      check(actual == expected) { "Accumulator setup input=$limit expected=$expected actual=$actual" }
+    }
+    println("RESTORATION_SETUP_CHECK accumulator inputs=$size..${size + 15} passed=16")
+  }
+
+  @Benchmark fun cadenza(): Any? = target.call(nextInput(size))
+}
+
+/** Return each allocated closure to JMH so its captured value escapes the timed call. */
+open class CapturedClosure : RestorationGuestBenchmark() {
+  @Param("1000") @JvmField var base: Int = 1000
+  override val text = "\\(x : Nat) -> \\(y : Nat) -> plus x y"
+
+  override fun checkAllInputs(language: Language) {
+    // Retain all sixteen results before invoking any, catching reused capture storage.
+    val captures = (0 until 16).map { offset ->
+      val input = base + offset
+      input to (target.call(input) as Closure)
+    }
+    for ((input, closure) in captures.reversed()) {
+      // The restored exported Closure.execute has an older calling convention.
+      // Validate through the same common rooted guest dispatcher on BOTH revisions.
+      val actual = RestorationApplyRoot(language, closure).callTarget.call(7)
+      check(actual == input + 7) { "Capture setup input=$input expected=${input + 7} actual=$actual" }
+    }
+    println("RESTORATION_SETUP_CHECK captures inputs=$base..${base + 15} argument=7 passed=16")
+  }
+
+  @Benchmark fun allocate(): Any? = target.call(nextInput(base))
+}
+
+/** Exact goal-start/current Fib source and four-input range; no saturated wrapper. */
+open class Fib : RestorationGuestBenchmark() {
+  @Param("15") @JvmField var size: Int = 15
+  override val text = "fixNatF (\\(f : Nat -> Nat) (x : Nat) -> if le x 1 then x else plus (f (minus x 1)) (f (minus x 2)))"
+
+  override fun checkAllInputs(language: Language) {
+    repeat(4) { offset ->
+      val input = size + offset
+      var previous = BigInteger.ZERO
+      var current = BigInteger.ONE
+      repeat(input) {
+        val next = previous + current
+        previous = current
+        current = next
+      }
+      val actual = InteropLibrary.getUncached().asBigInteger(target.call(input))
+      check(actual == previous) { "Fib setup input=$input expected=$previous actual=$actual" }
+    }
+    println("GOAL_SETUP_CHECK fib inputs=$size..${size + 3} passed=4")
+  }
+
+  @Benchmark fun cadenza(): Any? = target.call(size + (nextInput(0) and 3))
+}
+
+/** Additional useful fixed-point workload for the goal-start/current comparison. */
+open class FixedAccumulate : RestorationGuestBenchmark() {
+  @Param("1000") @JvmField var size: Int = 0
+  override val text = """
+    \(limit : Nat) -> fixNatF (\(self : Nat -> Nat) (state : Nat) ->
+      let x : Nat = div state 65536 in
+      let sum : Nat = mod state 65536 in
+      if le limit x then sum else
+        self (plus (mult (plus x 1) 65536) (mod (plus sum x) 65521))) 0
+  """.trimIndent()
+
+  override fun checkAllInputs(language: Language) {
+    repeat(16) { offset ->
+      val limit = size + offset
+      // Independent closed form for the modular sum; no guest recursion in the oracle.
+      val expected = (limit.toLong() * (limit - 1L) / 2L % 65521L).toInt()
+      val actual = target.call(limit)
+      check(actual == expected) { "Fixed accumulator setup input=$limit expected=$expected actual=$actual" }
+    }
+    println("GOAL_SETUP_CHECK fixed-accumulate inputs=$size..${size + 15} passed=16")
+  }
+
+  @Benchmark fun cadenza(): Any? = target.call(nextInput(size))
+}
+

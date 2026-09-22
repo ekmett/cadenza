@@ -1,0 +1,2066 @@
+{
+  "revisions": {
+    "restored": "26887c4b6871dd827e865cb90417c2d5c3c4f1e6",
+    "goalstart": "dd7c47b7b8afca92b1c3d59c420fbb8ae95c6c2b",
+    "current": "2d3b1f339ab62df589ceed045747b97ac8f03203"
+  },
+  "harnessSha256": "187bf69c78c6ed53f7db8cbc36caedc1bedd06e9c3f6591a65e20d5124eef741",
+  "runs": {
+    "accumulate": {
+      "restored": {
+        "command": [
+          "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "-Xms64m",
+          "-Xmx128m",
+          "-Xss32m",
+          "--enable-native-access=ALL-UNNAMED",
+          "-cp",
+          "/private/tmp/cadenza-final-restoration-restored/build/classes/java/bench:/private/tmp/cadenza-final-restoration-restored/build/classes/kotlin/bench:/private/tmp/cadenza-final-restoration-restored/build/tmp/kapt3/classes/bench:/private/tmp/cadenza-final-restoration-restored/build/resources/bench:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-core/1.37/896f27e49105b35ea1964319c83d12082e7a79ef/jmh-core-1.37.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/2.4.20/a550e029f875982678926dc574e7b4c15ac71d8b/kotlin-reflect-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.4.20/94c1451890d164aed65d43b3db0b7ecef7c183e7/kotlin-stdlib-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-script-runtime/2.4.20/c5d2fe2964e557067ce970573bbc7ffa74f57cf4/kotlin-script-runtime-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.8/36e4d212970388e5bd2c5180292012502df461bb/asm-commons-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.8/18419ca5b77a2f81097c741e7872e6ab8d2f40d/asm-tree-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm/9.8/dc19ecb3f7889b7860697215cae99c0f9b6f6b4b/asm-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.fusesource.jansi/jansi/2.4.2/ba7387c31622c6650b83edba1bbb115f1fe462ba/jansi-2.4.2.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/launcher-common/25.3.4.1/24a0d8aac2806664dd5a20f6f8970743edaa00bc/launcher-common-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-runtime/25.3.4.1/5f9818cd0413f63bdf1fe52ba4f2fc2786f4cbb7/truffle-runtime-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-api/25.3.4.1/d0ad4561c54b72dae2918cf8ba0d899844912df8/truffle-api-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.shadowed/jline/25.3.4.1/49807a25edccc0397ca03e63de298b8217ae16d9/jline-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.polyglot/polyglot/25.3.4.1/708778860913af594457422f5048ff5c05c7c1d0/polyglot-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.apache.commons/commons-math3/3.6.1/e4ba98f1d4b3c80ec46392f25e094a6a2e58fcbf/commons-math3-3.6.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/jniutils/25.3.4.1/bccb3644f0750807fd94726c13f9afc5f24ce92d/jniutils-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/collections/25.3.4.1/76c7a0adc6d80c4bc6b52d3799707c2c39240930/collections-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/nativeimage/25.3.4.1/f532f70767714bafd65e13a22ba7b3cf3809e85/nativeimage-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-compiler/25.3.4.1/978fceb932a0b8ad538592bf2204b2e6f5240304/truffle-compiler-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/word/25.3.4.1/36aa272882c63927768f3aa9541a5b372a726af3/word-25.3.4.1.jar:/private/tmp/cadenza-final-restoration-restored/build/classes/java/main:/private/tmp/cadenza-final-restoration-restored/build/classes/kotlin/main:/private/tmp/cadenza-final-restoration-restored/build/tmp/kapt3/classes/main:/private/tmp/cadenza-final-restoration-restored/build/resources/main",
+          "org.openjdk.jmh.Main",
+          "^cadenza.bench.Accumulate.cadenza$",
+          "-p",
+          "size=1000",
+          "-wi",
+          "10",
+          "-w",
+          "1s",
+          "-i",
+          "5",
+          "-r",
+          "1s",
+          "-f",
+          "2",
+          "-t",
+          "1",
+          "-prof",
+          "gc",
+          "-foe",
+          "true",
+          "-jvmArgsAppend",
+          "-Xms128m -Xmx768m",
+          "-rf",
+          "json",
+          "-rff",
+          "/tmp/cadenza-final-restoration-restored-accumulate.json"
+        ],
+        "setupChecks": 32,
+        "result": {
+          "jmhVersion": "1.37",
+          "benchmark": "cadenza.bench.Accumulate.cadenza",
+          "mode": "avgt",
+          "threads": 1,
+          "forks": 2,
+          "jvm": "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "jvmArgs": [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:+EnableJVMCI",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Xms64m",
+            "-Xmx128m",
+            "-Xss32m",
+            "--enable-native-access=ALL-UNNAMED",
+            "-Xms128m",
+            "-Xmx768m"
+          ],
+          "jdkVersion": "25.0.4.1",
+          "vmName": "Java HotSpot(TM) 64-Bit Server VM",
+          "vmVersion": "25.0.4.1+1-LTS-jvmci-25.3-b22",
+          "warmupIterations": 10,
+          "warmupTime": "1 s",
+          "warmupBatchSize": 1,
+          "measurementIterations": 5,
+          "measurementTime": "1 s",
+          "measurementBatchSize": 1,
+          "params": {
+            "size": "1000"
+          },
+          "primaryMetric": {
+            "score": 9.097872429678153,
+            "scoreError": 0.06853680659313661,
+            "scoreConfidence": [
+              9.029335623085016,
+              9.16640923627129
+            ],
+            "scorePercentiles": {
+              "0.0": 9.027949062264218,
+              "50.0": 9.101805918832937,
+              "90.0": 9.156862729758737,
+              "95.0": 9.157857377243435,
+              "99.0": 9.157857377243435,
+              "99.9": 9.157857377243435,
+              "99.99": 9.157857377243435,
+              "99.999": 9.157857377243435,
+              "99.9999": 9.157857377243435,
+              "100.0": 9.157857377243435
+            },
+            "scoreUnit": "us/op",
+            "rawData": [
+              [
+                9.157857377243435,
+                9.11201338447727,
+                9.147910902396463,
+                9.120616147591564,
+                9.13553938740845
+              ],
+              [
+                9.027949062264218,
+                9.091598453188602,
+                9.033985977906214,
+                9.06427628469905,
+                9.086977319606282
+              ]
+            ]
+          },
+          "secondaryMetrics": {
+            "gc.alloc.rate": {
+              "score": 11607.110843894185,
+              "scoreError": 90.25768485773254,
+              "scoreConfidence": [
+                11516.853159036453,
+                11697.368528751917
+              ],
+              "scorePercentiles": {
+                "0.0": 11534.51648900535,
+                "50.0": 11599.375937799416,
+                "90.0": 11699.558670099988,
+                "95.0": 11700.304877661963,
+                "99.0": 11700.304877661963,
+                "99.9": 11700.304877661963,
+                "99.99": 11700.304877661963,
+                "99.999": 11700.304877661963,
+                "99.9999": 11700.304877661963,
+                "100.0": 11700.304877661963
+              },
+              "scoreUnit": "MB/sec",
+              "rawData": [
+                [
+                  11534.51648900535,
+                  11592.441621225491,
+                  11546.708889757841,
+                  11581.674961321198,
+                  11544.137194831654
+                ],
+                [
+                  11700.304877661963,
+                  11618.54052970427,
+                  11692.842802042209,
+                  11653.630819018525,
+                  11606.31025437334
+                ]
+              ]
+            },
+            "gc.alloc.rate.norm": {
+              "score": 110776.46005248686,
+              "scoreError": 1.065345580151906,
+              "scoreConfidence": [
+                110775.3947069067,
+                110777.52539806701
+              ],
+              "scorePercentiles": {
+                "0.0": 110776.03994572592,
+                "50.0": 110776.07815627933,
+                "90.0": 110777.79511413055,
+                "95.0": 110777.79920001462,
+                "99.0": 110777.79920001462,
+                "99.9": 110777.79920001462,
+                "99.99": 110777.79920001462,
+                "99.999": 110777.79920001462,
+                "99.9999": 110777.79920001462,
+                "100.0": 110777.79920001462
+              },
+              "scoreUnit": "B/op",
+              "rawData": [
+                [
+                  110776.34053723942,
+                  110776.04766179711,
+                  110776.08134998583,
+                  110776.04493811028,
+                  110777.79920001462
+                ],
+                [
+                  110776.34261488162,
+                  110776.03994572592,
+                  110776.07097336701,
+                  110776.07496257282,
+                  110777.75834117392
+                ]
+              ]
+            },
+            "gc.count": {
+              "score": 1093.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                1093.0,
+                1093.0
+              ],
+              "scorePercentiles": {
+                "0.0": 108.0,
+                "50.0": 109.0,
+                "90.0": 110.0,
+                "95.0": 110.0,
+                "99.0": 110.0,
+                "99.9": 110.0,
+                "99.99": 110.0,
+                "99.999": 110.0,
+                "99.9999": 110.0,
+                "100.0": 110.0
+              },
+              "scoreUnit": "counts",
+              "rawData": [
+                [
+                  109.0,
+                  109.0,
+                  108.0,
+                  109.0,
+                  109.0
+                ],
+                [
+                  110.0,
+                  110.0,
+                  110.0,
+                  109.0,
+                  110.0
+                ]
+              ]
+            },
+            "gc.time": {
+              "score": 181.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                181.0,
+                181.0
+              ],
+              "scorePercentiles": {
+                "0.0": 17.0,
+                "50.0": 18.0,
+                "90.0": 19.0,
+                "95.0": 19.0,
+                "99.0": 19.0,
+                "99.9": 19.0,
+                "99.99": 19.0,
+                "99.999": 19.0,
+                "99.9999": 19.0,
+                "100.0": 19.0
+              },
+              "scoreUnit": "ms",
+              "rawData": [
+                [
+                  19.0,
+                  17.0,
+                  18.0,
+                  19.0,
+                  18.0
+                ],
+                [
+                  18.0,
+                  19.0,
+                  17.0,
+                  18.0,
+                  18.0
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "goalstart": {
+        "command": [
+          "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "-Xms64m",
+          "-Xmx128m",
+          "-Xss32m",
+          "--enable-native-access=ALL-UNNAMED",
+          "-cp",
+          "/private/tmp/cadenza-final-restoration-goalstart/build/classes/java/bench:/private/tmp/cadenza-final-restoration-goalstart/build/classes/kotlin/bench:/private/tmp/cadenza-final-restoration-goalstart/build/tmp/kapt3/classes/bench:/private/tmp/cadenza-final-restoration-goalstart/build/resources/bench:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-core/1.37/896f27e49105b35ea1964319c83d12082e7a79ef/jmh-core-1.37.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/2.4.20/a550e029f875982678926dc574e7b4c15ac71d8b/kotlin-reflect-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.4.20/94c1451890d164aed65d43b3db0b7ecef7c183e7/kotlin-stdlib-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-script-runtime/2.4.20/c5d2fe2964e557067ce970573bbc7ffa74f57cf4/kotlin-script-runtime-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.8/36e4d212970388e5bd2c5180292012502df461bb/asm-commons-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.8/18419ca5b77a2f81097c741e7872e6ab8d2f40d/asm-tree-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm/9.8/dc19ecb3f7889b7860697215cae99c0f9b6f6b4b/asm-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.fusesource.jansi/jansi/2.4.2/ba7387c31622c6650b83edba1bbb115f1fe462ba/jansi-2.4.2.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/launcher-common/25.3.4.1/24a0d8aac2806664dd5a20f6f8970743edaa00bc/launcher-common-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-runtime/25.3.4.1/5f9818cd0413f63bdf1fe52ba4f2fc2786f4cbb7/truffle-runtime-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-api/25.3.4.1/d0ad4561c54b72dae2918cf8ba0d899844912df8/truffle-api-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.shadowed/jline/25.3.4.1/49807a25edccc0397ca03e63de298b8217ae16d9/jline-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.polyglot/polyglot/25.3.4.1/708778860913af594457422f5048ff5c05c7c1d0/polyglot-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.apache.commons/commons-math3/3.6.1/e4ba98f1d4b3c80ec46392f25e094a6a2e58fcbf/commons-math3-3.6.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/jniutils/25.3.4.1/bccb3644f0750807fd94726c13f9afc5f24ce92d/jniutils-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/collections/25.3.4.1/76c7a0adc6d80c4bc6b52d3799707c2c39240930/collections-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/nativeimage/25.3.4.1/f532f70767714bafd65e13a22ba7b3cf3809e85/nativeimage-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-compiler/25.3.4.1/978fceb932a0b8ad538592bf2204b2e6f5240304/truffle-compiler-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/word/25.3.4.1/36aa272882c63927768f3aa9541a5b372a726af3/word-25.3.4.1.jar:/private/tmp/cadenza-final-restoration-goalstart/build/classes/java/main:/private/tmp/cadenza-final-restoration-goalstart/build/classes/kotlin/main:/private/tmp/cadenza-final-restoration-goalstart/build/tmp/kapt3/classes/main:/private/tmp/cadenza-final-restoration-goalstart/build/resources/main",
+          "org.openjdk.jmh.Main",
+          "^cadenza.bench.Accumulate.cadenza$",
+          "-p",
+          "size=1000",
+          "-wi",
+          "10",
+          "-w",
+          "1s",
+          "-i",
+          "5",
+          "-r",
+          "1s",
+          "-f",
+          "2",
+          "-t",
+          "1",
+          "-prof",
+          "gc",
+          "-foe",
+          "true",
+          "-jvmArgsAppend",
+          "-Xms128m -Xmx768m",
+          "-rf",
+          "json",
+          "-rff",
+          "/tmp/cadenza-final-restoration-goalstart-accumulate.json"
+        ],
+        "setupChecks": 32,
+        "result": {
+          "jmhVersion": "1.37",
+          "benchmark": "cadenza.bench.Accumulate.cadenza",
+          "mode": "avgt",
+          "threads": 1,
+          "forks": 2,
+          "jvm": "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "jvmArgs": [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:+EnableJVMCI",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Xms64m",
+            "-Xmx128m",
+            "-Xss32m",
+            "--enable-native-access=ALL-UNNAMED",
+            "-Xms128m",
+            "-Xmx768m"
+          ],
+          "jdkVersion": "25.0.4.1",
+          "vmName": "Java HotSpot(TM) 64-Bit Server VM",
+          "vmVersion": "25.0.4.1+1-LTS-jvmci-25.3-b22",
+          "warmupIterations": 10,
+          "warmupTime": "1 s",
+          "warmupBatchSize": 1,
+          "measurementIterations": 5,
+          "measurementTime": "1 s",
+          "measurementBatchSize": 1,
+          "params": {
+            "size": "1000"
+          },
+          "primaryMetric": {
+            "score": 3.197935200941221,
+            "scoreError": 0.014144133537831751,
+            "scoreConfidence": [
+              3.1837910674033894,
+              3.212079334479053
+            ],
+            "scorePercentiles": {
+              "0.0": 3.182584705509816,
+              "50.0": 3.198373529265898,
+              "90.0": 3.214776642220656,
+              "95.0": 3.2154495538690324,
+              "99.0": 3.2154495538690324,
+              "99.9": 3.2154495538690324,
+              "99.99": 3.2154495538690324,
+              "99.999": 3.2154495538690324,
+              "99.9999": 3.2154495538690324,
+              "100.0": 3.2154495538690324
+            },
+            "scoreUnit": "us/op",
+            "rawData": [
+              [
+                3.182584705509816,
+                3.1911679304781693,
+                3.199694157768924,
+                3.2154495538690324,
+                3.200232707126027
+              ],
+              [
+                3.2087204373852662,
+                3.197052900762872,
+                3.200167439381998,
+                3.1931255444268243,
+                3.1911566327032803
+              ]
+            ]
+          },
+          "secondaryMetrics": {
+            "gc.alloc.rate": {
+              "score": 16.739050007989835,
+              "scoreError": 0.12503869792987815,
+              "scoreConfidence": [
+                16.614011310059958,
+                16.864088705919713
+              ],
+              "scorePercentiles": {
+                "0.0": 16.61359413110502,
+                "50.0": 16.71889250818992,
+                "90.0": 16.882579954428294,
+                "95.0": 16.88776891046611,
+                "99.0": 16.88776891046611,
+                "99.9": 16.88776891046611,
+                "99.99": 16.88776891046611,
+                "99.999": 16.88776891046611,
+                "99.9999": 16.88776891046611,
+                "100.0": 16.88776891046611
+              },
+              "scoreUnit": "MB/sec",
+              "rawData": [
+                [
+                  16.811747039682785,
+                  16.739705509433655,
+                  16.695531941797352,
+                  16.61359413110502,
+                  16.835879350087954
+                ],
+                [
+                  16.67648293678565,
+                  16.708656154413145,
+                  16.692005244159958,
+                  16.729128861966696,
+                  16.88776891046611
+                ]
+              ]
+            },
+            "gc.alloc.rate.norm": {
+              "score": 56.16148871785492,
+              "scoreError": 0.37288374407263025,
+              "scoreConfidence": [
+                55.78860497378229,
+                56.53437246192755
+              ],
+              "scorePercentiles": {
+                "0.0": 56.02220876494024,
+                "50.0": 56.02262665365215,
+                "90.0": 56.62444358494102,
+                "95.0": 56.6246194994587,
+                "99.0": 56.6246194994587,
+                "99.9": 56.6246194994587,
+                "99.99": 56.6246194994587,
+                "99.999": 56.6246194994587,
+                "99.9999": 56.6246194994587,
+                "100.0": 56.6246194994587
+              },
+              "scoreUnit": "B/op",
+              "rawData": [
+                [
+                  56.11599746675111,
+                  56.02235084849854,
+                  56.02220876494024,
+                  56.02287062201938,
+                  56.6246194994587
+                ],
+                [
+                  56.11702769574587,
+                  56.02238268528492,
+                  56.02233588706976,
+                  56.02223335449884,
+                  56.62286035428183
+                ]
+              ]
+            },
+            "gc.count": {
+              "score": 3.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                3.0,
+                3.0
+              ],
+              "scorePercentiles": {
+                "0.0": 0.0,
+                "50.0": 0.0,
+                "90.0": 1.0,
+                "95.0": 1.0,
+                "99.0": 1.0,
+                "99.9": 1.0,
+                "99.99": 1.0,
+                "99.999": 1.0,
+                "99.9999": 1.0,
+                "100.0": 1.0
+              },
+              "scoreUnit": "counts",
+              "rawData": [
+                [
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ],
+                [
+                  1.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ]
+            },
+            "gc.time": {
+              "score": 1.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                1.0,
+                1.0
+              ],
+              "scorePercentiles": {
+                "0.0": 0.0,
+                "50.0": 0.0,
+                "90.0": 0.9000000000000004,
+                "95.0": 1.0,
+                "99.0": 1.0,
+                "99.9": 1.0,
+                "99.99": 1.0,
+                "99.999": 1.0,
+                "99.9999": 1.0,
+                "100.0": 1.0
+              },
+              "scoreUnit": "ms",
+              "rawData": [
+                [
+                  1.0
+                ],
+                [
+                  0.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "current": {
+        "command": [
+          "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "-Xms64m",
+          "-Xmx128m",
+          "-Xss32m",
+          "--enable-native-access=ALL-UNNAMED",
+          "-cp",
+          "/private/tmp/cadenza-final-restoration-current/build/classes/java/bench:/private/tmp/cadenza-final-restoration-current/build/classes/kotlin/bench:/private/tmp/cadenza-final-restoration-current/build/tmp/kapt3/classes/bench:/private/tmp/cadenza-final-restoration-current/build/resources/bench:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-core/1.37/896f27e49105b35ea1964319c83d12082e7a79ef/jmh-core-1.37.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.4.20/94c1451890d164aed65d43b3db0b7ecef7c183e7/kotlin-stdlib-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.8/18419ca5b77a2f81097c741e7872e6ab8d2f40d/asm-tree-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm/9.8/dc19ecb3f7889b7860697215cae99c0f9b6f6b4b/asm-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.fusesource.jansi/jansi/2.4.2/ba7387c31622c6650b83edba1bbb115f1fe462ba/jansi-2.4.2.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/launcher-common/25.3.4.1/24a0d8aac2806664dd5a20f6f8970743edaa00bc/launcher-common-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-runtime/25.3.4.1/5f9818cd0413f63bdf1fe52ba4f2fc2786f4cbb7/truffle-runtime-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-api/25.3.4.1/d0ad4561c54b72dae2918cf8ba0d899844912df8/truffle-api-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.shadowed/jline/25.3.4.1/49807a25edccc0397ca03e63de298b8217ae16d9/jline-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.polyglot/polyglot/25.3.4.1/708778860913af594457422f5048ff5c05c7c1d0/polyglot-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.apache.commons/commons-math3/3.6.1/e4ba98f1d4b3c80ec46392f25e094a6a2e58fcbf/commons-math3-3.6.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/jniutils/25.3.4.1/bccb3644f0750807fd94726c13f9afc5f24ce92d/jniutils-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/collections/25.3.4.1/76c7a0adc6d80c4bc6b52d3799707c2c39240930/collections-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/nativeimage/25.3.4.1/f532f70767714bafd65e13a22ba7b3cf3809e85/nativeimage-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-compiler/25.3.4.1/978fceb932a0b8ad538592bf2204b2e6f5240304/truffle-compiler-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/word/25.3.4.1/36aa272882c63927768f3aa9541a5b372a726af3/word-25.3.4.1.jar:/private/tmp/cadenza-final-restoration-current/build/classes/java/main:/private/tmp/cadenza-final-restoration-current/build/classes/kotlin/main:/private/tmp/cadenza-final-restoration-current/build/tmp/kapt3/classes/main:/private/tmp/cadenza-final-restoration-current/build/resources/main",
+          "org.openjdk.jmh.Main",
+          "^cadenza.bench.Accumulate.cadenza$",
+          "-p",
+          "size=1000",
+          "-wi",
+          "10",
+          "-w",
+          "1s",
+          "-i",
+          "5",
+          "-r",
+          "1s",
+          "-f",
+          "2",
+          "-t",
+          "1",
+          "-prof",
+          "gc",
+          "-foe",
+          "true",
+          "-jvmArgsAppend",
+          "-Xms128m -Xmx768m",
+          "-rf",
+          "json",
+          "-rff",
+          "/tmp/cadenza-final-restoration-current-accumulate.json"
+        ],
+        "setupChecks": 32,
+        "result": {
+          "jmhVersion": "1.37",
+          "benchmark": "cadenza.bench.Accumulate.cadenza",
+          "mode": "avgt",
+          "threads": 1,
+          "forks": 2,
+          "jvm": "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "jvmArgs": [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:+EnableJVMCI",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Xms64m",
+            "-Xmx128m",
+            "-Xss32m",
+            "--enable-native-access=ALL-UNNAMED",
+            "-Xms128m",
+            "-Xmx768m"
+          ],
+          "jdkVersion": "25.0.4.1",
+          "vmName": "Java HotSpot(TM) 64-Bit Server VM",
+          "vmVersion": "25.0.4.1+1-LTS-jvmci-25.3-b22",
+          "warmupIterations": 10,
+          "warmupTime": "1 s",
+          "warmupBatchSize": 1,
+          "measurementIterations": 5,
+          "measurementTime": "1 s",
+          "measurementBatchSize": 1,
+          "params": {
+            "size": "1000"
+          },
+          "primaryMetric": {
+            "score": 3.184472283073519,
+            "scoreError": 0.026613963456053,
+            "scoreConfidence": [
+              3.157858319617466,
+              3.2110862465295718
+            ],
+            "scorePercentiles": {
+              "0.0": 3.1423126317175973,
+              "50.0": 3.1891625687798406,
+              "90.0": 3.199283945428683,
+              "95.0": 3.199509673289619,
+              "99.0": 3.199509673289619,
+              "99.9": 3.199509673289619,
+              "99.99": 3.199509673289619,
+              "99.999": 3.199509673289619,
+              "99.9999": 3.199509673289619,
+              "100.0": 3.199509673289619
+            },
+            "scoreUnit": "us/op",
+            "rawData": [
+              [
+                3.1862749371518784,
+                3.199509673289619,
+                3.195263772769177,
+                3.1852290072209626,
+                3.1849387357794208
+              ],
+              [
+                3.192050200407803,
+                3.195424360731102,
+                3.197252394680258,
+                3.1423126317175973,
+                3.1664671169873673
+              ]
+            ]
+          },
+          "secondaryMetrics": {
+            "gc.alloc.rate": {
+              "score": 16.809313157697915,
+              "scoreError": 0.1836134991396282,
+              "scoreConfidence": [
+                16.625699658558286,
+                16.992926656837543
+              ],
+              "scorePercentiles": {
+                "0.0": 16.696374553381254,
+                "50.0": 16.767089847875027,
+                "90.0": 17.01520430929676,
+                "95.0": 17.01682774152695,
+                "99.0": 17.01682774152695,
+                "99.9": 17.01682774152695,
+                "99.99": 17.01682774152695,
+                "99.999": 17.01682774152695,
+                "99.9999": 17.01682774152695,
+                "100.0": 17.01682774152695
+              },
+              "scoreUnit": "MB/sec",
+              "rawData": [
+                [
+                  16.793392905810244,
+                  16.696374553381254,
+                  16.718338254597935,
+                  16.77058856080331,
+                  16.907433827580814
+                ],
+                [
+                  16.763591134946743,
+                  16.717538884472898,
+                  16.708452294633933,
+                  17.000593419225048,
+                  17.01682774152695
+                ]
+              ]
+            },
+            "gc.alloc.rate.norm": {
+              "score": 56.16088872089283,
+              "scoreError": 0.371336982003825,
+              "scoreConfidence": [
+                55.789551738889,
+                56.53222570289665
+              ],
+              "scorePercentiles": {
+                "0.0": 56.02195293291184,
+                "50.0": 56.02252717834648,
+                "90.0": 56.62140214996338,
+                "95.0": 56.62145674534224,
+                "99.0": 56.62145674534224,
+                "99.9": 56.62145674534224,
+                "99.99": 56.62145674534224,
+                "99.999": 56.62145674534224,
+                "99.9999": 56.62145674534224,
+                "100.0": 56.62145674534224
+              },
+              "scoreUnit": "B/op",
+              "rawData": [
+                [
+                  56.116204829398654,
+                  56.0227254632829,
+                  56.022328893410055,
+                  56.02225748089831,
+                  56.62145674534224
+                ],
+                [
+                  56.11649696053459,
+                  56.02225479193359,
+                  56.02229831966234,
+                  56.02195293291184,
+                  56.62091079155364
+                ]
+              ]
+            },
+            "gc.count": {
+              "score": 3.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                3.0,
+                3.0
+              ],
+              "scorePercentiles": {
+                "0.0": 0.0,
+                "50.0": 0.0,
+                "90.0": 1.0,
+                "95.0": 1.0,
+                "99.0": 1.0,
+                "99.9": 1.0,
+                "99.99": 1.0,
+                "99.999": 1.0,
+                "99.9999": 1.0,
+                "100.0": 1.0
+              },
+              "scoreUnit": "counts",
+              "rawData": [
+                [
+                  0.0,
+                  0.0,
+                  1.0,
+                  0.0,
+                  0.0
+                ],
+                [
+                  1.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  1.0
+                ]
+              ]
+            },
+            "gc.time": {
+              "score": 1.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                1.0,
+                1.0
+              ],
+              "scorePercentiles": {
+                "0.0": 0.0,
+                "50.0": 0.0,
+                "90.0": 0.9000000000000004,
+                "95.0": 1.0,
+                "99.0": 1.0,
+                "99.9": 1.0,
+                "99.99": 1.0,
+                "99.999": 1.0,
+                "99.9999": 1.0,
+                "100.0": 1.0
+              },
+              "scoreUnit": "ms",
+              "rawData": [
+                [
+                  0.0
+                ],
+                [
+                  1.0,
+                  0.0
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    "capture": {
+      "restored": {
+        "command": [
+          "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "-Xms64m",
+          "-Xmx128m",
+          "-Xss32m",
+          "--enable-native-access=ALL-UNNAMED",
+          "-cp",
+          "/private/tmp/cadenza-final-restoration-restored/build/classes/java/bench:/private/tmp/cadenza-final-restoration-restored/build/classes/kotlin/bench:/private/tmp/cadenza-final-restoration-restored/build/tmp/kapt3/classes/bench:/private/tmp/cadenza-final-restoration-restored/build/resources/bench:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-core/1.37/896f27e49105b35ea1964319c83d12082e7a79ef/jmh-core-1.37.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/2.4.20/a550e029f875982678926dc574e7b4c15ac71d8b/kotlin-reflect-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.4.20/94c1451890d164aed65d43b3db0b7ecef7c183e7/kotlin-stdlib-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-script-runtime/2.4.20/c5d2fe2964e557067ce970573bbc7ffa74f57cf4/kotlin-script-runtime-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.8/36e4d212970388e5bd2c5180292012502df461bb/asm-commons-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.8/18419ca5b77a2f81097c741e7872e6ab8d2f40d/asm-tree-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm/9.8/dc19ecb3f7889b7860697215cae99c0f9b6f6b4b/asm-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.fusesource.jansi/jansi/2.4.2/ba7387c31622c6650b83edba1bbb115f1fe462ba/jansi-2.4.2.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/launcher-common/25.3.4.1/24a0d8aac2806664dd5a20f6f8970743edaa00bc/launcher-common-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-runtime/25.3.4.1/5f9818cd0413f63bdf1fe52ba4f2fc2786f4cbb7/truffle-runtime-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-api/25.3.4.1/d0ad4561c54b72dae2918cf8ba0d899844912df8/truffle-api-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.shadowed/jline/25.3.4.1/49807a25edccc0397ca03e63de298b8217ae16d9/jline-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.polyglot/polyglot/25.3.4.1/708778860913af594457422f5048ff5c05c7c1d0/polyglot-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.apache.commons/commons-math3/3.6.1/e4ba98f1d4b3c80ec46392f25e094a6a2e58fcbf/commons-math3-3.6.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/jniutils/25.3.4.1/bccb3644f0750807fd94726c13f9afc5f24ce92d/jniutils-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/collections/25.3.4.1/76c7a0adc6d80c4bc6b52d3799707c2c39240930/collections-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/nativeimage/25.3.4.1/f532f70767714bafd65e13a22ba7b3cf3809e85/nativeimage-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-compiler/25.3.4.1/978fceb932a0b8ad538592bf2204b2e6f5240304/truffle-compiler-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/word/25.3.4.1/36aa272882c63927768f3aa9541a5b372a726af3/word-25.3.4.1.jar:/private/tmp/cadenza-final-restoration-restored/build/classes/java/main:/private/tmp/cadenza-final-restoration-restored/build/classes/kotlin/main:/private/tmp/cadenza-final-restoration-restored/build/tmp/kapt3/classes/main:/private/tmp/cadenza-final-restoration-restored/build/resources/main",
+          "org.openjdk.jmh.Main",
+          "^cadenza.bench.CapturedClosure.allocate$",
+          "-p",
+          "base=1000",
+          "-wi",
+          "10",
+          "-w",
+          "1s",
+          "-i",
+          "5",
+          "-r",
+          "1s",
+          "-f",
+          "2",
+          "-t",
+          "1",
+          "-prof",
+          "gc",
+          "-foe",
+          "true",
+          "-jvmArgsAppend",
+          "-Xms128m -Xmx768m",
+          "-rf",
+          "json",
+          "-rff",
+          "/tmp/cadenza-final-restoration-restored-capture.json"
+        ],
+        "setupChecks": 32,
+        "result": {
+          "jmhVersion": "1.37",
+          "benchmark": "cadenza.bench.CapturedClosure.allocate",
+          "mode": "avgt",
+          "threads": 1,
+          "forks": 2,
+          "jvm": "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "jvmArgs": [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:+EnableJVMCI",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Xms64m",
+            "-Xmx128m",
+            "-Xss32m",
+            "--enable-native-access=ALL-UNNAMED",
+            "-Xms128m",
+            "-Xmx768m"
+          ],
+          "jdkVersion": "25.0.4.1",
+          "vmName": "Java HotSpot(TM) 64-Bit Server VM",
+          "vmVersion": "25.0.4.1+1-LTS-jvmci-25.3-b22",
+          "warmupIterations": 10,
+          "warmupTime": "1 s",
+          "warmupBatchSize": 1,
+          "measurementIterations": 5,
+          "measurementTime": "1 s",
+          "measurementBatchSize": 1,
+          "params": {
+            "base": "1000"
+          },
+          "primaryMetric": {
+            "score": 0.008080781932057517,
+            "scoreError": 5.5414474167519785e-05,
+            "scoreConfidence": [
+              0.008025367457889997,
+              0.008136196406225036
+            ],
+            "scorePercentiles": {
+              "0.0": 0.008028312249176722,
+              "50.0": 0.00807445262358255,
+              "90.0": 0.008145224370059762,
+              "95.0": 0.008148631643301455,
+              "99.0": 0.008148631643301455,
+              "99.9": 0.008148631643301455,
+              "99.99": 0.008148631643301455,
+              "99.999": 0.008148631643301455,
+              "99.9999": 0.008148631643301455,
+              "100.0": 0.008148631643301455
+            },
+            "scoreUnit": "us/op",
+            "rawData": [
+              [
+                0.008114558910884511,
+                0.00810052765083965,
+                0.008148631643301455,
+                0.008075788317951573,
+                0.008105496690529306
+              ],
+              [
+                0.00804535418894885,
+                0.008073116929213526,
+                0.008028312249176722,
+                0.008068445641126229,
+                0.008047587098603343
+              ]
+            ]
+          },
+          "secondaryMetrics": {
+            "gc.alloc.rate": {
+              "score": 12268.563814001449,
+              "scoreError": 84.48562132107901,
+              "scoreConfidence": [
+                12184.07819268037,
+                12353.049435322528
+              ],
+              "scorePercentiles": {
+                "0.0": 12170.140702381173,
+                "50.0": 12282.120638344346,
+                "90.0": 12349.939542165892,
+                "95.0": 12352.553028071254,
+                "99.0": 12352.553028071254,
+                "99.9": 12352.553028071254,
+                "99.99": 12352.553028071254,
+                "99.999": 12352.553028071254,
+                "99.9999": 12352.553028071254,
+                "100.0": 12352.553028071254
+              },
+              "scoreUnit": "MB/sec",
+              "rawData": [
+                [
+                  12221.336606642259,
+                  12242.540661872015,
+                  12170.140702381173,
+                  12280.106722454017,
+                  12213.743966625456
+                ],
+                [
+                  12326.418169017632,
+                  12284.134554234677,
+                  12352.553028071254,
+                  12291.288350839086,
+                  12303.375377876913
+                ]
+              ]
+            },
+            "gc.alloc.rate.norm": {
+              "score": 104.00040824154571,
+              "scoreError": 0.0009421333215272903,
+              "scoreConfidence": [
+                103.99946610822418,
+                104.00135037486724
+              ],
+              "scorePercentiles": {
+                "0.0": 104.00005610683611,
+                "50.0": 104.00005685535513,
+                "90.0": 104.0015805191134,
+                "95.0": 104.00158164707446,
+                "99.0": 104.00158164707446,
+                "99.9": 104.00158164707446,
+                "99.99": 104.00158164707446,
+                "99.999": 104.00158164707446,
+                "99.9999": 104.00158164707446,
+                "100.0": 104.00158164707446
+              },
+              "scoreUnit": "B/op",
+              "rawData": [
+                [
+                  104.00029614344852,
+                  104.00005670678694,
+                  104.0000570039233,
+                  104.00005643925542,
+                  104.00158164707446
+                ],
+                [
+                  104.00029506015643,
+                  104.0000564209227,
+                  104.00005610683611,
+                  104.00005651958935,
+                  104.00157036746383
+                ]
+              ]
+            },
+            "gc.count": {
+              "score": 1336.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                1336.0,
+                1336.0
+              ],
+              "scorePercentiles": {
+                "0.0": 133.0,
+                "50.0": 133.5,
+                "90.0": 134.9,
+                "95.0": 135.0,
+                "99.0": 135.0,
+                "99.9": 135.0,
+                "99.99": 135.0,
+                "99.999": 135.0,
+                "99.9999": 135.0,
+                "100.0": 135.0
+              },
+              "scoreUnit": "counts",
+              "rawData": [
+                [
+                  133.0,
+                  133.0,
+                  133.0,
+                  134.0,
+                  133.0
+                ],
+                [
+                  134.0,
+                  133.0,
+                  135.0,
+                  134.0,
+                  134.0
+                ]
+              ]
+            },
+            "gc.time": {
+              "score": 167.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                167.0,
+                167.0
+              ],
+              "scorePercentiles": {
+                "0.0": 15.0,
+                "50.0": 17.0,
+                "90.0": 17.0,
+                "95.0": 17.0,
+                "99.0": 17.0,
+                "99.9": 17.0,
+                "99.99": 17.0,
+                "99.999": 17.0,
+                "99.9999": 17.0,
+                "100.0": 17.0
+              },
+              "scoreUnit": "ms",
+              "rawData": [
+                [
+                  16.0,
+                  17.0,
+                  17.0,
+                  15.0,
+                  17.0
+                ],
+                [
+                  17.0,
+                  17.0,
+                  17.0,
+                  17.0,
+                  17.0
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "goalstart": {
+        "command": [
+          "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "-Xms64m",
+          "-Xmx128m",
+          "-Xss32m",
+          "--enable-native-access=ALL-UNNAMED",
+          "-cp",
+          "/private/tmp/cadenza-final-restoration-goalstart/build/classes/java/bench:/private/tmp/cadenza-final-restoration-goalstart/build/classes/kotlin/bench:/private/tmp/cadenza-final-restoration-goalstart/build/tmp/kapt3/classes/bench:/private/tmp/cadenza-final-restoration-goalstart/build/resources/bench:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-core/1.37/896f27e49105b35ea1964319c83d12082e7a79ef/jmh-core-1.37.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/2.4.20/a550e029f875982678926dc574e7b4c15ac71d8b/kotlin-reflect-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.4.20/94c1451890d164aed65d43b3db0b7ecef7c183e7/kotlin-stdlib-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-script-runtime/2.4.20/c5d2fe2964e557067ce970573bbc7ffa74f57cf4/kotlin-script-runtime-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.8/36e4d212970388e5bd2c5180292012502df461bb/asm-commons-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.8/18419ca5b77a2f81097c741e7872e6ab8d2f40d/asm-tree-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm/9.8/dc19ecb3f7889b7860697215cae99c0f9b6f6b4b/asm-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.fusesource.jansi/jansi/2.4.2/ba7387c31622c6650b83edba1bbb115f1fe462ba/jansi-2.4.2.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/launcher-common/25.3.4.1/24a0d8aac2806664dd5a20f6f8970743edaa00bc/launcher-common-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-runtime/25.3.4.1/5f9818cd0413f63bdf1fe52ba4f2fc2786f4cbb7/truffle-runtime-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-api/25.3.4.1/d0ad4561c54b72dae2918cf8ba0d899844912df8/truffle-api-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.shadowed/jline/25.3.4.1/49807a25edccc0397ca03e63de298b8217ae16d9/jline-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.polyglot/polyglot/25.3.4.1/708778860913af594457422f5048ff5c05c7c1d0/polyglot-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.apache.commons/commons-math3/3.6.1/e4ba98f1d4b3c80ec46392f25e094a6a2e58fcbf/commons-math3-3.6.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/jniutils/25.3.4.1/bccb3644f0750807fd94726c13f9afc5f24ce92d/jniutils-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/collections/25.3.4.1/76c7a0adc6d80c4bc6b52d3799707c2c39240930/collections-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/nativeimage/25.3.4.1/f532f70767714bafd65e13a22ba7b3cf3809e85/nativeimage-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-compiler/25.3.4.1/978fceb932a0b8ad538592bf2204b2e6f5240304/truffle-compiler-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/word/25.3.4.1/36aa272882c63927768f3aa9541a5b372a726af3/word-25.3.4.1.jar:/private/tmp/cadenza-final-restoration-goalstart/build/classes/java/main:/private/tmp/cadenza-final-restoration-goalstart/build/classes/kotlin/main:/private/tmp/cadenza-final-restoration-goalstart/build/tmp/kapt3/classes/main:/private/tmp/cadenza-final-restoration-goalstart/build/resources/main",
+          "org.openjdk.jmh.Main",
+          "^cadenza.bench.CapturedClosure.allocate$",
+          "-p",
+          "base=1000",
+          "-wi",
+          "10",
+          "-w",
+          "1s",
+          "-i",
+          "5",
+          "-r",
+          "1s",
+          "-f",
+          "2",
+          "-t",
+          "1",
+          "-prof",
+          "gc",
+          "-foe",
+          "true",
+          "-jvmArgsAppend",
+          "-Xms128m -Xmx768m",
+          "-rf",
+          "json",
+          "-rff",
+          "/tmp/cadenza-final-restoration-goalstart-capture.json"
+        ],
+        "setupChecks": 32,
+        "result": {
+          "jmhVersion": "1.37",
+          "benchmark": "cadenza.bench.CapturedClosure.allocate",
+          "mode": "avgt",
+          "threads": 1,
+          "forks": 2,
+          "jvm": "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "jvmArgs": [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:+EnableJVMCI",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Xms64m",
+            "-Xmx128m",
+            "-Xss32m",
+            "--enable-native-access=ALL-UNNAMED",
+            "-Xms128m",
+            "-Xmx768m"
+          ],
+          "jdkVersion": "25.0.4.1",
+          "vmName": "Java HotSpot(TM) 64-Bit Server VM",
+          "vmVersion": "25.0.4.1+1-LTS-jvmci-25.3-b22",
+          "warmupIterations": 10,
+          "warmupTime": "1 s",
+          "warmupBatchSize": 1,
+          "measurementIterations": 5,
+          "measurementTime": "1 s",
+          "measurementBatchSize": 1,
+          "params": {
+            "base": "1000"
+          },
+          "primaryMetric": {
+            "score": 0.00825227258455932,
+            "scoreError": 0.00011137190003517721,
+            "scoreConfidence": [
+              0.008140900684524143,
+              0.008363644484594498
+            ],
+            "scorePercentiles": {
+              "0.0": 0.008170311869908532,
+              "50.0": 0.00823795130942585,
+              "90.0": 0.008361998346448365,
+              "95.0": 0.008362826092487764,
+              "99.0": 0.008362826092487764,
+              "99.9": 0.008362826092487764,
+              "99.99": 0.008362826092487764,
+              "99.999": 0.008362826092487764,
+              "99.9999": 0.008362826092487764,
+              "100.0": 0.008362826092487764
+            },
+            "scoreUnit": "us/op",
+            "rawData": [
+              [
+                0.008198088383518464,
+                0.008190701268378552,
+                0.00819170426500185,
+                0.008184998567625472,
+                0.008170311869908532
+              ],
+              [
+                0.008290160260481362,
+                0.008354548632093782,
+                0.008362826092487764,
+                0.008301572270764203,
+                0.008277814235333237
+              ]
+            ]
+          },
+          "secondaryMetrics": {
+            "gc.alloc.rate": {
+              "score": 15710.629837006965,
+              "scoreError": 209.12231451249974,
+              "scoreConfidence": [
+                15501.507522494465,
+                15919.752151519466
+              ],
+              "scorePercentiles": {
+                "0.0": 15506.94918953278,
+                "50.0": 15730.885773639417,
+                "90.0": 15846.637860470379,
+                "95.0": 15846.941667157947,
+                "99.0": 15846.941667157947,
+                "99.9": 15846.941667157947,
+                "99.99": 15846.941667157947,
+                "99.999": 15846.941667157947,
+                "99.9999": 15846.941667157947,
+                "100.0": 15846.941667157947
+              },
+              "scoreUnit": "MB/sec",
+              "rawData": [
+                [
+                  15818.632458861392,
+                  15833.10188982074,
+                  15831.262896964628,
+                  15843.903600282256,
+                  15846.941667157947
+                ],
+                [
+                  15643.139088417443,
+                  15522.408311221354,
+                  15506.94918953278,
+                  15621.055863343025,
+                  15638.903404468061
+                ]
+              ]
+            },
+            "gc.alloc.rate.norm": {
+              "score": 136.0004164262145,
+              "scoreError": 0.000960202139868912,
+              "scoreConfidence": [
+                135.99945622407463,
+                136.0013766283544
+              ],
+              "scorePercentiles": {
+                "0.0": 136.00005724257295,
+                "50.0": 136.00005887813467,
+                "90.0": 136.00161625050288,
+                "95.0": 136.0016186456012,
+                "99.0": 136.0016186456012,
+                "99.9": 136.0016186456012,
+                "99.99": 136.0016186456012,
+                "99.999": 136.0016186456012,
+                "99.9999": 136.0016186456012,
+                "100.0": 136.0016186456012
+              },
+              "scoreUnit": "B/op",
+              "rawData": [
+                [
+                  136.00029918354866,
+                  136.00005724257295,
+                  136.00005733820774,
+                  136.00005852431877,
+                  136.00159469461795
+                ],
+                [
+                  136.00030255459765,
+                  136.000058385278,
+                  136.00005846145157,
+                  136.00005923195056,
+                  136.0016186456012
+                ]
+              ]
+            },
+            "gc.count": {
+              "score": 1631.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                1631.0,
+                1631.0
+              ],
+              "scorePercentiles": {
+                "0.0": 162.0,
+                "50.0": 163.0,
+                "90.0": 164.0,
+                "95.0": 164.0,
+                "99.0": 164.0,
+                "99.9": 164.0,
+                "99.99": 164.0,
+                "99.999": 164.0,
+                "99.9999": 164.0,
+                "100.0": 164.0
+              },
+              "scoreUnit": "counts",
+              "rawData": [
+                [
+                  164.0,
+                  164.0,
+                  163.0,
+                  163.0,
+                  164.0
+                ],
+                [
+                  163.0,
+                  162.0,
+                  162.0,
+                  163.0,
+                  163.0
+                ]
+              ]
+            },
+            "gc.time": {
+              "score": 215.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                215.0,
+                215.0
+              ],
+              "scorePercentiles": {
+                "0.0": 20.0,
+                "50.0": 21.5,
+                "90.0": 23.0,
+                "95.0": 23.0,
+                "99.0": 23.0,
+                "99.9": 23.0,
+                "99.99": 23.0,
+                "99.999": 23.0,
+                "99.9999": 23.0,
+                "100.0": 23.0
+              },
+              "scoreUnit": "ms",
+              "rawData": [
+                [
+                  22.0,
+                  20.0,
+                  21.0,
+                  21.0,
+                  21.0
+                ],
+                [
+                  22.0,
+                  23.0,
+                  23.0,
+                  22.0,
+                  20.0
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "current": {
+        "command": [
+          "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "-Xms64m",
+          "-Xmx128m",
+          "-Xss32m",
+          "--enable-native-access=ALL-UNNAMED",
+          "-cp",
+          "/private/tmp/cadenza-final-restoration-current/build/classes/java/bench:/private/tmp/cadenza-final-restoration-current/build/classes/kotlin/bench:/private/tmp/cadenza-final-restoration-current/build/tmp/kapt3/classes/bench:/private/tmp/cadenza-final-restoration-current/build/resources/bench:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-core/1.37/896f27e49105b35ea1964319c83d12082e7a79ef/jmh-core-1.37.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.4.20/94c1451890d164aed65d43b3db0b7ecef7c183e7/kotlin-stdlib-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.8/18419ca5b77a2f81097c741e7872e6ab8d2f40d/asm-tree-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm/9.8/dc19ecb3f7889b7860697215cae99c0f9b6f6b4b/asm-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.fusesource.jansi/jansi/2.4.2/ba7387c31622c6650b83edba1bbb115f1fe462ba/jansi-2.4.2.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/launcher-common/25.3.4.1/24a0d8aac2806664dd5a20f6f8970743edaa00bc/launcher-common-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-runtime/25.3.4.1/5f9818cd0413f63bdf1fe52ba4f2fc2786f4cbb7/truffle-runtime-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-api/25.3.4.1/d0ad4561c54b72dae2918cf8ba0d899844912df8/truffle-api-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.shadowed/jline/25.3.4.1/49807a25edccc0397ca03e63de298b8217ae16d9/jline-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.polyglot/polyglot/25.3.4.1/708778860913af594457422f5048ff5c05c7c1d0/polyglot-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.apache.commons/commons-math3/3.6.1/e4ba98f1d4b3c80ec46392f25e094a6a2e58fcbf/commons-math3-3.6.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/jniutils/25.3.4.1/bccb3644f0750807fd94726c13f9afc5f24ce92d/jniutils-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/collections/25.3.4.1/76c7a0adc6d80c4bc6b52d3799707c2c39240930/collections-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/nativeimage/25.3.4.1/f532f70767714bafd65e13a22ba7b3cf3809e85/nativeimage-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-compiler/25.3.4.1/978fceb932a0b8ad538592bf2204b2e6f5240304/truffle-compiler-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/word/25.3.4.1/36aa272882c63927768f3aa9541a5b372a726af3/word-25.3.4.1.jar:/private/tmp/cadenza-final-restoration-current/build/classes/java/main:/private/tmp/cadenza-final-restoration-current/build/classes/kotlin/main:/private/tmp/cadenza-final-restoration-current/build/tmp/kapt3/classes/main:/private/tmp/cadenza-final-restoration-current/build/resources/main",
+          "org.openjdk.jmh.Main",
+          "^cadenza.bench.CapturedClosure.allocate$",
+          "-p",
+          "base=1000",
+          "-wi",
+          "10",
+          "-w",
+          "1s",
+          "-i",
+          "5",
+          "-r",
+          "1s",
+          "-f",
+          "2",
+          "-t",
+          "1",
+          "-prof",
+          "gc",
+          "-foe",
+          "true",
+          "-jvmArgsAppend",
+          "-Xms128m -Xmx768m",
+          "-rf",
+          "json",
+          "-rff",
+          "/tmp/cadenza-final-restoration-current-capture.json"
+        ],
+        "setupChecks": 32,
+        "result": {
+          "jmhVersion": "1.37",
+          "benchmark": "cadenza.bench.CapturedClosure.allocate",
+          "mode": "avgt",
+          "threads": 1,
+          "forks": 2,
+          "jvm": "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "jvmArgs": [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:+EnableJVMCI",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Xms64m",
+            "-Xmx128m",
+            "-Xss32m",
+            "--enable-native-access=ALL-UNNAMED",
+            "-Xms128m",
+            "-Xmx768m"
+          ],
+          "jdkVersion": "25.0.4.1",
+          "vmName": "Java HotSpot(TM) 64-Bit Server VM",
+          "vmVersion": "25.0.4.1+1-LTS-jvmci-25.3-b22",
+          "warmupIterations": 10,
+          "warmupTime": "1 s",
+          "warmupBatchSize": 1,
+          "measurementIterations": 5,
+          "measurementTime": "1 s",
+          "measurementBatchSize": 1,
+          "params": {
+            "base": "1000"
+          },
+          "primaryMetric": {
+            "score": 0.007843425859516237,
+            "scoreError": 0.0004852367205964557,
+            "scoreConfidence": [
+              0.007358189138919781,
+              0.008328662580112693
+            ],
+            "scorePercentiles": {
+              "0.0": 0.007677864157979055,
+              "50.0": 0.007764768366874229,
+              "90.0": 0.008652919711784276,
+              "95.0": 0.008745327535765325,
+              "99.0": 0.008745327535765325,
+              "99.9": 0.008745327535765325,
+              "99.99": 0.008745327535765325,
+              "99.999": 0.008745327535765325,
+              "99.9999": 0.008745327535765325,
+              "100.0": 0.008745327535765325
+            },
+            "scoreUnit": "us/op",
+            "rawData": [
+              [
+                0.00782124929595482,
+                0.007762559956811152,
+                0.008745327535765325,
+                0.007766976776937306,
+                0.007771582551986149
+              ],
+              [
+                0.007706922322736645,
+                0.00768185210620337,
+                0.007804820277584323,
+                0.007677864157979055,
+                0.007695103613204217
+              ]
+            ]
+          },
+          "secondaryMetrics": {
+            "gc.alloc.rate": {
+              "score": 12656.449319062282,
+              "scoreError": 710.722551293157,
+              "scoreConfidence": [
+                11945.726767769125,
+                13367.171870355438
+              ],
+              "scorePercentiles": {
+                "0.0": 11339.754071270836,
+                "50.0": 12771.837506750544,
+                "90.0": 12915.614439216833,
+                "95.0": 12916.29190034518,
+                "99.0": 12916.29190034518,
+                "99.9": 12916.29190034518,
+                "99.99": 12916.29190034518,
+                "99.999": 12916.29190034518,
+                "99.9999": 12916.29190034518,
+                "100.0": 12916.29190034518
+              },
+              "scoreUnit": "MB/sec",
+              "rawData": [
+                [
+                  12679.612055125934,
+                  12775.565689729749,
+                  11339.754071270836,
+                  12768.10932377134,
+                  12739.113285831563
+                ],
+                [
+                  12867.801195169346,
+                  12909.517289061714,
+                  12706.041725919482,
+                  12916.29190034518,
+                  12862.686654397685
+                ]
+              ]
+            },
+            "gc.alloc.rate.norm": {
+              "score": 104.00039205648514,
+              "scoreError": 0.0009012481368858578,
+              "scoreConfidence": [
+                103.99949080834826,
+                104.00129330462202
+              ],
+              "scorePercentiles": {
+                "0.0": 104.00005382481025,
+                "50.0": 104.00005854414107,
+                "90.0": 104.00151474907395,
+                "95.0": 104.00151614168325,
+                "99.0": 104.00151614168325,
+                "99.9": 104.00151614168325,
+                "99.99": 104.00151614168325,
+                "99.999": 104.00151614168325,
+                "99.9999": 104.00151614168325,
+                "100.0": 104.00151614168325
+              },
+              "scoreUnit": "B/op",
+              "rawData": [
+                [
+                  104.0002866866734,
+                  104.00005436064089,
+                  104.00006229702893,
+                  104.0000542796783,
+                  104.00151614168325
+                ],
+                [
+                  104.00028127004806,
+                  104.00005382481025,
+                  104.0000547912532,
+                  104.00005469744482,
+                  104.00150221559025
+                ]
+              ]
+            },
+            "gc.count": {
+              "score": 1378.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                1378.0,
+                1378.0
+              ],
+              "scorePercentiles": {
+                "0.0": 124.0,
+                "50.0": 139.0,
+                "90.0": 141.0,
+                "95.0": 141.0,
+                "99.0": 141.0,
+                "99.9": 141.0,
+                "99.99": 141.0,
+                "99.999": 141.0,
+                "99.9999": 141.0,
+                "100.0": 141.0
+              },
+              "scoreUnit": "counts",
+              "rawData": [
+                [
+                  137.0,
+                  139.0,
+                  124.0,
+                  139.0,
+                  139.0
+                ],
+                [
+                  140.0,
+                  141.0,
+                  138.0,
+                  141.0,
+                  140.0
+                ]
+              ]
+            },
+            "gc.time": {
+              "score": 172.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                172.0,
+                172.0
+              ],
+              "scorePercentiles": {
+                "0.0": 16.0,
+                "50.0": 17.0,
+                "90.0": 19.0,
+                "95.0": 19.0,
+                "99.0": 19.0,
+                "99.9": 19.0,
+                "99.99": 19.0,
+                "99.999": 19.0,
+                "99.9999": 19.0,
+                "100.0": 19.0
+              },
+              "scoreUnit": "ms",
+              "rawData": [
+                [
+                  17.0,
+                  17.0,
+                  19.0,
+                  17.0,
+                  16.0
+                ],
+                [
+                  16.0,
+                  17.0,
+                  19.0,
+                  17.0,
+                  17.0
+                ]
+              ]
+            }
+          }
+        }
+      }
+    },
+    "fib": {
+      "goalstart": {
+        "command": [
+          "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "-Xms64m",
+          "-Xmx128m",
+          "-Xss32m",
+          "--enable-native-access=ALL-UNNAMED",
+          "-cp",
+          "/private/tmp/cadenza-final-restoration-goalstart/build/classes/java/bench:/private/tmp/cadenza-final-restoration-goalstart/build/classes/kotlin/bench:/private/tmp/cadenza-final-restoration-goalstart/build/tmp/kapt3/classes/bench:/private/tmp/cadenza-final-restoration-goalstart/build/resources/bench:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-core/1.37/896f27e49105b35ea1964319c83d12082e7a79ef/jmh-core-1.37.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/2.4.20/a550e029f875982678926dc574e7b4c15ac71d8b/kotlin-reflect-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.4.20/94c1451890d164aed65d43b3db0b7ecef7c183e7/kotlin-stdlib-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-script-runtime/2.4.20/c5d2fe2964e557067ce970573bbc7ffa74f57cf4/kotlin-script-runtime-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.8/36e4d212970388e5bd2c5180292012502df461bb/asm-commons-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.8/18419ca5b77a2f81097c741e7872e6ab8d2f40d/asm-tree-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm/9.8/dc19ecb3f7889b7860697215cae99c0f9b6f6b4b/asm-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.fusesource.jansi/jansi/2.4.2/ba7387c31622c6650b83edba1bbb115f1fe462ba/jansi-2.4.2.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/launcher-common/25.3.4.1/24a0d8aac2806664dd5a20f6f8970743edaa00bc/launcher-common-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-runtime/25.3.4.1/5f9818cd0413f63bdf1fe52ba4f2fc2786f4cbb7/truffle-runtime-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-api/25.3.4.1/d0ad4561c54b72dae2918cf8ba0d899844912df8/truffle-api-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.shadowed/jline/25.3.4.1/49807a25edccc0397ca03e63de298b8217ae16d9/jline-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.polyglot/polyglot/25.3.4.1/708778860913af594457422f5048ff5c05c7c1d0/polyglot-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.apache.commons/commons-math3/3.6.1/e4ba98f1d4b3c80ec46392f25e094a6a2e58fcbf/commons-math3-3.6.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/jniutils/25.3.4.1/bccb3644f0750807fd94726c13f9afc5f24ce92d/jniutils-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/collections/25.3.4.1/76c7a0adc6d80c4bc6b52d3799707c2c39240930/collections-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/nativeimage/25.3.4.1/f532f70767714bafd65e13a22ba7b3cf3809e85/nativeimage-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-compiler/25.3.4.1/978fceb932a0b8ad538592bf2204b2e6f5240304/truffle-compiler-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/word/25.3.4.1/36aa272882c63927768f3aa9541a5b372a726af3/word-25.3.4.1.jar:/private/tmp/cadenza-final-restoration-goalstart/build/classes/java/main:/private/tmp/cadenza-final-restoration-goalstart/build/classes/kotlin/main:/private/tmp/cadenza-final-restoration-goalstart/build/tmp/kapt3/classes/main:/private/tmp/cadenza-final-restoration-goalstart/build/resources/main",
+          "org.openjdk.jmh.Main",
+          "^cadenza.bench.Fib.cadenza$",
+          "-p",
+          "size=15",
+          "-wi",
+          "10",
+          "-w",
+          "1s",
+          "-i",
+          "5",
+          "-r",
+          "1s",
+          "-f",
+          "2",
+          "-t",
+          "1",
+          "-prof",
+          "gc",
+          "-foe",
+          "true",
+          "-jvmArgsAppend",
+          "-Xms128m -Xmx768m",
+          "-rf",
+          "json",
+          "-rff",
+          "/tmp/cadenza-final-restoration-goalstart-fib.json"
+        ],
+        "setupChecks": 8,
+        "result": {
+          "jmhVersion": "1.37",
+          "benchmark": "cadenza.bench.Fib.cadenza",
+          "mode": "avgt",
+          "threads": 1,
+          "forks": 2,
+          "jvm": "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "jvmArgs": [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:+EnableJVMCI",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Xms64m",
+            "-Xmx128m",
+            "-Xss32m",
+            "--enable-native-access=ALL-UNNAMED",
+            "-Xms128m",
+            "-Xmx768m"
+          ],
+          "jdkVersion": "25.0.4.1",
+          "vmName": "Java HotSpot(TM) 64-Bit Server VM",
+          "vmVersion": "25.0.4.1+1-LTS-jvmci-25.3-b22",
+          "warmupIterations": 10,
+          "warmupTime": "1 s",
+          "warmupBatchSize": 1,
+          "measurementIterations": 5,
+          "measurementTime": "1 s",
+          "measurementBatchSize": 1,
+          "params": {
+            "size": "15"
+          },
+          "primaryMetric": {
+            "score": 69.38015134990856,
+            "scoreError": 6.995527059897965,
+            "scoreConfidence": [
+              62.38462429001059,
+              76.37567840980653
+            ],
+            "scorePercentiles": {
+              "0.0": 66.23388633368477,
+              "50.0": 66.7446123929341,
+              "90.0": 79.57599186309875,
+              "95.0": 80.1318026945153,
+              "99.0": 80.1318026945153,
+              "99.9": 80.1318026945153,
+              "99.99": 80.1318026945153,
+              "99.999": 80.1318026945153,
+              "99.9999": 80.1318026945153,
+              "100.0": 80.1318026945153
+            },
+            "scoreUnit": "us/op",
+            "rawData": [
+              [
+                66.46225104214915,
+                66.23388633368477,
+                70.64081474159842,
+                80.1318026945153,
+                74.57369438034983
+              ],
+              [
+                66.69624873871481,
+                66.38290846651697,
+                66.7056536138581,
+                66.78357117201011,
+                69.19068231568802
+              ]
+            ]
+          },
+          "secondaryMetrics": {
+            "gc.alloc.rate": {
+              "score": 10315.187136957682,
+              "scoreError": 959.5761282294807,
+              "scoreConfidence": [
+                9355.611008728201,
+                11274.763265187163
+              ],
+              "scorePercentiles": {
+                "0.0": 8901.880995926336,
+                "50.0": 10687.274971332985,
+                "90.0": 10767.455129632093,
+                "95.0": 10769.84931552493,
+                "99.0": 10769.84931552493,
+                "99.9": 10769.84931552493,
+                "99.99": 10769.84931552493,
+                "99.999": 10769.84931552493,
+                "99.9999": 10769.84931552493,
+                "100.0": 10769.84931552493
+              },
+              "scoreUnit": "MB/sec",
+              "rawData": [
+                [
+                  10733.308010809002,
+                  10769.84931552493,
+                  10098.039834784977,
+                  8901.880995926336,
+                  9545.676990441756
+                ],
+                [
+                  10694.777593052075,
+                  10745.90745659655,
+                  10693.190406356713,
+                  10681.359536309257,
+                  10287.881229775248
+                ]
+              ]
+            },
+            "gc.alloc.rate.norm": {
+              "score": 748079.6456893387,
+              "scoreError": 42.70863473509189,
+              "scoreConfidence": [
+                748036.9370546036,
+                748122.3543240738
+              ],
+              "scorePercentiles": {
+                "0.0": 748035.2569190947,
+                "50.0": 748073.5774304215,
+                "90.0": 748116.5232049483,
+                "95.0": 748116.6630563994,
+                "99.0": 748116.6630563994,
+                "99.9": 748116.6630563994,
+                "99.99": 748116.6630563994,
+                "99.999": 748116.6630563994,
+                "99.9999": 748116.6630563994,
+                "100.0": 748116.6630563994
+              },
+              "scoreUnit": "B/op",
+              "rawData": [
+                [
+                  748111.519883544,
+                  748072.4739061677,
+                  748074.5885343123,
+                  748072.5663265307,
+                  748042.6706363974
+                ],
+                [
+                  748072.4753053638,
+                  748116.6630563994,
+                  748035.2569190947,
+                  748082.9777836903,
+                  748115.2645418876
+                ]
+              ]
+            },
+            "gc.count": {
+              "score": 1129.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                1129.0,
+                1129.0
+              ],
+              "scorePercentiles": {
+                "0.0": 97.0,
+                "50.0": 117.0,
+                "90.0": 118.0,
+                "95.0": 118.0,
+                "99.0": 118.0,
+                "99.9": 118.0,
+                "99.99": 118.0,
+                "99.999": 118.0,
+                "99.9999": 118.0,
+                "100.0": 118.0
+              },
+              "scoreUnit": "counts",
+              "rawData": [
+                [
+                  118.0,
+                  118.0,
+                  110.0,
+                  97.0,
+                  105.0
+                ],
+                [
+                  117.0,
+                  117.0,
+                  117.0,
+                  117.0,
+                  113.0
+                ]
+              ]
+            },
+            "gc.time": {
+              "score": 198.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                198.0,
+                198.0
+              ],
+              "scorePercentiles": {
+                "0.0": 17.0,
+                "50.0": 18.5,
+                "90.0": 24.9,
+                "95.0": 25.0,
+                "99.0": 25.0,
+                "99.9": 25.0,
+                "99.99": 25.0,
+                "99.999": 25.0,
+                "99.9999": 25.0,
+                "100.0": 25.0
+              },
+              "scoreUnit": "ms",
+              "rawData": [
+                [
+                  19.0,
+                  18.0,
+                  22.0,
+                  25.0,
+                  24.0
+                ],
+                [
+                  17.0,
+                  18.0,
+                  17.0,
+                  18.0,
+                  20.0
+                ]
+              ]
+            }
+          }
+        }
+      },
+      "current": {
+        "command": [
+          "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "-Xms64m",
+          "-Xmx128m",
+          "-Xss32m",
+          "--enable-native-access=ALL-UNNAMED",
+          "-cp",
+          "/private/tmp/cadenza-final-restoration-current/build/classes/java/bench:/private/tmp/cadenza-final-restoration-current/build/classes/kotlin/bench:/private/tmp/cadenza-final-restoration-current/build/tmp/kapt3/classes/bench:/private/tmp/cadenza-final-restoration-current/build/resources/bench:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.openjdk.jmh/jmh-core/1.37/896f27e49105b35ea1964319c83d12082e7a79ef/jmh-core-1.37.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.4.20/94c1451890d164aed65d43b3db0b7ecef7c183e7/kotlin-stdlib-2.4.20.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.8/18419ca5b77a2f81097c741e7872e6ab8d2f40d/asm-tree-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.ow2.asm/asm/9.8/dc19ecb3f7889b7860697215cae99c0f9b6f6b4b/asm-9.8.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.fusesource.jansi/jansi/2.4.2/ba7387c31622c6650b83edba1bbb115f1fe462ba/jansi-2.4.2.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/launcher-common/25.3.4.1/24a0d8aac2806664dd5a20f6f8970743edaa00bc/launcher-common-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-runtime/25.3.4.1/5f9818cd0413f63bdf1fe52ba4f2fc2786f4cbb7/truffle-runtime-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-api/25.3.4.1/d0ad4561c54b72dae2918cf8ba0d899844912df8/truffle-api-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.shadowed/jline/25.3.4.1/49807a25edccc0397ca03e63de298b8217ae16d9/jline-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.polyglot/polyglot/25.3.4.1/708778860913af594457422f5048ff5c05c7c1d0/polyglot-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/net.sf.jopt-simple/jopt-simple/5.0.4/4fdac2fbe92dfad86aa6e9301736f6b4342a3f5c/jopt-simple-5.0.4.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.apache.commons/commons-math3/3.6.1/e4ba98f1d4b3c80ec46392f25e094a6a2e58fcbf/commons-math3-3.6.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/jniutils/25.3.4.1/bccb3644f0750807fd94726c13f9afc5f24ce92d/jniutils-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/collections/25.3.4.1/76c7a0adc6d80c4bc6b52d3799707c2c39240930/collections-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/nativeimage/25.3.4.1/f532f70767714bafd65e13a22ba7b3cf3809e85/nativeimage-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.truffle/truffle-compiler/25.3.4.1/978fceb932a0b8ad538592bf2204b2e6f5240304/truffle-compiler-25.3.4.1.jar:/Users/ekmett/cadenza/.gradle-user-home/caches/modules-2/files-2.1/org.graalvm.sdk/word/25.3.4.1/36aa272882c63927768f3aa9541a5b372a726af3/word-25.3.4.1.jar:/private/tmp/cadenza-final-restoration-current/build/classes/java/main:/private/tmp/cadenza-final-restoration-current/build/classes/kotlin/main:/private/tmp/cadenza-final-restoration-current/build/tmp/kapt3/classes/main:/private/tmp/cadenza-final-restoration-current/build/resources/main",
+          "org.openjdk.jmh.Main",
+          "^cadenza.bench.Fib.cadenza$",
+          "-p",
+          "size=15",
+          "-wi",
+          "10",
+          "-w",
+          "1s",
+          "-i",
+          "5",
+          "-r",
+          "1s",
+          "-f",
+          "2",
+          "-t",
+          "1",
+          "-prof",
+          "gc",
+          "-foe",
+          "true",
+          "-jvmArgsAppend",
+          "-Xms128m -Xmx768m",
+          "-rf",
+          "json",
+          "-rff",
+          "/tmp/cadenza-final-restoration-current-fib.json"
+        ],
+        "setupChecks": 8,
+        "result": {
+          "jmhVersion": "1.37",
+          "benchmark": "cadenza.bench.Fib.cadenza",
+          "mode": "avgt",
+          "threads": 1,
+          "forks": 2,
+          "jvm": "/Users/ekmett/cadenza/.toolchains/graalvm-25.3.4.1+1.1/Contents/Home/bin/java",
+          "jvmArgs": [
+            "-XX:ThreadPriorityPolicy=1",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+EnableJVMCIProduct",
+            "-XX:+EnableJVMCI",
+            "-XX:-UnlockExperimentalVMOptions",
+            "-Xms64m",
+            "-Xmx128m",
+            "-Xss32m",
+            "--enable-native-access=ALL-UNNAMED",
+            "-Xms128m",
+            "-Xmx768m"
+          ],
+          "jdkVersion": "25.0.4.1",
+          "vmName": "Java HotSpot(TM) 64-Bit Server VM",
+          "vmVersion": "25.0.4.1+1-LTS-jvmci-25.3-b22",
+          "warmupIterations": 10,
+          "warmupTime": "1 s",
+          "warmupBatchSize": 1,
+          "measurementIterations": 5,
+          "measurementTime": "1 s",
+          "measurementBatchSize": 1,
+          "params": {
+            "size": "15"
+          },
+          "primaryMetric": {
+            "score": 15.096079785531876,
+            "scoreError": 4.829291969014927,
+            "scoreConfidence": [
+              10.266787816516949,
+              19.925371754546802
+            ],
+            "scorePercentiles": {
+              "0.0": 12.46021814372668,
+              "50.0": 14.08778720330881,
+              "90.0": 20.950596123276362,
+              "95.0": 20.960386858873918,
+              "99.0": 20.960386858873918,
+              "99.9": 20.960386858873918,
+              "99.99": 20.960386858873918,
+              "99.999": 20.960386858873918,
+              "99.9999": 20.960386858873918,
+              "100.0": 20.960386858873918
+            },
+            "scoreUnit": "us/op",
+            "rawData": [
+              [
+                12.55770664817522,
+                12.990866189341757,
+                14.799120737381472,
+                20.960386858873918,
+                20.86247950289837
+              ],
+              [
+                12.46021814372668,
+                13.047479330567873,
+                15.10696603773585,
+                13.933160372126556,
+                14.242414034491066
+              ]
+            ]
+          },
+          "secondaryMetrics": {
+            "gc.alloc.rate": {
+              "score": 3274.5960213398403,
+              "scoreError": 863.3612756305921,
+              "scoreConfidence": [
+                2411.2347457092483,
+                4137.957296970432
+              ],
+              "scorePercentiles": {
+                "0.0": 2282.411908810844,
+                "50.0": 3391.214722874524,
+                "90.0": 3836.450821941497,
+                "95.0": 3839.4413608130494,
+                "99.0": 3839.4413608130494,
+                "99.9": 3839.4413608130494,
+                "99.99": 3839.4413608130494,
+                "99.999": 3839.4413608130494,
+                "99.9999": 3839.4413608130494,
+                "100.0": 3839.4413608130494
+              },
+              "scoreUnit": "MB/sec",
+              "rawData": [
+                [
+                  3809.5359720975257,
+                  3682.545611408403,
+                  3232.6749479507976,
+                  2282.411908810844,
+                  2283.975235641734
+                ],
+                [
+                  3839.4413608130494,
+                  3666.253978389294,
+                  3166.691752537704,
+                  3433.622046445739,
+                  3348.8073993033086
+                ]
+              ]
+            },
+            "gc.alloc.rate.norm": {
+              "score": 50172.7626602024,
+              "scoreError": 2.080896448416331,
+              "scoreConfidence": [
+                50170.681763753986,
+                50174.84355665082
+              ],
+              "scorePercentiles": {
+                "0.0": 50171.403350943394,
+                "50.0": 50172.364842323266,
+                "90.0": 50175.69923763853,
+                "95.0": 50175.84803369615,
+                "99.0": 50175.84803369615,
+                "99.9": 50175.84803369615,
+                "99.99": 50175.84803369615,
+                "99.999": 50175.84803369615,
+                "99.9999": 50175.84803369615,
+                "100.0": 50175.84803369615
+              },
+              "scoreUnit": "B/op",
+              "rawData": [
+                [
+                  50172.97290003373,
+                  50172.09135636232,
+                  50172.10389304435,
+                  50171.53026219576,
+                  50175.84803369615
+                ],
+                [
+                  50171.94768616658,
+                  50172.62579160219,
+                  50171.403350943394,
+                  50172.74325485955,
+                  50174.360073119926
+                ]
+              ]
+            },
+            "gc.count": {
+              "score": 437.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                437.0,
+                437.0
+              ],
+              "scorePercentiles": {
+                "0.0": 30.0,
+                "50.0": 45.5,
+                "90.0": 50.9,
+                "95.0": 51.0,
+                "99.0": 51.0,
+                "99.9": 51.0,
+                "99.99": 51.0,
+                "99.999": 51.0,
+                "99.9999": 51.0,
+                "100.0": 51.0
+              },
+              "scoreUnit": "counts",
+              "rawData": [
+                [
+                  50.0,
+                  50.0,
+                  43.0,
+                  30.0,
+                  31.0
+                ],
+                [
+                  51.0,
+                  49.0,
+                  42.0,
+                  46.0,
+                  45.0
+                ]
+              ]
+            },
+            "gc.time": {
+              "score": 120.0,
+              "scoreError": "NaN",
+              "scoreConfidence": [
+                120.0,
+                120.0
+              ],
+              "scorePercentiles": {
+                "0.0": 10.0,
+                "50.0": 12.0,
+                "90.0": 13.9,
+                "95.0": 14.0,
+                "99.0": 14.0,
+                "99.9": 14.0,
+                "99.99": 14.0,
+                "99.999": 14.0,
+                "99.9999": 14.0,
+                "100.0": 14.0
+              },
+              "scoreUnit": "ms",
+              "rawData": [
+                [
+                  12.0,
+                  14.0,
+                  13.0,
+                  11.0,
+                  12.0
+                ],
+                [
+                  12.0,
+                  13.0,
+                  12.0,
+                  10.0,
+                  11.0
+                ]
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -23,7 +23,8 @@ conditionals, local bindings, recursive bindings, closures, and function applica
 Truffle Bytecode DSL operations. It generates a real bytecode interpreter rather than wrapping an
 AST in a single operation. Common arithmetic and comparisons have dedicated instructions; other
 builtins and all function applications use the existing guest dispatch machinery. Tail calls reuse
-the existing trampoline, so recursive bytecode functions have bounded Java stack usage.
+the existing trampoline, so tail-recursive bytecode calls have bounded Java stack
+usage. Non-tail recursion still consumes Java stack frames.
 
 `BytecodeRoot.java` enables uncached interpretation and primitive boxing elimination for `int` and
 `boolean`. The generated interpreter provides quickening, typed stack/local storage, and lazy source

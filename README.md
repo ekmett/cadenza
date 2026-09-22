@@ -99,6 +99,9 @@ The runtime uses primitive-specialized indexed frame slots, immutable closure
 captures backed by Truffle StaticShape, bounded dispatch caches, and shared guest
 and polyglot calling conventions. Neutral terms deliberately use the exceptional
 SlowPathException path: they are temporary values outside ordinary execution.
+Self-tail calls reuse frames, including split roots with changing captures and
+partial arguments. Other tail calls use bounded direct unrolling with a general
+trampoline fallback; non-tail recursion still consumes Java stack frames.
 
 The migration uses generated language providers,
 and the public Truffle loop API. The old reflective OSR factory, `gu` component
@@ -111,7 +114,9 @@ This code is very much a work-in-progress.
 
 * The intention is to support an [eval-apply](https://www.microsoft.com/en-us/research/publication/make-fast-curry-pushenter-vs-evalapply/) execution model, which is a bit strange in the ecosystem of truffle languages. A lot of work is going into trying to figure out how to make that efficient.
 
-* I'm hopeful that I can use truffle rewrites to dynamically trampoline tail-calls, degrading tail positions from a set of recursive calls, to something that handles self-tailcalls, to something that handles self-tailcalls with differing environments to something that does an arbitrary trampoline for the worst case. This would enable us to trust the space usage.
+* Packed argument arrays remain the dominant allocation in non-tail recursive
+  Fibonacci. See the [allocation analysis](bench/results/2026-09-22/fib-allocation.md)
+  and measured experiments before changing the calling convention.
 
 * Normalization by evaluation deliberately sends exotic, temporary neutral terms
   through an exceptional control flow path; ordinary evaluation remains the fast path.
