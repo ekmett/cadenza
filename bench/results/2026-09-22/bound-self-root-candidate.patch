@@ -1,0 +1,558 @@
+diff --git a/src/cadenza/jit/builtin.kt b/src/cadenza/jit/builtin.kt
+index be1bde3..e6cbc0e 100644
+--- a/src/cadenza/jit/builtin.kt
++++ b/src/cadenza/jit/builtin.kt
+@@ -164,7 +164,7 @@ abstract class FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
+   @Specialization(guards = ["f.equals(cachedF)"], limit = "3")
+   fun cached(frame: VirtualFrame, f: Closure, right: Any?,
+              @Cached("f") cachedF: Closure,
+-             @Cached(value = "mkFix(cachedF)", neverDefault = true) fix: Closure,
++             @Cached(value = "mkCachedFix(cachedF)", neverDefault = true) fix: Closure,
+              @Cached.Exclusive @Cached(value = "createDispatch()", neverDefault = true) dispatch: Dispatch): Any? =
+     dispatch.executeDispatch(frame, fix, arrayOf(right))
+ 
+@@ -175,12 +175,22 @@ abstract class FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
+ 
+   fun createDispatch(): Dispatch = DispatchNodeGen.create(1, false)
+ 
+-  fun mkFix(f: Closure): Closure {
++  private fun fixedOwner(): RootCallTarget {
+     if (fixedTarget == null) {
+       CompilerDirectives.transferToInterpreterAndInvalidate()
+       fixedTarget = FixApplyRootNode(Language.currentLanguage(this)).callTarget
+     }
+-    return FixedFunction(f, fixedTarget!!).self
++    return fixedTarget!!
++  }
++
++  fun mkFix(f: Closure): Closure = FixedFunction(f, fixedOwner()).self
++
++  fun mkCachedFix(f: Closure): Closure {
++    val root = f.callTarget.rootNode
++    return if (f.arity == 2 && f.env == null && f.papArgs.isEmpty() &&
++      root is ClosureRootNode && root.arity == 2 && !root.hasEnvironment())
++      BoundFixedFunction(f, fixedOwner(), root).self
++    else mkFix(f)
+   }
+ }
+ 
+@@ -188,7 +198,7 @@ abstract class FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
+  * The knot is tied once, before this value becomes visible outside its constructor.
+  * Every field is immutable; recursive calls reuse the same closure and capture array.
+  */
+-private class FixedFunction(val function: Closure, private val owner: RootCallTarget) {
++private open class FixedFunction(val function: Closure, private val owner: RootCallTarget) {
+   // A two-argument AST body can receive its own fixed closure directly. Keep the
+   // cell in papArgs so structural equality never follows a self-referential array.
+   // ClosureRootNode resolves that private token before exposing a parameter.
+@@ -208,6 +218,19 @@ private class FixedFunction(val function: Closure, private val owner: RootCallTa
+   }
+ }
+ 
++/** Construct the entire owned root before the cached self becomes visible to callers. */
++private class BoundFixedFunction(function: Closure, owner: RootCallTarget, root: ClosureRootNode) :
++  FixedFunction(function, owner) {
++  val target: RootCallTarget = root.bindFixedSelf(self).callTarget
++}
++
++/** Copies made by zero-argument PAP retain the same token and optimized target. */
++internal fun boundFixedTarget(function: Closure): RootCallTarget? {
++  if (function.arity != 1 || function.env != null || function.papArgs.size != 1) return null
++  val fixed = function.papArgs[0] as? BoundFixedFunction ?: return null
++  return if (fixed.function.callTarget === function.callTarget) fixed.target else null
++}
++
+ /** Fixed-point tokens exist only in the physical argument array, never guest locals. */
+ internal fun resolveFixedArgument(argument: Any?): Any? =
+   if (argument is FixedFunction) argument.self else argument
+diff --git a/src/cadenza/jit/dispatch.kt b/src/cadenza/jit/dispatch.kt
+index 482df27..69831dc 100644
+--- a/src/cadenza/jit/dispatch.kt
++++ b/src/cadenza/jit/dispatch.kt
+@@ -48,8 +48,20 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
+   // pre: ys.size == argsSize
+   abstract fun executeDispatch(frame: VirtualFrame, fn: Closure, ys: Array<Any?>): Any?
+ 
++  @Specialization(guards = [
++    "argsSize == 1",
++    "fn.arity == 1",
++    "hasBoundTarget(fn)",
++    "boundTarget(fn) == cachedCallTarget"
++  ], limit = "3")
++  fun callBoundFixed(frame: VirtualFrame, fn: Closure, ys: Array<Any?>,
++                     @Cached("boundTarget(fn)") cachedCallTarget: RootCallTarget,
++                     @Cached("create(cachedCallTarget)") callerNode: DirectCallerNode): Any? =
++    callerNode.call(frame, arrayOf(0L, ys[0]), tail_call)
++
+   @Specialization(guards = [
+     "fn.arity == argsSize",
++    "!hasBoundTarget(fn)",
+     "fn.callTarget == cachedCallTarget"
+   ], limit = "3")
+   fun callDirect(frame: VirtualFrame, fn: Closure, ys: Array<Any?>?,
+@@ -94,7 +106,7 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
+   }
+ 
+   // Once the small direct cache saturates, a single indirect caller handles every target.
+-  @Specialization(guards = ["fn.arity == argsSize"], replaces = ["callDirect"])
++  @Specialization(guards = ["fn.arity == argsSize"], replaces = ["callBoundFixed", "callDirect"])
+   fun callIndirect(frame: VirtualFrame, fn: Closure, ys: Array<Any?>?,
+                    @Cached("create()") callerNode: IndirectCallerNode): Any? {
+     val hasEnv = fn.env != null
+@@ -112,6 +124,9 @@ abstract class Dispatch(@JvmField val argsSize: Int, val tail_call: Boolean = fa
+     dispatch.executeDispatch(frame, node, fn, ys, tail_call)
+ 
+   fun createMinusTail(x: Int, y: Int): Dispatch = DispatchNodeGen.create(x - y, tail_call)
++
++  fun hasBoundTarget(fn: Closure): Boolean = boundFixedTarget(fn) != null
++  fun boundTarget(fn: Closure): RootCallTarget = boundFixedTarget(fn)!!
+ }
+ 
+ /** Handles every arity without allocating an unbounded chain of cached dispatch nodes. */
+diff --git a/src/cadenza/jit/nodes.kt b/src/cadenza/jit/nodes.kt
+index b196092..101e825 100644
+--- a/src/cadenza/jit/nodes.kt
++++ b/src/cadenza/jit/nodes.kt
+@@ -187,8 +187,16 @@ open class ClosureRootNode(
+   fun isSelfCall(target: RootCallTarget): Boolean =
+     (target.rootNode as? ClosureRootNode)?.bodyIdentity === bodyIdentity
+ 
++  /** Own a unary copy without changing the exposed closure's binary call target. */
++  internal fun bindFixedSelf(self: Closure): ClosureRootNode {
++    require(arity == 2 && !hasEnvironment())
++    val bound: ClosureRootNode = BoundFixedRootNode(language, frameDescriptor.copy(), argPreamble, source, loc, self)
++    bound.invocation = NodeUtil.cloneNode(invocation)
++    return bound
++  }
++
+   @ExplodeLoop
+-  fun buildFrame(arguments: Array<Any?>, local: VirtualFrame) {
++  open fun buildFrame(arguments: Array<Any?>, local: VirtualFrame) {
+     val offset = if (hasEnvironment()) 2 else 1
+     for ((slot, x) in argPreamble) FrameAccess.write(local, slot, resolveFixedArgument(arguments[x+offset]))
+     if (hasEnvironment()) { // Closure receives its captured environment.
+@@ -206,6 +214,24 @@ open class ClosureRootNode(
+   override fun isCloningAllowed() = true
+ }
+ 
++/** A fresh logical body because its physical argument convention differs from the original. */
++private class BoundFixedRootNode(
++  language: Language,
++  frameDescriptor: FrameDescriptor,
++  argPreamble: Array<Pair<Int, Int>>,
++  source: Source,
++  loc: Loc?,
++  private val self: Closure
++) : ClosureRootNode(language, frameDescriptor, 1, argPreamble = argPreamble,
++  body = ClosureBody(null), source = source, loc = loc) {
++  @ExplodeLoop
++  override fun buildFrame(arguments: Array<Any?>, local: VirtualFrame) {
++    for ((slot, argument) in argPreamble) {
++      FrameAccess.write(local, slot, if (argument == 0) self else arguments[1])
++    }
++  }
++}
++
+ class Indirection {
+   var set: Boolean = false
+   var value: Any? = null
+diff --git a/test/instrumentation.kt b/test/instrumentation.kt
+index dd525ee..2d98cb1 100644
+--- a/test/instrumentation.kt
++++ b/test/instrumentation.kt
+@@ -6,6 +6,9 @@ import cadenza.jit.FrameAccess
+ import cadenza.jit.FrameLayout
+ import cadenza.jit.ClosureRootNode
+ import cadenza.jit.TailCallException
++import cadenza.jit.BuiltinRootNode
++import cadenza.jit.FixNatFNodeGen
++import cadenza.jit.boundFixedTarget
+ import com.oracle.truffle.api.frame.MaterializedFrame
+ import com.oracle.truffle.api.frame.VirtualFrame
+ import com.oracle.truffle.api.instrumentation.ExecutionEventNode
+@@ -238,4 +241,80 @@ class InstrumentationTests {
+       binding.dispose()
+     }
+   }
++
++  @Test fun bindingAnInstrumentedBinaryRootPreservesUnaryUnwindAndTailFrames() = withLanguage { language, instrumenter ->
++    val source = source("""
++      \(self : Nat -> Nat) (n : Nat) ->
++        if eq n 0 then div 42 n else if le n 2 then n else self (minus n 1)
++    """.trimIndent())
++    val function = language.parse(source).call() as Closure
++    val owner = FixNatFNodeGen.create().also { BuiltinRootNode(language, it).callTarget }
++    val plain = owner.mkFix(function)
++    var expectedRoot = function.callTarget.rootNode
++    var expectedSelf = plain
++    val entries = mutableListOf<Any?>()
++    val argumentsSeen = mutableListOf<Int>()
++    val frames: MutableSet<MaterializedFrame> = Collections.newSetFromMap(IdentityHashMap())
++    var returns = 0
++    var retried = false
++    val errorSections = mutableListOf<String?>()
++    val retry = Any()
++    val binding = instrumenter.attachExecutionEventFactory(filter(source), ExecutionEventNodeFactory { event ->
++      val rootEvent = event.hasTag(StandardTags.RootTag::class.java)
++      object : ExecutionEventNode() {
++        override fun onEnter(frame: VirtualFrame) {
++          assertSame(expectedRoot, event.instrumentedNode.rootNode)
++          assertSame(expectedRoot.frameDescriptor, frame.frameDescriptor)
++          val n = FrameAccess.read(frame, slot(frame, "n"))
++          if (rootEvent) entries += n else {
++            assertSame(expectedSelf, FrameAccess.read(frame, slot(frame, "self")))
++            argumentsSeen += n as Int
++            frames += frame.materialize()
++          }
++        }
++        override fun onReturnValue(frame: VirtualFrame, result: Any?) { if (rootEvent) returns++ }
++        override fun onReturnExceptional(frame: VirtualFrame, exception: Throwable) {
++          if (rootEvent) {
++            assertTrue(exception is RuntimeError)
++            assertFalse(retried)
++            errorSections += (exception as RuntimeError).encapsulatingSourceSection?.characters?.toString()?.trim()
++            assertEquals(2, frame.arguments.size, "The instrumented bound entry has unary physical arguments")
++            frame.arguments[1] = 5
++            retried = true
++            throw event.createUnwind(retry)
++          }
++        }
++        override fun onUnwind(frame: VirtualFrame, info: Any?): Any? {
++          assertTrue(rootEvent)
++          assertSame(retry, info)
++          return ProbeNode.UNWIND_ACTION_REENTER
++        }
++      }
++    })
++    try {
++      // Install wrappers and event nodes on the original before its invocation is cloned.
++      assertEquals(2, function.callTarget.call(*arguments(function, plain, 2)))
++      entries.clear(); argumentsSeen.clear(); frames.clear(); returns = 0
++      val fixed = owner.mkCachedFix(function)
++      val target = requireNotNull(boundFixedTarget(fixed))
++      expectedRoot = target.rootNode
++      expectedSelf = fixed
++      assertNotSame(function.callTarget.rootNode.frameDescriptor, expectedRoot.frameDescriptor)
++      assertEquals(2, target.call(0L, 4))
++      assertEquals(listOf<Int?>(null), entries)
++      assertEquals(listOf(4, 3, 2), argumentsSeen)
++      assertEquals(1, frames.size)
++      assertEquals(2, target.call(0L, 0))
++      assertTrue(retried)
++      assertEquals(listOf("div 42 n"), errorSections)
++      assertEquals(listOf(null, null, 0), entries)
++      assertEquals(listOf(4, 3, 2, 0, 5, 4, 3, 2), argumentsSeen)
++      assertEquals(2, frames.size, "Re-entry reuses its invocation frame; a later call gets a fresh one")
++      assertEquals(2, returns)
++      assertTrue(NodeUtil.verify(expectedRoot))
++      assertTrue(NodeUtil.verify(function.callTarget.rootNode))
++    } finally {
++      binding.dispose()
++    }
++  }
+ }
+diff --git a/test/boundSelfRoot.kt b/test/boundSelfRoot.kt
+new file mode 100644
+index 0000000..a14d49b
+--- /dev/null
++++ b/test/boundSelfRoot.kt
+@@ -0,0 +1,299 @@
++import cadenza.Language
++import cadenza.data.BigInt
++import cadenza.data.Closure
++import cadenza.jit.*
++import com.oracle.truffle.api.RootCallTarget
++import com.oracle.truffle.api.frame.MaterializedFrame
++import com.oracle.truffle.api.frame.VirtualFrame
++import com.oracle.truffle.api.interop.InteropLibrary
++import com.oracle.truffle.api.nodes.DirectCallNode
++import com.oracle.truffle.api.nodes.NodeUtil
++import com.oracle.truffle.api.nodes.RootNode
++import com.oracle.truffle.api.source.Source
++import org.graalvm.polyglot.Context
++import org.junit.jupiter.api.Assertions.*
++import org.junit.jupiter.api.Test
++import java.math.BigInteger
++import java.util.Collections
++import java.util.IdentityHashMap
++import java.util.concurrent.CyclicBarrier
++import java.util.concurrent.Executors
++import java.util.concurrent.TimeUnit
++
++class BoundSelfRootTests {
++  private fun withLanguage(action: (Language) -> Unit) {
++    Context.create("cadenza").use { context ->
++      context.initialize("cadenza")
++      context.enter()
++      try { action(Language.currentLanguage()) } finally { context.leave() }
++    }
++  }
++
++  private fun source(text: String) = Source.newBuilder("cadenza", text, "bound-self-root.za").build()
++  private fun parse(language: Language, text: String) = language.parse(source(text)).call() as Closure
++  private fun owner(language: Language) = FixNatFNodeGen.create().also {
++    BuiltinRootNode(language, it).callTarget
++  }
++
++  /** Observations are shared by deep-cloned code, but its dispatch children are not. */
++  private class Body(language: Language) {
++    private val layout = FrameLayout()
++    private val selfSlot = layout.slot("self")
++    private val argumentSlot = layout.slot("n")
++    val seen = mutableListOf<Closure>()
++    val frames: MutableSet<MaterializedFrame> = Collections.newSetFromMap(IdentityHashMap())
++    val roots: MutableSet<RootNode> = Collections.newSetFromMap(IdentityHashMap())
++    var schedule: List<Closure> = emptyList()
++    var iterations = 0
++    val code = object : Code(null) {
++      @Child private var dispatch: Dispatch = DispatchNodeGen.create(1, true)
++      override fun execute(frame: VirtualFrame): Any? {
++        val self = FrameAccess.read(frame, selfSlot) as Closure
++        seen += self
++        frames += frame.materialize()
++        roots += rootNode
++        val n = FrameAccess.read(frame, argumentSlot) as Int
++        if (n == 0) return 42
++        val next = if (schedule.isEmpty()) self else schedule[(iterations - n + 1) % schedule.size]
++        return dispatch.executeDispatch(frame, next, arrayOf(n - 1))
++      }
++    }
++    val root = ClosureRootNode(language, layout.build(), 2,
++      argPreamble = arrayOf(selfSlot to 0, argumentSlot to 1), body = ClosureBody(code),
++      source = Source.newBuilder("cadenza", "0", "observed-bound-self.za").build())
++    val function = Closure(null, emptyArray(), 2, natFF, root.callTarget)
++
++    fun reset(count: Int, sequence: List<Closure> = emptyList()) {
++      iterations = count
++      schedule = sequence
++      seen.clear()
++      frames.clear()
++      roots.clear()
++    }
++  }
++
++  private class Driver(language: Language, target: RootCallTarget) :
++    CadenzaRootNode(language, FrameLayout().build()) {
++    @Child private var direct = DirectCallNode.create(target)
++    @Child private var trampoline = TailCallLoop()
++    var escaped = 0
++    override fun execute(frame: VirtualFrame): Any? = try {
++      CallUtils.callDirect(direct, frame.arguments)
++    } catch (tail: TailCallException) {
++      escaped++
++      trampoline.execute(tail)
++    }
++    fun split(): ClosureRootNode {
++      callTarget
++      assertTrue(direct.cloneCallTarget(), "requires an actual Truffle call-target split")
++      assertTrue(direct.isCallTargetCloned)
++      return direct.currentRootNode as ClosureRootNode
++    }
++  }
++
++  @Test fun cachedBindingPreservesRepresentationAndTheOriginalBinaryBody() = withLanguage { language ->
++    val body = Body(language)
++    val site = owner(language)
++    val fixed = site.mkCachedFix(body.function)
++    val equal = site.mkCachedFix(body.function)
++    val generic = site.mkFix(body.function)
++    val bound = boundFixedTarget(fixed)!!
++    val equalBound = boundFixedTarget(equal)!!
++    val root = bound.rootNode as ClosureRootNode
++    assertSame(body.function.callTarget, fixed.callTarget)
++    assertEquals(1, fixed.arity)
++    assertEquals(natF, fixed.type)
++    assertEquals(1, fixed.papArgs.size)
++    assertNull(fixed.env)
++    assertNotSame(fixed, equal)
++    for (other in listOf(equal, generic, fixed.pap(emptyArray()))) {
++      assertEquals(fixed, other)
++      assertEquals(other, fixed)
++      assertEquals(fixed.hashCode(), other.hashCode())
++    }
++    assertNotEquals(fixed, owner(language).mkCachedFix(body.function))
++    assertNotSame(bound, equalBound)
++    assertEquals(1, root.arity)
++    assertEquals(2, body.root.arity)
++    assertNotSame(body.root.frameDescriptor, root.frameDescriptor)
++    assertFalse(root.isSelfCall(body.root.callTarget))
++    assertFalse(body.root.isSelfCall(bound))
++    assertFalse(root.isSelfCall(equalBound), "equal closures still bind distinct self references")
++    assertSame(body.root, body.code.rootNode, "binding must not adopt the original body")
++    val clonedCodes = NodeUtil.findAllNodeInstances(root, Code::class.java)
++    assertFalse(clonedCodes.any { it === body.code })
++    assertTrue(clonedCodes.isNotEmpty())
++    clonedCodes.forEach { assertSame(root, it.rootNode) }
++
++    body.reset(3)
++    val explicit = parse(language, "\\(n : Nat) -> plus n 1000")
++    assertEquals(1002, InteropLibrary.getUncached().execute(body.function, explicit, 3))
++    assertSame(explicit, body.seen.single(), "the original binary ABI must honor its explicit self")
++    body.reset(32)
++    assertEquals(42, bound.call(0L, 32))
++    assertEquals(33, body.seen.size)
++    body.seen.forEach { assertSame(fixed, it) }
++    assertTrue(NodeUtil.verify(root))
++    assertTrue(NodeUtil.verify(body.root))
++  }
++
++  @Test fun tailTransitionsPreserveExactSelfAcrossEqualBindingsAndGenericFallback() = withLanguage { language ->
++    val body = Body(language)
++    val site = owner(language)
++    val first = site.mkCachedFix(body.function)
++    val equal = site.mkCachedFix(body.function)
++    val generic = site.mkFix(body.function)
++    val differentOwner = owner(language).mkCachedFix(body.function)
++    assertEquals(first, equal)
++    assertNotSame(first, equal)
++    val driver = Driver(language, boundFixedTarget(first)!!)
++    val sequence = listOf(first, equal, generic, differentOwner)
++    body.reset(128, sequence)
++    // Every target's bloom bit is present, forcing cross-binding transitions through
++    // TailCallException instead of relying on incidental direct-call nesting.
++    assertEquals(42, driver.callTarget.call(-1L, 128))
++    assertEquals(129, body.seen.size)
++    body.seen.forEachIndexed { index, actual ->
++      assertSame(sequence[index % sequence.size], actual, "wrong bound self at iteration $index")
++    }
++    assertTrue(driver.escaped > 0, "different bindings must not reuse one unary root's self constant")
++    // Saturating a dispatch may use the original binary ABI. Replaying a retained
++    // binding must remain correct whether or not that call site is still specialized.
++    body.reset(16)
++    assertEquals(42, InteropLibrary.getUncached().execute(equal, 16))
++    body.seen.forEach { assertSame(equal, it) }
++    assertTrue(NodeUtil.verify(body.root))
++    assertTrue(NodeUtil.verify(driver))
++  }
++
++  @Test fun actualBoundRootSplitReusesItsFrameAndOnlyItsOwnLogicalIdentity() = withLanguage { language ->
++    val body = Body(language)
++    val site = owner(language)
++    val fixed = site.mkCachedFix(body.function)
++    val target = boundFixedTarget(fixed)!!
++    val driver = Driver(language, target)
++    val clone = driver.split()
++    assertNotSame(target.rootNode, clone)
++    assertTrue(clone.isSelfCall(target))
++    assertFalse(clone.isSelfCall(body.root.callTarget))
++    assertFalse(clone.isSelfCall(boundFixedTarget(site.mkCachedFix(body.function))!!))
++    body.reset(128)
++    assertEquals(42, driver.callTarget.call(-1L, 128))
++    assertEquals(129, body.seen.size)
++    body.seen.forEach { assertSame(fixed, it) }
++    assertEquals(1, body.frames.size, "self tail iterations should rebuild one cloned frame")
++    assertEquals(setOf(clone), body.roots)
++    assertEquals(0, driver.escaped)
++    assertTrue(NodeUtil.verify(clone))
++    assertTrue(NodeUtil.verify(target.rootNode))
++    assertTrue(NodeUtil.verify(body.root))
++  }
++
++  @Test fun capturedAndPrefixedBodiesKeepTheBinaryFallback() = withLanguage { language ->
++    val site = owner(language)
++    val captured = parse(language, "let answer : Nat = 42 in \\(self : Nat -> Nat) (n : Nat) -> " +
++      "if le n 0 then answer else self (minus n 1)")
++    val prefixed = parse(language, "(\\(answer : Nat) (self : Nat -> Nat) (n : Nat) -> " +
++      "if le n 0 then answer else self (minus n 1)) 42")
++    assertNotNull(captured.env)
++    assertEquals(1, prefixed.papArgs.size)
++    assertEquals(3, (prefixed.callTarget.rootNode as ClosureRootNode).arity)
++    for (function in listOf(captured, prefixed)) {
++      val fixed = site.mkCachedFix(function)
++      assertNull(boundFixedTarget(fixed))
++      assertSame(function.callTarget, fixed.callTarget)
++      assertSame(function.env, fixed.env)
++      assertEquals(site.mkFix(function), fixed)
++      assertEquals(42, InteropLibrary.getUncached().execute(fixed, 1000))
++    }
++  }
++
++  @Test fun saturatedFixSiteKeepsRetainedBindingsEqualToItsGenericResults() = withLanguage { language ->
++    val site = owner(language)
++    val target = site.rootNode.callTarget
++    val bodies = List(4) { Body(language) }
++    val retained = bodies.mapIndexed { index, body ->
++      assertEquals(42, target.call(0L, body.function, 0))
++      val fixed = body.seen.single()
++      if (index < 3) assertNotNull(boundFixedTarget(fixed)) else assertNull(boundFixedTarget(fixed))
++      fixed
++    }
++    bodies.forEachIndexed { index, body ->
++      body.reset(0)
++      assertEquals(42, target.call(0L, body.function, 0))
++      val generic = body.seen.single()
++      assertNull(boundFixedTarget(generic))
++      assertNotSame(retained[index], generic)
++      assertEquals(retained[index], generic)
++      assertEquals(generic, retained[index])
++      assertEquals(retained[index].hashCode(), generic.hashCode())
++      body.reset(8)
++      assertEquals(42, InteropLibrary.getUncached().execute(retained[index], 8))
++      body.seen.forEach { assertSame(retained[index], it) }
++    }
++  }
++
++  @Test fun installedUnaryRootHandlesPromotedArgumentsAndConcreteRecovery() {
++    CompilationTestSupport.requireOptimizingRuntime()
++    CompilationTestSupport.context().use { context ->
++      context.initialize("cadenza")
++      context.enter()
++      try {
++        val language = Language.currentLanguage()
++        val function = parse(language, "\\(self : Nat -> Nat) (n : Nat) -> " +
++          "if le n 0 then 0 else plus n (self (minus n 1))")
++        val fixed = owner(language).mkCachedFix(function)
++        val target = boundFixedTarget(fixed)!!
++        fun check(n: Int, argument: Any = n) {
++          val result = target.call(0L, argument)
++          val integer = if (result is BigInt) result.value else BigInteger.valueOf((result as Int).toLong())
++          assertEquals(BigInteger.valueOf(n.toLong() * (n + 1) / 2), integer)
++        }
++        repeat(24) { check(3 + it % 12) }
++        CompilationTestSupport.compileAndVerify(target)
++        check(100)
++        check(12, BigInt(BigInteger.valueOf(12)))
++        repeat(24) { check(3 + it % 12) }
++        CompilationTestSupport.compileAndVerify(target)
++        check(101)
++      } finally { context.leave() }
++    }
++  }
++
++  @Test fun simultaneousNoncapturingFixedCallsKeepUnaryArgumentsIndependent() {
++    val context = Context.newBuilder("cadenza").allowExperimentalOptions(true)
++      .option("cadenza.Backend", "ast").build()
++    val workers = Executors.newFixedThreadPool(4) { action ->
++      Thread(action, "bound-self-concurrent-test").apply { isDaemon = true }
++    }
++    var completed = false
++    try {
++      val function = context.eval("cadenza", "\\(self : Nat -> Nat) (n : Nat) -> " +
++        "if le n 0 then 0 else plus (mult n 7) (self (minus n 1))")
++      val fix = context.eval("cadenza", "fixNatF")
++      val partial = fix.execute(function)
++      val barrier = CyclicBarrier(4)
++      val results = (0 until 4).map { worker -> workers.submit {
++        context.enter()
++        try {
++          barrier.await(10, TimeUnit.SECONDS)
++          repeat(12) { round ->
++            val n = 5 + worker * 17 + round
++            barrier.await(10, TimeUnit.SECONDS)
++            assertEquals(7 * n * (n + 1) / 2, partial.execute(n).asInt())
++            assertEquals(7 * (n + 1) * (n + 2) / 2, fix.execute(function, n + 1).asInt())
++          }
++        } finally { context.leave() }
++      } }
++      results.forEach { it.get(30, TimeUnit.SECONDS) }
++      completed = true
++    } finally {
++      workers.shutdownNow()
++      if (completed) context.close()
++      else Thread({ context.close(true) }, "bound-self-concurrent-cleanup").apply {
++        isDaemon = true
++        start()
++      }
++    }
++  }
++}

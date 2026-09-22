@@ -6,6 +6,8 @@ import cadenza.jit.FrameAccess
 import cadenza.jit.FrameLayout
 import cadenza.jit.ClosureRootNode
 import cadenza.jit.TailCallException
+import cadenza.jit.BuiltinRootNode
+import cadenza.jit.FixNatFNodeGen
 import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.instrumentation.ExecutionEventNode
@@ -234,6 +236,81 @@ class InstrumentationTests {
       assertEquals(listOf("program root", "closure"), statements)
       assertEquals(listOf("plus (mult x 2) 1"), bodySections)
       assertTrue(NodeUtil.verify((target as com.oracle.truffle.api.RootCallTarget).rootNode))
+    } finally {
+      binding.dispose()
+    }
+  }
+
+  @Test fun cloningAnInstrumentedRootPreservesArgumentsOnUnwindAndTailFrames() = withLanguage { language, instrumenter ->
+    val source = source("""
+      \(self : Nat -> Nat) (n : Nat) ->
+        if eq n 0 then div 42 n else if le n 2 then n else self (minus n 1)
+    """.trimIndent())
+    val function = language.parse(source).call() as Closure
+    val owner = FixNatFNodeGen.create().also { BuiltinRootNode(language, it).callTarget }
+    val plain = owner.mkFix(function)
+    var expectedRoot = function.callTarget.rootNode
+    val entries = mutableListOf<Any?>()
+    val argumentsSeen = mutableListOf<Int>()
+    val frames: MutableSet<MaterializedFrame> = Collections.newSetFromMap(IdentityHashMap())
+    var returns = 0
+    var retried = false
+    val errorSections = mutableListOf<String?>()
+    val retry = Any()
+    val binding = instrumenter.attachExecutionEventFactory(filter(source), ExecutionEventNodeFactory { event ->
+      val rootEvent = event.hasTag(StandardTags.RootTag::class.java)
+      object : ExecutionEventNode() {
+        override fun onEnter(frame: VirtualFrame) {
+          assertSame(expectedRoot, event.instrumentedNode.rootNode)
+          assertSame(expectedRoot.frameDescriptor, frame.frameDescriptor)
+          val n = FrameAccess.read(frame, slot(frame, "n"))
+          if (rootEvent) entries += n else {
+            assertSame(plain, FrameAccess.read(frame, slot(frame, "self")))
+            argumentsSeen += n as Int
+            frames += frame.materialize()
+          }
+        }
+        override fun onReturnValue(frame: VirtualFrame, result: Any?) { if (rootEvent) returns++ }
+        override fun onReturnExceptional(frame: VirtualFrame, exception: Throwable) {
+          if (rootEvent) {
+            assertTrue(exception is RuntimeError)
+            assertFalse(retried)
+            errorSections += (exception as RuntimeError).encapsulatingSourceSection?.characters?.toString()?.trim()
+            assertEquals(3, frame.arguments.size, "The cloned binary root must preserve its physical argument convention")
+            frame.arguments[2] = 5
+            retried = true
+            throw event.createUnwind(retry)
+          }
+        }
+        override fun onUnwind(frame: VirtualFrame, info: Any?): Any? {
+          assertTrue(rootEvent)
+          assertSame(retry, info)
+          return ProbeNode.UNWIND_ACTION_REENTER
+        }
+      }
+    })
+    try {
+      // Populate instrument wrappers and event nodes before making a real AST copy.
+      assertEquals(2, function.callTarget.call(*arguments(function, plain, 2)))
+      entries.clear(); argumentsSeen.clear(); frames.clear(); returns = 0
+      val cloned = NodeUtil.cloneNode(function.callTarget.rootNode)
+      val target = cloned.callTarget
+      expectedRoot = cloned
+      assertNotSame(function.callTarget.rootNode, cloned)
+      assertSame(function.callTarget.rootNode.frameDescriptor, cloned.frameDescriptor)
+      assertEquals(2, target.call(*arguments(function, plain, 4)))
+      assertEquals(listOf<Int?>(null), entries)
+      assertEquals(listOf(4, 3, 2), argumentsSeen)
+      assertEquals(1, frames.size)
+      assertEquals(2, target.call(*arguments(function, plain, 0)))
+      assertTrue(retried)
+      assertEquals(listOf("div 42 n"), errorSections)
+      assertEquals(listOf(null, null, 0), entries)
+      assertEquals(listOf(4, 3, 2, 0, 5, 4, 3, 2), argumentsSeen)
+      assertEquals(2, frames.size, "Re-entry reuses its invocation frame; a later call gets a fresh one")
+      assertEquals(2, returns)
+      assertTrue(NodeUtil.verify(expectedRoot))
+      assertTrue(NodeUtil.verify(function.callTarget.rootNode))
     } finally {
       binding.dispose()
     }

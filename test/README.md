@@ -98,7 +98,10 @@ locations, including shebangs and whitespace prefixes. Static rejection must occ
 before guest output, and the context must remain usable afterward.
 
 Tooling tests attach real Truffle listeners, inspect retained frames, and request
-unwind/re-entry to verify that argument setup runs again. Host lifecycle tests
+unwind/re-entry to verify that argument setup runs again. They also check a
+populated instrumented root after cloning: tail iterations must stay
+in the clone, source errors must retain the operation, and unwind/re-entry must
+reload the changed physical arguments into that clone's frame. Host lifecycle tests
 cancel an executing loop at an observable checkpoint and verify shared-engine
 isolation. Statement-limit tests exercise the public polyglot API on both
 backends, including infinite recursion with a bounded watchdog. Bytecode tests

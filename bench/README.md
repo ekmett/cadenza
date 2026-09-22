@@ -48,6 +48,13 @@ source parsing, execution, and shutdown. Its single-shot timings are distinct
 from the warm steady-state timings; they are JVM-process-warm, not operating
 system process startup measurements.
 
+`ColdFixedPoint` adds uncached parsing, construction and first execution of a
+small noncapturing recursive function in a fresh context. It cycles through four
+inputs and checks each result against an iterative host oracle. Use it to check
+the startup cost of fixed-point optimizations separately from warmed recursion;
+the default inputs are deliberately small. Context shutdown and the result check
+are included, and the JVM process itself has already warmed up.
+
 `NoncapturingClosure` selects between two escaping functions using a runtime
 argument. `PartialApplication` selects among four differently curried functions,
 saturates the direct-call cache, and returns an escaping partial application;
@@ -101,3 +108,7 @@ Fibonacci setup also checks its varying inputs against an independent host oracl
 [Rejected fixed-self identity profiling](results/2026-09-22/fixed-self-profile.md)
 records an experiment that preserved allocation and slowed small Fibonacci calls;
 the candidate patch is retained as evidence but is not applied to the runtime.
+
+[Rejected unary fixed-self entry](results/2026-09-22/bound-self-root.md) records a
+smaller call-array convention that reduced allocation but substantially slowed
+recursion, together with its checked cold-start comparison and unapplied patch.
