@@ -12,6 +12,19 @@ class ParserTests {
     Source.newBuilder("cadenza", "(\\(x : Nat) (y : Nat) -> plus x y) w z", "lam.za").build()
   }
 
+  @Test fun stringCanEndExactlyAtEof() {
+    val parser = Parse(")")
+    org.junit.jupiter.api.Assertions.assertEquals(")", parser.string(")"))
+    parser.eof
+  }
+
+  @Test fun parenthesizedApplicationAtEofAndBooleanTypes() {
+    for (text in listOf("plus (mult 6 7) (minus 2 2)", "\\(b : Bool) -> if b then 1 else 2")) {
+      val parsed = Source.newBuilder("cadenza", text, "eof.za").build().parse { grammar }
+      org.junit.jupiter.api.Assertions.assertTrue(parsed is Success<*>, text)
+    }
+  }
+
   @Test fun lam() {
     val result = source2.parse { grammar } as Success<*>
   }

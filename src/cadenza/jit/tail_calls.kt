@@ -8,19 +8,14 @@ import com.oracle.truffle.api.profiles.BranchProfile
 import java.lang.Exception
 
 
-class TailCallException(val fn: RootCallTarget, @CompilerDirectives.CompilationFinal(dimensions = 1) val args: Array<Any?>) : ControlFlowException() {}
+class TailCallException(val fn: RootCallTarget, val args: Array<Any?>) : ControlFlowException() {}
 
 class TailCheck : Node() {
-  @CompilerDirectives.CompilationFinal var root: Node? = null
   private val tailCallProfile: BranchProfile = BranchProfile.create()
   private val unrollProfile: BranchProfile = BranchProfile.create()
 
   fun tailCheck(frame: VirtualFrame, fn: RootCallTarget, args: Array<Any?>) {
-    if (root == null) {
-      CompilerDirectives.transferToInterpreterAndInvalidate()
-      root = rootNode
-    }
-
+    val root = rootNode
     if (root !is ClosureRootNode) {
       throw TailCallException(fn, args)
     }
@@ -103,21 +98,16 @@ class IndirectCallerNode() : Node() {
 }
 
 
-class TailCallLoop() : Node() {
-  @Child var loopNode: LoopNode? = null
-  @Child var repeatingNode: TailCallRepeatingNode? = null
+class TailCallLoop : Node() {
+  @Child private var loopNode: LoopNode = Truffle.getRuntime().createLoopNode(
+    TailCallRepeatingNode(FrameLayout().build()))
 
-  fun execute(tailCall: TailCallException): Any {
-    if (loopNode == null) {
-      CompilerDirectives.transferToInterpreterAndInvalidate()
-      repeatingNode = TailCallRepeatingNode(rootNode.frameDescriptor)
-      loopNode = Truffle.getRuntime().createLoopNode(repeatingNode!!)
-      adoptChildren()
-    }
-    val frame = Truffle.getRuntime().createVirtualFrame(emptyArray(), repeatingNode!!.descriptor)
-    repeatingNode!!.setNextCall(frame, tailCall.fn, tailCall.args)
-    loopNode!!.execute(frame)
-    return repeatingNode!!.getResult(frame)
+  fun execute(tailCall: TailCallException): Any? {
+    val repeating = loopNode.repeatingNode as TailCallRepeatingNode
+    val frame = Truffle.getRuntime().createVirtualFrame(emptyArray(), repeating.descriptor)
+    repeating.setNextCall(frame, tailCall.fn, tailCall.args)
+    loopNode.execute(frame)
+    return repeating.getResult(frame)
   }
 }
 
@@ -137,7 +127,7 @@ class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), Repeating
     frame.setObject(argsSlot, arguments)
   }
 
-  fun getResult(frame: VirtualFrame): Any {
+  fun getResult(frame: VirtualFrame): Any? {
     return frame.getObject(resultSlot)
   }
 
@@ -158,7 +148,7 @@ class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), Repeating
       val fn = getNextFunction(frame)
       val args = getNextArgs(frame)
       args[0] = 0L
-      frame.setObject(resultSlot, dispatchNode.executeDispatch(fn, args))
+      frame.setObject(resultSlot, dispatchNode.executeDispatch(this, fn, args))
       false
     } catch (e: TailCallException) {
       setNextCall(frame, e.fn, e.args)
@@ -168,30 +158,29 @@ class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), Repeating
 }
 
 
-class SelfTailCallLoop(
-  @field:Child var body: ClosureBody,
-  private val closureRoot: ClosureRootNode
-): Node() {
-  @field:Child var repeatingNode: SelfTailCallRepeatingNode = SelfTailCallRepeatingNode(body, closureRoot)
-  @field:Child var loopNode: LoopNode = Truffle.getRuntime().createLoopNode(repeatingNode)
+class SelfTailCallLoop(body: ClosureBody): Node() {
+  @Child private var loopNode: LoopNode = Truffle.getRuntime().createLoopNode(SelfTailCallRepeatingNode(body))
 
-  fun execute(frame: VirtualFrame): Any? {
-    return loopNode.execute(frame)
-  }
+  fun executeOnce(frame: VirtualFrame): Any? =
+    (loopNode.repeatingNode as SelfTailCallRepeatingNode).executeOnce(frame)
+
+  fun execute(frame: VirtualFrame): Any? = loopNode.execute(frame)
 }
 
-
 class SelfTailCallRepeatingNode(
-  @field:Child var body: ClosureBody,
-  private val closureRoot: ClosureRootNode
+  @field:Child private var body: ClosureBody
 ): RepeatingNode, Node() {
-  override fun executeRepeating(frame: VirtualFrame): Boolean { throw Exception() }
+  fun executeOnce(frame: VirtualFrame): Any? = body.execute(frame)
+
+  override fun executeRepeating(frame: VirtualFrame): Boolean =
+    throw UnsupportedOperationException("value-returning loop")
 
   override fun executeRepeatingWithValue(frame: VirtualFrame): Any? {
     return try {
-      body.execute(frame)
+      executeOnce(frame)
     } catch (e: TailCallException) {
-      if (e.fn.rootNode == closureRoot) {
+      val closureRoot = rootNode as ClosureRootNode
+      if (e.fn.rootNode === closureRoot) {
         closureRoot.buildFrame(e.args, frame)
         CONTINUE_LOOP_STATUS
       } else { throw e }

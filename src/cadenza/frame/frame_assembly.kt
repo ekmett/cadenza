@@ -2,11 +2,8 @@ package cadenza.frame
 
 // cadenza.aot?
 
-import cadenza.data.map
 import cadenza.jit.Code
 import cadenza.todo
-import com.oracle.truffle.api.dsl.Cached
-import com.oracle.truffle.api.dsl.Specialization
 import com.oracle.truffle.api.frame.FrameSlotTypeException
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.ExplodeLoop
@@ -17,10 +14,6 @@ import org.intelligence.asm.*
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.AnnotationNode
 import org.objectweb.asm.tree.LabelNode
-import java.lang.invoke.MethodHandle
-import java.lang.invoke.MethodHandles
-import java.lang.invoke.MethodType
-import java.lang.reflect.Constructor
 
 
 // manufacture cadenza.frame.dynamic.IIO, OIO, etc.
@@ -211,48 +204,4 @@ fun ByteArray.loadClass(className: String) : Class<*> {
       else -> TODO()
     }
   }.loadClass(className)
-}
-
-val frameCache: HashMap<String, Class<DataFrame>> = HashMap()
-
-abstract class BuildFrame : Node() {
-  var lookup: MethodHandles.Lookup = MethodHandles.publicLookup()
-
-  abstract fun execute(fields: Array<Any>): DataFrame
-
-  @Specialization(guards = ["matchesSig(fields, sig)"], limit = "1000000")
-  fun build(
-    fields: Array<Any>,
-    @Cached("getSignature(fields)", dimensions = 1) sig: Array<FieldInfo>,
-    @Cached("assembleSig(sig)") cstr: MethodHandle
-  ): DataFrame {
-    return cstr.invokeExact(fields) as DataFrame
-  }
-
-  fun assembleSig(sigArr: Array<FieldInfo>): MethodHandle {
-    val sig = sigArr.map { it.sig }.joinToString("")
-    var klass = frameCache[sig]
-    if (klass === null) {
-      klass = frame(sig).loadClass("cadenza.frame.dynamic.$sig") as Class<DataFrame>
-      frameCache[sig] = klass
-    }
-    val arrayClass = arrayOf<Any>().javaClass
-    val ctor = klass.getConstructor(arrayClass)
-    val ctorH = lookup.unreflectConstructor(ctor)
-    return ctorH.asType(ctorH.type().changeReturnType(DataFrame::class.java))
-  }
-
-  @ExplodeLoop
-  fun matchesSig(fields: Array<Any>, sig: Array<FieldInfo>): Boolean {
-    if (fields.size != sig.size) return false
-    sig.forEachIndexed { ix, v ->
-      if (!v.matches(fields[ix])) {
-        return false
-      }
-    }
-    return true
-  }
-
-  fun getSignature(fields: Array<Any>): Array<FieldInfo> = map(fields) { FieldInfo.from(it) }
-  fun equalsArray(x: ByteArray, y: ByteArray): Boolean = x.contentEquals(y)
 }

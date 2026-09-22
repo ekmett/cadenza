@@ -7,6 +7,7 @@ import cadenza.semantics.Ctx
 import cadenza.semantics.NameInfo
 import cadenza.semantics.Type
 import com.oracle.truffle.api.RootCallTarget
+import com.oracle.truffle.api.CompilerDirectives
 import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.dsl.*
 import com.oracle.truffle.api.frame.VirtualFrame
@@ -123,59 +124,44 @@ abstract class Minus : Builtin2(Type.Arr(Type.Nat,Type.Arr(Type.Nat, Type.Nat)))
 val natF = Type.Arr(Type.Nat, Type.Nat)
 val natFF = Type.Arr(natF, natF)
 
-//// fixNatF f x = f (fixNatF f) x
-//abstract class FixNatF : Builtin2(Type.Arr(natFF, natF)) {
-//  @CompilerDirectives.CompilationFinal var target: RootCallTarget? = null
-//
-//  @Child var dispatch: Dispatch = DispatchNodeGen.create(2, true)
-//  @Specialization(guards = ["f.equals(cachedF)"], limit = "100000")
-//  fun fixNatF(f: Closure, x: Any?, @Cached("f") cachedF: Closure, @Cached("mkSelfApp(cachedF)") selfApp: Closure): Any? {
-//    return dispatch.executeDispatch(cachedF, arrayOf(selfApp, x))
-//  }
-//
-//  fun mkSelfApp(f: Closure): Closure {
-//    if (target == null) {
-//      CompilerDirectives.transferToInterpreterAndInvalidate()
-//      val language = lookupLanguageReference(Language::class.java).get()
-//      target = BuiltinRootNode(language, this).callTarget
-//    }
-//    return Closure(null, arrayOf(f), 1, type, target as RootCallTarget)
-//  }
-//}
-
-// fixNatF f x = f (fixNatF f) x
-// fix f = let r = f r in r
+// fixNatF f x = f (fixNatF f) x. Cache values, never nodes owned by another root.
 abstract class FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
+  @CompilerDirectives.CompilationFinal private var fixedTarget: RootCallTarget? = null
   abstract fun execute(frame: VirtualFrame, l: Any?, r: Any?): Any?
-
   override fun run(frame: VirtualFrame, args: Array<Any?>) = execute(frame, args[0], args[1])
 
-  @Specialization(guards = ["f.equals(cachedF)"], limit = "100000")
-  fun fixNatF(frame: VirtualFrame, f: Closure, right: Any?,
-              @Cached("f") cachedF: Closure,
-              @Cached("mkFix(f)") fix: FixNatF1
-              ): Any? {
-    return fix.run(frame, arrayOf(right))
+  @Specialization(guards = ["f.equals(cachedF)"], limit = "3")
+  fun cached(frame: VirtualFrame, f: Closure, right: Any?,
+             @Cached("f") cachedF: Closure,
+             @Cached(value = "mkFix(cachedF)", neverDefault = true) fix: Closure,
+             @Cached.Exclusive @Cached(value = "createDispatch()", neverDefault = true) dispatch: Dispatch): Any? =
+    dispatch.executeDispatch(frame, fix, arrayOf(right))
+
+  @Specialization(replaces = ["cached"])
+  fun generic(frame: VirtualFrame, f: Closure, right: Any?,
+              @Cached.Exclusive @Cached(value = "createDispatch()", neverDefault = true) dispatch: Dispatch): Any? =
+    dispatch.executeDispatch(frame, mkFix(f), arrayOf(right))
+
+  fun createDispatch(): Dispatch = DispatchNodeGen.create(1, false)
+
+  fun mkFix(f: Closure): Closure {
+    if (fixedTarget == null) {
+      CompilerDirectives.transferToInterpreterAndInvalidate()
+      fixedTarget = FixApplyRootNode(Language.currentLanguage(this)).callTarget
+    }
+    return Closure(null, arrayOf(f), 1, type, fixedTarget!!)
   }
-  fun mkFix(f: Closure) = FixNatF1(f, Language.currentLanguage(this))
 }
 
-// fixNatF with a known function
-// inlines possibly up to graal.TruffleMaximumRecursiveInlining (default 2)
-class FixNatF1(private val f: Closure, language: Language) : Builtin(natF, 1) {
-  // TODO: make this instrumentable?
-  private val target: RootCallTarget = BuiltinRootNode(language, this).callTarget
-  private val self = Closure(null, arrayOf(), 1, type, target)
-  // TODO: making this a tail call breaks the specialization we get by using FixNatF1
-  // TODO: this is wrong when using CallBuiltin
-  @Child var dispatch: Dispatch = DispatchNodeGen.create(2, true)
-
-  override fun run(frame: VirtualFrame, xs: Array<Any?>):  Any? {
-    val x = xs[0]
-    // still need to use a dispatch since calling w/ multiple args => might need to call twice
-    // but actually it's impossible to branch on values of function types, so this is avoidable?
-    return dispatch.executeDispatch(frame, f, arrayOf(self, x))
+/** The recursive function is an ordinary partial application of this shared body. */
+class FixApplyRootNode(language: Language) : CadenzaRootNode(language, FrameLayout().build()) {
+  @Child private var dispatch: Dispatch = DispatchNodeGen.create(2, true)
+  override fun execute(frame: VirtualFrame): Any? {
+    val f = frame.arguments[1] as Closure
+    val self = Closure(null, arrayOf(f), 1, Type.Arr(natFF, natF), callTarget)
+    return dispatch.executeDispatch(frame, f, arrayOf(self, frame.arguments[2]))
   }
+  override fun getName() = "fixNatF"
 }
 
 
@@ -186,17 +172,16 @@ class PrintId : Builtin1(natF) {
   }
 }
 
-val initialCtx: Ctx = arrayOf(
-  Pair("le", LeNodeGen.create()),
-  Pair("fixNatF", FixNatFNodeGen.create()),
-  Pair("plus", PlusNodeGen.create()),
-  Pair("minus", MinusNodeGen.create()),
-  Pair("eq",EqNodeGen.create()),
-  Pair("mod",ModNodeGen.create()),
-  Pair("div",DivNodeGen.create()),
-  Pair("mult",MultNodeGen.create()),
-  Pair("printId",PrintId())
-).fold(null as Ctx) { c, x ->
-  ConsEnv(x.first, NameInfo(x.second.type, x.second), c)
+val initialCtx: Ctx = arrayOf<Pair<String, () -> Builtin>>(
+  "le" to { LeNodeGen.create() },
+  "fixNatF" to { FixNatFNodeGen.create() },
+  "plus" to { PlusNodeGen.create() },
+  "minus" to { MinusNodeGen.create() },
+  "eq" to { EqNodeGen.create() },
+  "mod" to { ModNodeGen.create() },
+  "div" to { DivNodeGen.create() },
+  "mult" to { MultNodeGen.create() },
+  "printId" to { PrintId() }
+).fold(null as Ctx) { ctx, (name, factory) ->
+  ConsEnv(name, NameInfo(factory().type, factory), ctx)
 }
-

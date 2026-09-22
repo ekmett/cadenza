@@ -7,11 +7,11 @@ import cadenza.semantics.Term.*
 import cadenza.semantics.Type
 import org.intelligence.parser.*
 
-val reserved = arrayOf("if","then","else","Nat","=","in")
+val reserved = arrayOf("if","then","else","Nat","Bool","=","in")
 
 
 val Parse.type: Type get() {
-  val x = choice({tok("Nat"); Type.Nat })
+  val x = choice({tok("Nat"); Type.Nat }, {tok("Bool"); Type.Bool })
   return choice({ tok("->"); Type.Arr(x, type) }, { x })
 }
 val Parse.ident: String get() = trying("ident") {

@@ -58,6 +58,17 @@ the test suite, distribution build, and JMH smoke run pass; `add.za` returns
 20,000,000 with tier-2 OSR compilation. JDK 25 currently prints an upstream
 `sun.misc.Unsafe::objectFieldOffset` deprecation warning from Truffle at startup.
 
+## Experimental bytecode backend
+
+The AST interpreter remains the default. Try the concrete typed-core Bytecode DSL backend with:
+
+```sh
+build/install/cadenza/bin/cadenza --experimental-options --cadenza.Backend=bytecode examples/fib.za
+```
+
+See [backend coverage and limitations](docs/bytecode.md). Both backends share the
+parser, type checker, closure calling convention, and tail-call trampoline.
+
 ## Benchmarks
 
 ```sh
@@ -65,7 +76,15 @@ the test suite, distribution build, and JMH smoke run pass; `add.za` returns
 ./gradlew bench --args='-wi 3 -i 3 -f 1'
 ```
 
-The migration uses indexed Truffle frame slots, generated language providers,
+See [benchmark methodology](bench/README.md) for warm, cold, allocation, and
+neutral-path benchmarks, runtime-varying inputs, and GC profiling.
+
+The runtime uses primitive-specialized indexed frame slots, immutable closure
+captures backed by Truffle StaticShape, bounded dispatch caches, and shared guest
+and polyglot calling conventions. Neutral terms deliberately use the exceptional
+SlowPathException path: they are temporary values outside ordinary execution.
+
+The migration uses generated language providers,
 and the public Truffle loop API. The old reflective OSR factory, `gu` component
 packaging, build-scan uploads, and obsolete documentation publishing plugins
 have been removed from the build. Native Image packaging is not configured.
@@ -78,7 +97,8 @@ This code is very much a work-in-progress.
 
 * I'm hopeful that I can use truffle rewrites to dynamically trampoline tail-calls, degrading tail positions from a set of recursive calls, to something that handles self-tailcalls, to something that handles self-tailcalls with differing environments to something that does an arbitrary trampoline for the worst case. This would enable us to trust the space usage.
 
-* Currently, Normalization-by-evaluation proceeds through an exceptional control flow path. It is worth noting this is basically completely irrelevant if we're seeking "just a better Haskell runtime" but it is pretty important for dependent types. Different ways to pass around neutral values should probably be explored.
+* Normalization by evaluation deliberately sends exotic, temporary neutral terms
+  through an exceptional control flow path; ordinary evaluation remains the fast path.
 
 ## Contribution
 

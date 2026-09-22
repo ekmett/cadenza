@@ -2,6 +2,9 @@ package cadenza.data
 
 import cadenza.frame.DataFrame
 import cadenza.jit.CallUtils
+import cadenza.jit.InteropDispatch
+import cadenza.jit.InteropDispatchNodeGen
+import com.oracle.truffle.api.dsl.Cached
 import cadenza.jit.ClosureRootNode
 import cadenza.semantics.Type
 import cadenza.semantics.Type.Arr
@@ -62,34 +65,22 @@ class Closure (
   @ExportMessage
   @ExplodeLoop
   @Throws(ArityException::class, UnsupportedTypeException::class)
-  fun execute(vararg arguments: Any?): Any? {
+  fun execute(arguments: Array<Any?>, @Cached(value = "createInteropDispatch()", uncached = "getUncachedInteropDispatch()", neverDefault = true) dispatch: InteropDispatch): Any? {
     val maxArity = type.arity
     val len = arguments.size
     if (len > maxArity) throw ArityException.create(0, maxArity, len)
     arguments.fold(type) { t, it -> (t as Arr).apply { argument.validate(it) }.result }
     @Suppress("UNCHECKED_CAST")
-    return call(arguments)
+    return dispatch.execute(this, arguments)
   }
 
-  // only used for InteropLibrary execute
-  private fun call(ys: Array<out Any?>): Any? {
-    // TODO: need to catch TailCallException here
-    // or maybe we should have a special RootNode for InteropLibrary instead of closure?
-    // to deal w/ second level dispatch
-    return when {
-      ys.size < arity -> pap(ys)
-      ys.size == arity -> {
-        val args = if (env != null) consAppend(env, papArgs, ys) else append(papArgs, ys)
-        CallUtils.callTarget(callTarget, args)
-      }
-      else -> {
-        val zs = append(papArgs, ys)
-        val args = if (env != null) consTake(env, arity, zs) else (zs.take(arity).toTypedArray())
-        val g = CallUtils.callTarget(callTarget, args)
-        (g as Closure).call(drop(arity, zs))
-      }
-    }
+  companion object {
+    @JvmStatic fun createInteropDispatch(): InteropDispatch = InteropDispatchNodeGen.create()
+    @JvmStatic fun getUncachedInteropDispatch(): InteropDispatch = InteropDispatchNodeGen.getUncached()
   }
+
+  override fun hashCode(): Int =
+    31 * (31 * (31 * callTarget.hashCode() + arity) + papArgs.contentHashCode()) + (env?.hashCode() ?: 0)
 
   // construct a partial application node, which should check that it is a PAP itself
   @CompilerDirectives.TruffleBoundary

@@ -3,8 +3,7 @@ package cadenza.jit
 import cadenza.Language
 import cadenza.Loc
 import cadenza.data.*
-import cadenza.frame.BuildFrame
-import cadenza.frame.BuildFrameNodeGen
+import cadenza.frame.CaptureLayout
 import cadenza.frame.DataFrame
 import cadenza.panic
 import cadenza.section
@@ -90,7 +89,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       } catch (e: NeutralException) {
         e.apply(executeRands(frame))
       }
-      return executeFn(frame, fn)
+      return throwIfNeutralValue(executeFn(frame, fn))
     }
 
     override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.CallTag::class.java || super.hasTag(tag)
@@ -146,7 +145,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   @TypeSystemReference(DataTypes::class)
   @NodeInfo(shortName = "Lambda")
   class Lam(
-    private val closureFrameDescriptor: FrameDescriptor?,
+    private val captureLayout: CaptureLayout?,
     @CompilerDirectives.CompilationFinal(dimensions = 1) val captures: Array<Int>,
     private val arity: Int,
     @field:CompilerDirectives.CompilationFinal
@@ -154,10 +153,8 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     internal val type: Type,
     loc: Loc? = null
   ) : Code(loc) {
-    @Child var builder: BuildFrame = BuildFrameNodeGen.create()
-
     // do we need to capture an environment?
-    private inline fun isSuperCombinator() = closureFrameDescriptor != null
+    private inline fun isSuperCombinator() = captureLayout != null
 
     // TODO: statically allocate the Closure when possible (when no env)
     // split between capturing Lam and not?
@@ -168,8 +165,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     @ExplodeLoop
     private fun captureEnv(frame: VirtualFrame): DataFrame? {
       if (!isSuperCombinator()) return null
-      val cs = map(captures) { frame.getValue(it) }
-      return builder.execute(cs)
+      return captureLayout!!.capture(frame, captures)
     }
 
     // root to render capture steps opaque
@@ -178,20 +174,10 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
 
 
   @NodeInfo(shortName = "Read")
-  abstract class Var protected constructor(private val slot: Int, loc: Loc? = null) : Code(loc) {
-
-//    @Specialization(rewriteOn = [FrameSlotTypeException::class])
-//    @Throws(FrameSlotTypeException::class)
-//    protected fun readInt(frame: VirtualFrame): Int = frame.getInt(slot)
-//
-//    @Specialization(rewriteOn = [FrameSlotTypeException::class])
-//    @Throws(FrameSlotTypeException::class)
-//    protected fun readBoolean(frame: VirtualFrame): Boolean = frame.getBoolean(slot)
-
-    @Specialization() //(replaces = ["readInt", "readBoolean"])
-    protected fun read(frame: VirtualFrame): Any? = frame.getValue(slot)
-
-    override fun isAdoptable() = false
+  class Var(private val slot: Int, loc: Loc? = null) : Code(loc) {
+    @Throws(NeutralException::class)
+    override fun execute(frame: VirtualFrame): Any? = throwIfNeutralValue(FrameAccess.read(frame, slot))
+    override fun executeAny(frame: VirtualFrame): Any? = FrameAccess.read(frame, slot)
   }
 
   @Suppress("unused")
@@ -301,12 +287,11 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       val indir = Indirection()
       val clos = Closure(null, arrayOf(indir), 0, Type.Arr(Type.Obj,type), readTarget!!)
       // need to set it here in case a lambda in value captures it
-      frame.setObject(slot, clos)
+      FrameAccess.write(frame, slot, clos)
       val x = value.executeAny(frame)
       // ... but if not, we can avoid the indirection
       // and need to set it here anyways in case value shadows us with a let
-//      frame.setObject(slot, x)
-      frame.setObject(slot, clos)
+      FrameAccess.write(frame, slot, x)
       indir.value = x
       indir.set = true
       return body.execute(frame)
@@ -353,35 +338,19 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   }
 
   companion object {
-    fun `var`(slot: Int, loc: Loc? = null): Var = CodeFactory.VarNodeGen.create(slot, loc)
+    fun `var`(slot: Int, loc: Loc? = null): Var = Var(slot, loc)
 
-//    // invariant callTarget points to a native function body with known arity
-//    @Suppress("UNUSED")
-//    fun lam(callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
-//      val root = callTarget.rootNode
-//      assert(root is ClosureRootNode)
-//      return lam((root as ClosureRootNode).arity, callTarget, type, loc)
-//    }
-//
     // package a foreign root call target with known arity
     fun lam(arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       return lam(null, arrayOf(), arity, callTarget, type, loc)
     }
-//
-//    //@Suppress("unused")
-//    fun lam(closureFrameDescriptor: FrameDescriptor, captureSteps: Array<FrameBuilder>, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
-//      val root = callTarget.rootNode
-//      assert(root is ClosureRootNode)
-//      return lam(closureFrameDescriptor, captureSteps, (root as ClosureRootNode).arity, callTarget, type, loc)
-//    }
-
     // ensures that all the invariants for the constructor are satisfied
-    fun lam(closureFrameDescriptor: FrameDescriptor?, captures: Array<Int>, arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
+    fun lam(captureLayout: CaptureLayout?, captures: Array<Int>, arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       assert(arity > 0)
       val hasCaptureSteps = captures.isNotEmpty()
       assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }
       return Lam(
-        if (!hasCaptureSteps) null else closureFrameDescriptor ?: FrameDescriptor(),
+        if (!hasCaptureSteps) null else requireNotNull(captureLayout),
         captures,
         arity,
         callTarget,

@@ -107,7 +107,7 @@ val initialCtxElab: List<Pair<String,NameInfo>> by lazy {
 }
 
 val initialEnv: Env = initialCtxElab.map {
-  BuiltinClosure(it.second.builtin!!, arrayOf())
+  BuiltinClosure(it.second.builtin!!.invoke(), arrayOf())
 }.toTypedArray()
 
 fun parse(source: Source): Expr =

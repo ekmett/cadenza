@@ -5,6 +5,9 @@ import cadenza.jit.FrameLayout
 import cadenza.jit.InlineCode
 import cadenza.jit.ProgramRootNode
 import cadenza.jit.initialCtx
+import cadenza.jit.GenericInteropApplyRootNode
+import cadenza.bytecode.BytecodeCompiler
+import cadenza.bytecode.BytecodeOptions
 import cadenza.semantics.CompileInfo
 import cadenza.semantics.Term
 import cadenza.semantics.Type
@@ -85,8 +88,10 @@ class Language : TruffleLanguage<Language.Context>() {
   override fun initializeContext(ctx: Context?) {}
   override fun finalizeContext(ctx: Context) = ctx.shutdown()
   override fun initializeMultipleContexts() = singleContextAssumption.invalidate()
-  override fun areOptionsCompatible(a: OptionValues?, b: OptionValues?) = true
-  override fun getOptionDescriptors(): OptionDescriptors? = null // Language.OPTION_DESCRIPTORS
+  override fun areOptionsCompatible(a: OptionValues?, b: OptionValues?) =
+    a?.get(BytecodeOptions.BACKEND) == b?.get(BytecodeOptions.BACKEND)
+  override fun getOptionDescriptors(): OptionDescriptors = BytecodeOptions.descriptors()
+  val genericInteropTarget by lazy { GenericInteropApplyRootNode(this).callTarget }
   override fun initializeMultiThreading(ctx: Context) = ctx.singleThreadedAssumption.invalidate()
   override fun isThreadAccessAllowed(thread: Thread, singleThreaded: Boolean) = true
   override fun initializeThread(ctx: Context, thread: Thread?) {}
@@ -119,6 +124,9 @@ class Language : TruffleLanguage<Language.Context>() {
         throw SyntaxError(result)
       }
       is Success -> {
+        if (CONTEXT.get(null).env.options[BytecodeOptions.BACKEND] == "bytecode") {
+          return BytecodeCompiler(this, source).compile(result.value)
+        }
         val ci = CompileInfo(source, this)
         val fd = FrameLayout()
         val witness = result.value.infer(initialCtx)
@@ -141,8 +149,8 @@ class Language : TruffleLanguage<Language.Context>() {
 
   companion object {
     private val REFERENCE = LanguageReference.create(Language::class.java)
+    private val CONTEXT = ContextReference.create(Language::class.java)
     fun currentLanguage(node: com.oracle.truffle.api.nodes.Node? = null): Language = REFERENCE.get(node)
 
   }
 }
-

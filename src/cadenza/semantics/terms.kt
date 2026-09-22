@@ -3,12 +3,13 @@ package cadenza.semantics
 import cadenza.*
 import cadenza.jit.*
 import cadenza.jit.Code.Companion.lam
-import com.oracle.truffle.api.frame.FrameDescriptor
+import cadenza.frame.CaptureLayout
+import com.oracle.truffle.api.nodes.NodeUtil
 import com.oracle.truffle.api.source.Source
 
 // TODO: should be data NameInfo = Local | Global GlobalNameInfo | Builtin Builtin
 // (builtin a case of GlobalNameInfo)
-data class NameInfo(val type: Type, val builtin: Builtin?)
+data class NameInfo(val type: Type, val builtin: (() -> Builtin)?)
 
 typealias Ctx = Env<NameInfo>
 
@@ -41,7 +42,7 @@ sealed class Term {
       return object : Witness(info.type) {
         override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
           if (info.builtin != null) {
-            val builtin = info.builtin
+            val builtin = info.builtin.invoke()
             // TODO: statically cook this?
             val target = BuiltinRootNode(ci.language, builtin).callTarget
             return lam(builtin.arity, target, builtin.type, loc)
@@ -87,7 +88,9 @@ sealed class Term {
           val rands = wrands.map { it.compile(ci,fd) }.toTypedArray()
           if (rator is Code.Lam && rator.callTarget.rootNode is BuiltinRootNode) {
             val builtin = (rator.callTarget.rootNode as BuiltinRootNode).builtin
-            return Code.CallBuiltin(rator.type.after(rands.size), builtin, rands, loc)
+            if (rands.size == builtin.arity) {
+              return Code.CallBuiltin(rator.type.after(rands.size), NodeUtil.cloneNode(builtin), rands, loc)
+            }
           }
           return Code.App(
             rator,
@@ -108,7 +111,7 @@ sealed class Term {
       return object : Witness(aty) {
         override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
           val bodyFd = FrameLayout()
-          val closureFd = FrameDescriptor()
+          val captureTypes = arrayListOf<Type>()
           val closureCaptures = arrayListOf<Int>()
           val envPreamble = arrayListOf<Pair<Int,Int>>();
           val argPreamble = arrayListOf<Pair<Int,Int>>();
@@ -122,6 +125,7 @@ sealed class Term {
             val closureSlot = closureCaptures.size
             val parentSlot = fd.slot(name)
             closureCaptures += parentSlot
+            captureTypes += ctx.lookup(name).type
             envPreamble += Pair(slot, closureSlot)
           }
           for (name in fvs intersect namesSet) {
@@ -131,9 +135,10 @@ sealed class Term {
           }
 
           val bodyCode = bodyw.compile(ci, bodyFd)
+          val captureLayout = if (closureCaptures.isEmpty()) null else CaptureLayout(ci.language, captureTypes.toTypedArray())
 
           return Code.lam(
-            closureFd,
+            captureLayout,
             closureCaptures.toTypedArray(),
             names.size,
             ClosureRootNode(
@@ -144,7 +149,8 @@ sealed class Term {
               argPreamble.toTypedArray(),
               ClosureBody(markTailCalls(bodyCode)),
               ci.source,
-              loc
+              loc,
+              captureLayout
             ).callTarget,
             aty,
             loc
