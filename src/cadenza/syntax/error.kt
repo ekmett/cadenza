@@ -1,14 +1,15 @@
 package cadenza.syntax
 
-import com.oracle.truffle.api.TruffleException
+import com.oracle.truffle.api.exception.AbstractTruffleException
+import com.oracle.truffle.api.interop.ExceptionType
+import com.oracle.truffle.api.interop.InteropLibrary
+import com.oracle.truffle.api.library.ExportLibrary
+import com.oracle.truffle.api.library.ExportMessage
 
-data class SyntaxError(val failure: Failure): RuntimeException(failure.message), TruffleException {
-  internal constructor(failure: Failure, cause: Throwable?): this(failure) {
-    initCause(cause)
-  }
-  companion object { const val serialVersionUID : Long = 1L }
+@ExportLibrary(InteropLibrary::class)
+class SyntaxError(val failure: Failure) : AbstractTruffleException(failure.message) {
   override fun toString(): String = failure.toString()
-  override fun getLocation() = null
-  override fun getSourceLocation() = failure.sourceSection
-  override fun isSyntaxError() = true
+  @ExportMessage fun getExceptionType(): ExceptionType = ExceptionType.PARSE_ERROR
+  @ExportMessage fun hasSourceLocation(): Boolean = true
+  @ExportMessage fun getSourceLocation() = failure.sourceSection
 }

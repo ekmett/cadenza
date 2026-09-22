@@ -65,7 +65,7 @@ class Closure (
   fun execute(vararg arguments: Any?): Any? {
     val maxArity = type.arity
     val len = arguments.size
-    if (len > maxArity) throw ArityException.create(maxArity, len)
+    if (len > maxArity) throw ArityException.create(0, maxArity, len)
     arguments.fold(type) { t, it -> (t as Arr).apply { argument.validate(it) }.result }
     @Suppress("UNCHECKED_CAST")
     return call(arguments)

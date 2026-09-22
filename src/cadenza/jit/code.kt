@@ -147,7 +147,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   @NodeInfo(shortName = "Lambda")
   class Lam(
     private val closureFrameDescriptor: FrameDescriptor?,
-    @CompilerDirectives.CompilationFinal(dimensions = 1) val captures: Array<FrameSlot>,
+    @CompilerDirectives.CompilationFinal(dimensions = 1) val captures: Array<Int>,
     private val arity: Int,
     @field:CompilerDirectives.CompilationFinal
     internal var callTarget: RootCallTarget,
@@ -178,7 +178,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
 
 
   @NodeInfo(shortName = "Read")
-  abstract class Var protected constructor(private val slot: FrameSlot, loc: Loc? = null) : Code(loc) {
+  abstract class Var protected constructor(private val slot: Int, loc: Loc? = null) : Code(loc) {
 
 //    @Specialization(rewriteOn = [FrameSlotTypeException::class])
 //    @Throws(FrameSlotTypeException::class)
@@ -283,7 +283,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   }
 
   class LetRec(
-    val slot: FrameSlot,
+    val slot: Int,
     val type: Type,
     @field:Child var value: Code,
     @field:Child var body: Code,
@@ -294,8 +294,8 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     override fun execute(frame: VirtualFrame): Any? {
       if (readTarget === null) {
         CompilerDirectives.transferToInterpreterAndInvalidate()
-        val language = lookupLanguageReference(Language::class.java).get()
-        readTarget = Truffle.getRuntime().createCallTarget(ReadIndirectionRootNode(language))
+        val language = Language.currentLanguage(this)
+        readTarget = ReadIndirectionRootNode(language).callTarget
       }
 
       val indir = Indirection()
@@ -353,7 +353,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
   }
 
   companion object {
-    fun `var`(slot: FrameSlot, loc: Loc? = null): Var = CodeFactory.VarNodeGen.create(slot, loc)
+    fun `var`(slot: Int, loc: Loc? = null): Var = CodeFactory.VarNodeGen.create(slot, loc)
 
 //    // invariant callTarget points to a native function body with known arity
 //    @Suppress("UNUSED")
@@ -376,7 +376,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
 //    }
 
     // ensures that all the invariants for the constructor are satisfied
-    fun lam(closureFrameDescriptor: FrameDescriptor?, captures: Array<FrameSlot>, arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
+    fun lam(closureFrameDescriptor: FrameDescriptor?, captures: Array<Int>, arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       assert(arity > 0)
       val hasCaptureSteps = captures.isNotEmpty()
       assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }

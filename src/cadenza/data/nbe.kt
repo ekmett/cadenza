@@ -44,7 +44,7 @@ class NeutralValue(val type: Type, val term : Neutral) : TruffleObject {
   @Throws(ArityException::class)
   fun execute(vararg arguments: Any?) = NeutralValue(
     arguments.indices.fold(type) { resultType, i ->
-      (resultType as Type.Arr? ?: throw ArityException.create(i, arguments.size)).result
+      (resultType as Type.Arr? ?: throw ArityException.create(0, i, arguments.size)).result
     },
     term.apply(arguments)
   )

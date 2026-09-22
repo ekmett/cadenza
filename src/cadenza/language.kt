@@ -1,28 +1,22 @@
 package cadenza
 
-import cadenza.data.Closure
 import cadenza.jit.Code
+import cadenza.jit.FrameLayout
 import cadenza.jit.InlineCode
 import cadenza.jit.ProgramRootNode
 import cadenza.jit.initialCtx
 import cadenza.semantics.CompileInfo
 import cadenza.semantics.Term
 import cadenza.semantics.Type
-import cadenza.semantics.Type.Arr
 import cadenza.semantics.Type.Nat
 import cadenza.syntax.*
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
 import com.oracle.truffle.api.debug.DebuggerTags
-import com.oracle.truffle.api.frame.FrameDescriptor
 import com.oracle.truffle.api.instrumentation.ProvidedTags
 import com.oracle.truffle.api.instrumentation.StandardTags.*
-import com.oracle.truffle.api.interop.InteropLibrary
-import com.oracle.truffle.api.interop.TruffleObject
-import com.oracle.truffle.api.interop.UnsupportedMessageException
 import com.oracle.truffle.api.nodes.NodeInfo
 import com.oracle.truffle.api.source.Source
-import com.oracle.truffle.api.source.SourceSection
 import org.graalvm.options.OptionDescriptors
 import org.graalvm.options.OptionValues
 import java.io.IOException
@@ -44,45 +38,6 @@ private val LANGUAGE_SHEBANG_REGEXP by lazy { Pattern.compile("^#! ?/usr/bin/(en
 private fun lookupNodeInfo(clazz: Class<*>?): NodeInfo? =
   if (clazz == null) null
   else clazz.getAnnotation<NodeInfo>(NodeInfo::class.java) ?: lookupNodeInfo(clazz.superclass)
-
-private fun getMetaObject(value: Any?): String =
-  if (value == null) "ANY"
-  else {
-    val interop = InteropLibrary.getFactory().getUncached(value)
-    when {
-      interop.isNumber(value) || value is Number -> "Number"
-      interop.isBoolean(value) -> "Boolean"
-      interop.isString(value) -> "String"
-      interop.isExecutable(value) -> "Function"
-      interop.isNull(value) -> "NULL"
-      interop.hasMembers(value) -> "Object"
-      else -> "Unsupported"
-    }
-  }
-
-// crappy version of show
-private fun toString(value: Any?): String =
-  when(value) {
-    null -> "null"
-    is Number -> value.toString()
-    is Closure -> value.toString()
-    else -> {
-      val interop = InteropLibrary.getFactory().getUncached(value)
-      try {
-        when {
-          interop.fitsInLong(value) -> interop.asLong(value).toString()
-          interop.isBoolean(value) -> java.lang.Boolean.toString(interop.asBoolean(value))
-          interop.isString(value) -> interop.asString(value)
-          interop.isNull(value) -> "NULL"
-          interop.isExecutable(value) -> "Function"
-          interop.hasMembers(value) -> "Object"
-          else -> "Unsupported"
-        }
-      } catch (e: UnsupportedMessageException) {
-        panic("toString: unknown type", e)
-      }
-    }
-  }
 
 @Option.Group("cadenza")
 @TruffleLanguage.Registration(
@@ -129,7 +84,6 @@ class Language : TruffleLanguage<Language.Context>() {
   override fun createContext(env: Env) = Context(this, env)
   override fun initializeContext(ctx: Context?) {}
   override fun finalizeContext(ctx: Context) = ctx.shutdown()
-  override fun isObjectOfLanguage(obj: Any) = obj is TruffleObject
   override fun initializeMultipleContexts() = singleContextAssumption.invalidate()
   override fun areOptionsCompatible(a: OptionValues?, b: OptionValues?) = true
   override fun getOptionDescriptors(): OptionDescriptors? = null // Language.OPTION_DESCRIPTORS
@@ -137,10 +91,7 @@ class Language : TruffleLanguage<Language.Context>() {
   override fun isThreadAccessAllowed(thread: Thread, singleThreaded: Boolean) = true
   override fun initializeThread(ctx: Context, thread: Thread?) {}
   override fun disposeThread(ctx: Context, thread: Thread?) {}
-  override fun findMetaObject(ctx: Context, value: Any?): Any = getMetaObject(value)
-  override fun findSourceLocation(ctx: Context, value: Any?): SourceSection? = null
   override fun isVisible(ctx: Context, value: Any?) = true
-  override fun toString(ctx: Context, value: Any?): String = toString(value)
   override fun patchContext(ctx: Context, env: Env): Boolean {
     ctx.env = env
     return true
@@ -169,22 +120,13 @@ class Language : TruffleLanguage<Language.Context>() {
       }
       is Success -> {
         val ci = CompileInfo(source, this)
-        val fd = FrameDescriptor()
+        val fd = FrameLayout()
         val witness = result.value.infer(initialCtx)
-        val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd, source)
-        return Truffle.getRuntime().createCallTarget(rootNode)
+        val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd.build(), source)
+        return rootNode.callTarget
       }
     }
   }
-
-  override fun findExportedSymbol(context: Context?, globalName: String?, onlyExplicit: Boolean): Any? =
-    when (globalName) {
-      "S" -> s(Arr(Nat, Arr(Nat, Nat)), Arr(Nat, Nat), Nat)
-      "K" -> k(Nat, Nat)
-      "I" -> i(Nat)
-      "main" -> 42
-      else -> null
-    }
 
   @Suppress("UNUSED_PARAMETER")
   private fun s(tx: Type, ty: Type, tz: Type): Code = todo
@@ -198,7 +140,8 @@ class Language : TruffleLanguage<Language.Context>() {
   inline fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo
 
   companion object {
-    fun currentLanguage(): Language = getCurrentLanguage(Language::class.java)
+    private val REFERENCE = LanguageReference.create(Language::class.java)
+    fun currentLanguage(node: com.oracle.truffle.api.nodes.Node? = null): Language = REFERENCE.get(node)
 
   }
 }

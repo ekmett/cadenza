@@ -137,7 +137,7 @@ val natFF = Type.Arr(natF, natF)
 //    if (target == null) {
 //      CompilerDirectives.transferToInterpreterAndInvalidate()
 //      val language = lookupLanguageReference(Language::class.java).get()
-//      target = Truffle.getRuntime().createCallTarget(BuiltinRootNode(language, this))
+//      target = BuiltinRootNode(language, this).callTarget
 //    }
 //    return Closure(null, arrayOf(f), 1, type, target as RootCallTarget)
 //  }
@@ -152,20 +152,19 @@ abstract class FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
 
   @Specialization(guards = ["f.equals(cachedF)"], limit = "100000")
   fun fixNatF(frame: VirtualFrame, f: Closure, right: Any?,
-              @CachedLanguage language: Language,
               @Cached("f") cachedF: Closure,
-              @Cached("mkFix(f, language)") fix: FixNatF1
+              @Cached("mkFix(f)") fix: FixNatF1
               ): Any? {
     return fix.run(frame, arrayOf(right))
   }
-  fun mkFix(f: Closure, language: Language) = FixNatF1(f, language)
+  fun mkFix(f: Closure) = FixNatF1(f, Language.currentLanguage(this))
 }
 
 // fixNatF with a known function
 // inlines possibly up to graal.TruffleMaximumRecursiveInlining (default 2)
 class FixNatF1(private val f: Closure, language: Language) : Builtin(natF, 1) {
   // TODO: make this instrumentable?
-  private val target: RootCallTarget = Truffle.getRuntime().createCallTarget(BuiltinRootNode(language, this))
+  private val target: RootCallTarget = BuiltinRootNode(language, this).callTarget
   private val self = Closure(null, arrayOf(), 1, type, target)
   // TODO: making this a tail call breaks the specialization we get by using FixNatF1
   // TODO: this is wrong when using CallBuiltin

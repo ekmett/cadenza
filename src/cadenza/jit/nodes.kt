@@ -11,7 +11,6 @@ import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.TruffleLanguage
 import com.oracle.truffle.api.dsl.TypeSystemReference
 import com.oracle.truffle.api.frame.FrameDescriptor
-import com.oracle.truffle.api.frame.FrameSlot
 import com.oracle.truffle.api.frame.MaterializedFrame
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.instrumentation.*
@@ -49,8 +48,6 @@ open class ProgramRootNode constructor(
   fd: FrameDescriptor,
   val source: Source
 ) : CadenzaRootNode(language, fd) {
-  val target = Truffle.getRuntime().createCallTarget(this)
-
   @Child var tailCallLoop = TailCallLoop()
 
   override fun isCloningAllowed() = true
@@ -92,7 +89,7 @@ open class ClosureBody constructor(
 open class BuiltinRootNode(
   private val language: Language,
   @field:Child var builtin: Builtin
-) : CadenzaRootNode(language, FrameDescriptor()) {
+) : CadenzaRootNode(language, FrameLayout().build()) {
   override fun execute(frame: VirtualFrame): Any? {
 //    assert(frame.arguments.size == builtin.arity) { "bad builtin application $builtin" }
     return builtin.run(frame, drop(1, frame.arguments))
@@ -106,11 +103,11 @@ open class BuiltinRootNode(
 @TypeSystemReference(DataTypes::class)
 open class ClosureRootNode(
   private val language: Language,
-  frameDescriptor: FrameDescriptor = FrameDescriptor(),
+  frameDescriptor: FrameDescriptor = FrameLayout().build(),
   val arity: Int,
   // slot = closure.env[ix]
-  @CompilerDirectives.CompilationFinal(dimensions = 1) val envPreamble: Array<Pair<FrameSlot, Int>> = arrayOf(),
-  @CompilerDirectives.CompilationFinal(dimensions = 1) val argPreamble: Array<Pair<FrameSlot, Int>>,
+  @CompilerDirectives.CompilationFinal(dimensions = 1) val envPreamble: Array<Pair<Int, Int>> = arrayOf(),
+  @CompilerDirectives.CompilationFinal(dimensions = 1) val argPreamble: Array<Pair<Int, Int>>,
   @field:Child var body: ClosureBody,
   val source: Source,
   val loc: Loc? = null
@@ -129,7 +126,7 @@ open class ClosureRootNode(
     other.loc
   )
 
-  val bloomFilterSlot: FrameSlot = frameDescriptor.findOrAddFrameSlot("<TCO Bloom Filter>")
+  val bloomFilterSlot: Int = FrameLayout.BLOOM_FILTER
   @field:Child var selfTailCallLoopNode = SelfTailCallLoop(body, this)
   private val tailCallProfile: BranchProfile = BranchProfile.create()
 
@@ -184,7 +181,7 @@ class Indirection {
 // used for let rec
 open class ReadIndirectionRootNode(
   val language: Language
-): CadenzaRootNode(language, FrameDescriptor()) {
+): CadenzaRootNode(language, FrameLayout().build()) {
 //  override val mask: Long = 0L
 
   override fun execute(frame: VirtualFrame): Any? {

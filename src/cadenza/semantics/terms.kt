@@ -3,9 +3,7 @@ package cadenza.semantics
 import cadenza.*
 import cadenza.jit.*
 import cadenza.jit.Code.Companion.lam
-import com.oracle.truffle.api.Truffle
 import com.oracle.truffle.api.frame.FrameDescriptor
-import com.oracle.truffle.api.frame.FrameSlot
 import com.oracle.truffle.api.source.Source
 
 // TODO: should be data NameInfo = Local | Global GlobalNameInfo | Builtin Builtin
@@ -28,7 +26,7 @@ sealed class Term {
 
   // provides an expression with a given type in a given frame
   abstract class Witness internal constructor(val type: Type) {
-    abstract fun compile(ci: CompileInfo, fd: FrameDescriptor): Code
+    abstract fun compile(ci: CompileInfo, fd: FrameLayout): Code
     @Throws(TypeError::class)
     fun match(expectedType: Type): Witness =
       if (type == expectedType) this
@@ -41,16 +39,14 @@ sealed class Term {
     override fun infer(ctx: Ctx): Witness {
       val info = ctx.lookup(name)
       return object : Witness(info.type) {
-        override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
+        override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
           if (info.builtin != null) {
             val builtin = info.builtin
             // TODO: statically cook this?
-            val target = Truffle.getRuntime().createCallTarget(
-              BuiltinRootNode(ci.language, builtin)
-            )
+            val target = BuiltinRootNode(ci.language, builtin).callTarget
             return lam(builtin.arity, target, builtin.type, loc)
           } else {
-            return Code.`var`(fd.findOrAddFrameSlot(name), loc)
+            return Code.`var`(fd.slot(name), loc)
           }
         }
       }
@@ -66,7 +62,7 @@ sealed class Term {
       val actualType = thenWitness.type
       val elseWitness = elseTerm.check(ctx, actualType)
       return object : Witness(actualType) {
-        override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
+        override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
           return Code.If(actualType, condWitness.compile(ci,fd), thenWitness.compile(ci,fd), elseWitness.compile(ci,fd), loc)
         }
       }
@@ -86,7 +82,7 @@ sealed class Term {
         out
       }.toTypedArray<Witness>()
       return object : Witness(currentType) {
-        override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
+        override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
           val rator = wrator.compile(ci,fd)
           val rands = wrands.map { it.compile(ci,fd) }.toTypedArray()
           if (rator is Code.Lam && rator.callTarget.rootNode is BuiltinRootNode) {
@@ -110,27 +106,27 @@ sealed class Term {
       val bodyw = body.infer(ctx2)
       val aty = names.foldRight(bodyw.type) { (_,ty), x -> Type.Arr(ty, x) }
       return object : Witness(aty) {
-        override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
-          val bodyFd = FrameDescriptor()
+        override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
+          val bodyFd = FrameLayout()
           val closureFd = FrameDescriptor()
-          val closureCaptures = arrayListOf<FrameSlot>()
-          val envPreamble = arrayListOf<Pair<FrameSlot,Int>>();
-          val argPreamble = arrayListOf<Pair<FrameSlot,Int>>();
+          val closureCaptures = arrayListOf<Int>()
+          val envPreamble = arrayListOf<Pair<Int,Int>>();
+          val argPreamble = arrayListOf<Pair<Int,Int>>();
 
           val namesSet = names.map { it.first }.toSet()
           // we force inline when builtin != nulls, so those vars aren't actually used
           val fvs = body.fvs().filter { namesSet.contains(it) || ctx.lookup(it).builtin == null }
 
           for (name in fvs - namesSet) {
-            val slot = bodyFd.addFrameSlot(name)
+            val slot = bodyFd.slot(name)
             val closureSlot = closureCaptures.size
-            val parentSlot = fd.findOrAddFrameSlot(name)
+            val parentSlot = fd.slot(name)
             closureCaptures += parentSlot
             envPreamble += Pair(slot, closureSlot)
           }
           for (name in fvs intersect namesSet) {
             val ix = names.indexOfLast { it.first == name }
-            val slot = bodyFd.addFrameSlot(name)
+            val slot = bodyFd.slot(name)
             argPreamble += Pair(slot, ix)
           }
 
@@ -140,18 +136,16 @@ sealed class Term {
             closureFd,
             closureCaptures.toTypedArray(),
             names.size,
-            Truffle.getRuntime().createCallTarget(
-              ClosureRootNode(
-                ci.language,
-                bodyFd,
-                names.size,
-                envPreamble.toTypedArray(),
-                argPreamble.toTypedArray(),
-                ClosureBody(markTailCalls(bodyCode)),
-                ci.source,
-                loc
-              )
-            ),
+            ClosureRootNode(
+              ci.language,
+              bodyFd.build(),
+              names.size,
+              envPreamble.toTypedArray(),
+              argPreamble.toTypedArray(),
+              ClosureBody(markTailCalls(bodyCode)),
+              ci.source,
+              loc
+            ).callTarget,
             aty,
             loc
           )
@@ -167,8 +161,8 @@ sealed class Term {
       val vw = value.infer(ctx2)
       val bw = body.infer(ctx2)
       return object : Witness(bw.type) {
-        override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
-          val slot = fd.findOrAddFrameSlot(name)
+        override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
+          val slot = fd.slot(name)
           val vc = vw.compile(ci, fd)
           val bc = bw.compile(ci, fd)
           return Code.LetRec(slot, type, vc, bc, loc)
@@ -183,7 +177,7 @@ sealed class Term {
       val ty = Type.Nat
       ty.validate(it)
       return object : Witness(ty) {
-        override fun compile(ci: CompileInfo, fd: FrameDescriptor): Code {
+        override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
           return Code.LitInt(it, loc)
         }
       }

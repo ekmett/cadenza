@@ -17,7 +17,7 @@ val noFrameBuilders = arrayOf<FrameBuilder>() // can't make const because kotlin
 @TypeSystemReference(DataTypes::class)
 @NodeInfo(shortName = "FrameBuilder")
 abstract class FrameBuilder(
-  private val slot: FrameSlot,
+  private val slot: Int,
   @field:Child var rhs: Code
 ) : Node() {
 
@@ -38,4 +38,4 @@ abstract class FrameBuilder(
   override fun isAdoptable() = false
 }
 
-fun put(slot: FrameSlot, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)
+fun put(slot: Int, value: Code): FrameBuilder = FrameBuilderNodeGen.create(slot, value)

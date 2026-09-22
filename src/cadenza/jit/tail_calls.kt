@@ -6,14 +6,6 @@ import com.oracle.truffle.api.nodes.*
 import com.oracle.truffle.api.nodes.RepeatingNode.CONTINUE_LOOP_STATUS
 import com.oracle.truffle.api.profiles.BranchProfile
 import java.lang.Exception
-import java.lang.reflect.Method
-
-
-// list of ways custom loop node better than builtin
-// * if reflection not allowed, can make variant that still compiles w/ interpreted parent
-//   & doesn't need to use the parent's FrameWithoutBoxing for state
-// * less interpreter overhead
-// * less messy not using rootNode's fd
 
 
 class TailCallException(val fn: RootCallTarget, @CompilerDirectives.CompilationFinal(dimensions = 1) val args: Array<Any?>) : ControlFlowException() {}
@@ -119,11 +111,10 @@ class TailCallLoop() : Node() {
     if (loopNode == null) {
       CompilerDirectives.transferToInterpreterAndInvalidate()
       repeatingNode = TailCallRepeatingNode(rootNode.frameDescriptor)
-      val slots = arrayOf(repeatingNode!!.argsSlot, repeatingNode!!.functionSlot, repeatingNode!!.resultSlot)
-      loopNode = createOptimizedLoopNode(repeatingNode!!, slots, slots)
+      loopNode = Truffle.getRuntime().createLoopNode(repeatingNode!!)
       adoptChildren()
     }
-    val frame = Truffle.getRuntime().createVirtualFrame(null, repeatingNode!!.descriptor)
+    val frame = Truffle.getRuntime().createVirtualFrame(emptyArray(), repeatingNode!!.descriptor)
     repeatingNode!!.setNextCall(frame, tailCall.fn, tailCall.args)
     loopNode!!.execute(frame)
     return repeatingNode!!.getResult(frame)
@@ -133,9 +124,9 @@ class TailCallLoop() : Node() {
 // current version copied from
 // https://github.com/luna/enso/blob/master/engine/runtime/src/main/java/org/enso/interpreter/node/callable/dispatch/LoopingCallOptimiserNode.java
 class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), RepeatingNode {
-  val resultSlot = descriptor.findOrAddFrameSlot("<TCO Function>", FrameSlotKind.Object)
-  val functionSlot = descriptor.findOrAddFrameSlot("<TCO Result>", FrameSlotKind.Object)
-  val argsSlot = descriptor.findOrAddFrameSlot("<TCO Arguments>", FrameSlotKind.Object)
+  val resultSlot = FrameLayout.TAIL_RESULT
+  val functionSlot = FrameLayout.TAIL_FUNCTION
+  val argsSlot = FrameLayout.TAIL_ARGUMENTS
   @Child var dispatchNode: DispatchCallTarget = DispatchCallTargetNodeGen.create()
 
   fun setNextCall(
@@ -147,17 +138,17 @@ class TailCallRepeatingNode(val descriptor: FrameDescriptor) : Node(), Repeating
   }
 
   fun getResult(frame: VirtualFrame): Any {
-    return FrameUtil.getObjectSafe(frame, resultSlot)
+    return frame.getObject(resultSlot)
   }
 
   private fun getNextFunction(frame: VirtualFrame): CallTarget {
-    val result = FrameUtil.getObjectSafe(frame, functionSlot) as CallTarget
+    val result = frame.getObject(functionSlot) as CallTarget
     frame.setObject(functionSlot, null)
     return result
   }
 
   private fun getNextArgs(frame: VirtualFrame): Array<Any?> {
-    val result = FrameUtil.getObjectSafe(frame, argsSlot) as Array<Any?>
+    val result = frame.getObject(argsSlot) as Array<Any?>
     frame.setObject(argsSlot, null)
     return result
   }
@@ -182,10 +173,7 @@ class SelfTailCallLoop(
   private val closureRoot: ClosureRootNode
 ): Node() {
   @field:Child var repeatingNode: SelfTailCallRepeatingNode = SelfTailCallRepeatingNode(body, closureRoot)
-  // TODO: use frameDescriptor.version (Assumption)?
-  // this only works when no slots added after creation & all slots are filled before calling
-//  val slots: Array<FrameSlot> = closureRoot.frameDescriptor.slots.toTypedArray()
-  @field:Child var loopNode: LoopNode = Truffle.getRuntime().createLoopNode(repeatingNode) //createOptimizedLoopNode(repeatingNode, slots, slots)
+  @field:Child var loopNode: LoopNode = Truffle.getRuntime().createLoopNode(repeatingNode)
 
   fun execute(frame: VirtualFrame): Any? {
     return loopNode.execute(frame)
@@ -209,44 +197,4 @@ class SelfTailCallRepeatingNode(
       } else { throw e }
     }
   }
-}
-
-
-
-class DummyRepeatingNode() : Node(), RepeatingNode {
-  override fun executeRepeating(frame: VirtualFrame?): Boolean = false
-}
-
-val createOSRLoop: Method? by lazy {
-  try {
-    val klass: Class<*> = if (TruffleOptions.AOT) {
-      Class.forName("org.graalvm.compiler.truffle.runtime.OptimizedOSRLoopNode\$OptimizedDefaultOSRLoopNode")
-    } else {
-      Truffle.getRuntime().createLoopNode(DummyRepeatingNode())::class.java
-    }
-    klass.getMethod("createOSRLoop", RepeatingNode::class.java,
-      Int::class.javaPrimitiveType, Int::class.javaPrimitiveType,
-      Array<FrameSlot>::class.java, Array<FrameSlot>::class.java)
-  } catch (e: Exception) {
-    println("Virtualizing OSR loop node creation failed, falling back to normal LoopNode: $e")
-    null
-  }
-}
-
-// Note: to avoid "java.lang.AssertionError: Frames should never shrink.", you must:
-// 1. adopt the resulting LoopNode before executing it
-// 2. use the LoopNode's (parent's) rootNode.frameDescriptor as the fd for the frame you pass to LoopNode.execute
-// (but only the subset readFrameSlots/writtenFrameSlots will be available in the loop)
-fun createOptimizedLoopNode(repeatingNode: RepeatingNode, readFrameSlots: Array<FrameSlot>, writtenFrameSlots: Array<FrameSlot>): LoopNode {
-  val loopNode = Truffle.getRuntime().createLoopNode(repeatingNode)
-//  if (!OzLanguage.ON_GRAAL) {
-//    return loopNode
-//  }
-  val m = createOSRLoop
-  if (m != null) {
-    try {
-      return m.invoke(null, repeatingNode, 3, 100_000, readFrameSlots, writtenFrameSlots) as LoopNode
-    } catch (e: Exception) {}
-  }
-  return loopNode
 }

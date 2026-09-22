@@ -7,3 +7,7 @@
 *.iws
 .gradle
 old
+
+.toolchains/
+.kotlin/
+.gradle-user-home/

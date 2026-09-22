@@ -25,7 +25,13 @@ class BigInt(val value: BigInteger) : TruffleObject, Comparable<BigInt> {
 
   @ExportMessage
   @TruffleBoundary
-  fun isNumber() = fitsInLong()
+  fun isNumber() = true
+
+  @ExportMessage
+  fun fitsInBigInteger() = true
+
+  @ExportMessage
+  fun asBigInteger(): BigInteger = value
 
   fun isNatural() = value >= BigInteger.ZERO
 

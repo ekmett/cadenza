@@ -96,10 +96,12 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/frame/dynamic
     asm.`return` {
       aload_0
       invokespecial(type(Object::class), void, "<init>")
+      var local = 1
       for (i in types.indices) {
         aload_0
-        types[i].load(this, i+1)
+        types[i].load(this, local)
         putfield(type, members[i], types[i].type)
+        local += types[i].type.size
       }
     }
   }
@@ -115,13 +117,15 @@ fun frame(signature: String) : ByteArray = `class`(public,"cadenza/frame/dynamic
         aload_0
         aload_1
         iload_2
-        types[i].aload(this)
+        aaload
+        types[i].unbox(this)
         putfield(type, members[i], types[i].type)
         iinc(2)
       }
     }
   }
 
+  isMethod("isObject") { it.isObject }
   isMethod("isInteger") { it.isInteger }
   isMethod("isLong") { it.isLong }
   isMethod("isFloat") { it.isFloat }
@@ -222,7 +226,7 @@ abstract class BuildFrame : Node() {
     @Cached("getSignature(fields)", dimensions = 1) sig: Array<FieldInfo>,
     @Cached("assembleSig(sig)") cstr: MethodHandle
   ): DataFrame {
-    return cstr.invokeExact(*fields) as DataFrame
+    return cstr.invokeExact(fields) as DataFrame
   }
 
   fun assembleSig(sigArr: Array<FieldInfo>): MethodHandle {
@@ -240,6 +244,7 @@ abstract class BuildFrame : Node() {
 
   @ExplodeLoop
   fun matchesSig(fields: Array<Any>, sig: Array<FieldInfo>): Boolean {
+    if (fields.size != sig.size) return false
     sig.forEachIndexed { ix, v ->
       if (!v.matches(fields[ix])) {
         return false
