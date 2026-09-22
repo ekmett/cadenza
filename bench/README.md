@@ -26,8 +26,9 @@ field and enter the guest through frame arguments, preventing constant folding
 of an entire closed benchmark program. `Add` and Kotlin both stop at the limit;
 the old Kotlin baseline performed one extra increment. `AddLet` measures
 recursive let independently because the reference interpreter does not support
-that construct. Its simple counter can be optimized nearly to returning the limit;
-do not interpret that workload as general interpreter throughput. `Accumulate`
+that construct. Both simple counters can be optimized nearly to returning the
+limit; do not interpret those workloads as general interpreter throughput. `Add`
+checks every varying input during setup. `Accumulate`
 performs a modular sum on every recursive step to measure a loop with useful work.
 `FixedAccumulate` performs a modular sum through `fixNatF`, whose current type
 accepts one natural-number state. It encodes the index and accumulator in that
@@ -87,3 +88,7 @@ alongside the existing AST workloads, after preserving runtime error locations.
 [Primitive capture restoration](results/2026-09-22/capture-restore.md) measures the
 removal of per-iteration boxing in fixed-point loops, including a modular-sum
 workload and controls for the Integer cache, other loops, and escaping closures.
+
+[Fixed-point self binding](results/2026-09-22/fixed-self-binding.md) measures the
+remaining construction allocation after exposing the private recursive binding
+to partial evaluation, with a useful-work loop and ordinary calling controls.

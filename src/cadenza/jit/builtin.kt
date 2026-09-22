@@ -193,7 +193,7 @@ private class FixedFunction(val function: Closure, private val owner: RootCallTa
   // cell in papArgs so structural equality never follows a self-referential array.
   // ClosureRootNode resolves that private token before exposing a parameter.
   val self = if (function.arity == 2 && function.callTarget.rootNode is ClosureRootNode)
-    function.pap(arrayOf(this))
+    function.papFixedSelf(this)
   else
     Closure(null, arrayOf(this), 1, fixedFunctionType, owner)
 

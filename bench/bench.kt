@@ -98,6 +98,14 @@ open class Add : ComparedBenchmark() {
   @Param("100", "1000") @JvmField var size: Int = 0
   override val text = "\\(limit : Nat) -> fixNatF (\\(f : Nat -> Nat) (x : Nat) -> if le limit x then x else f (plus x 1)) 0"
 
+  override fun prepareBaseline() {
+    super.prepareBaseline()
+    repeat(16) { offset ->
+      val limit = size + offset
+      check(target.call(limit) == limit)
+    }
+  }
+
   @Benchmark fun cadenza(): Any? = target.call(nextInput(size))
   @Benchmark fun interpreter(): Any = interpreted.call(arrayOf(nextInput(size)))
   @Benchmark fun kotlin(): Int {

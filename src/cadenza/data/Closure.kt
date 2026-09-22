@@ -90,6 +90,16 @@ class Closure (
 
   fun pap(arguments: Array<out Any?>): Closure = pap(arguments, 0, arguments.size)
 
+  /** Bind the retained fixed-point token without the general escaping-PAP boundary. */
+  internal fun papFixedSelf(token: Any): Closure {
+    assert(arity == 2)
+    val prefixSize = papArgs.size
+    val combined = arrayOfNulls<Any>(prefixSize + 1)
+    System.arraycopy(papArgs, 0, combined, 0, prefixSize)
+    combined[prefixSize] = token
+    return Closure(env, combined, arity - 1, targetType, callTarget)
+  }
+
   /** Copy a checked argument range directly into the escaping partial application. */
   @CompilerDirectives.TruffleBoundary
   fun pap(arguments: Array<out Any?>, offset: Int, length: Int): Closure {
