@@ -67,6 +67,19 @@ partial application, branch laziness, failure short-circuiting, and captures
 across tail iterations. Flat and nested applications intentionally have different
 effect ordering: tests must not assume they are interchangeable for effectful code.
 
+`ApplicationEffectsTests` exhausts the eight lambda groupings and eight application
+groupings of four arguments. Its independent event scheduler predicts when each
+argument prints and when each newly satisfied function body runs. Weighted results
+check argument positions as well as effects. Each call site sees changing targets,
+large integers and captures, then revisits retained closures. Every argument failure
+position and reachable body boundary is followed by a successful call on the same
+site, checking both the truncated trace and recovery.
+
+`FixedSelfIdentityTests` alternates equal-but-distinct recursive closures within a
+single tail loop. It checks exact incoming self references, one reused frame and
+the executing root, including after a real `DirectCallNode` split. Equality alone
+is insufficient here: a previous binding must not replace the incoming closure.
+
 When adding a regression, prefer an externally observable result or a mathematical
 oracle. Exercise one call site repeatedly across relevant histories: small and large
 integers, cache saturation, retained partials, and exceptions followed by success.
@@ -137,3 +150,15 @@ leaving concrete conditionals unchanged. The generated neutral-history test
 compiled and rejected it when replaying a retained partial: seed `1325428639`,
 captured value `0`, input `0`, and choice `true` expected `false` but received
 `true`. This checks the independent residual oracle rather than backend agreement.
+
+A sixth isolated mutation skipped a tail-frame slot write whenever the incoming
+closure compared equal to the previous value. Both fixed-self identity tests
+rejected the stale reference at iteration 1, including the split-root case. The
+unmodified tests passed; the mutant compiled and failed the intended identity
+assertions rather than failing during setup.
+
+A seventh isolated mutation flattened nested AST applications. The new grouping
+matrix still obtained the expected numeric result but rejected the moved body
+effects: `[3, 10119, 5, 7, 11, 10122]` became `[3, 5, 7, 11, 10119, 10122]`.
+It also caught the changed trace during recovery. The two bytecode cases passed
+because this mutation affected only AST compilation.

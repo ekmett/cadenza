@@ -77,5 +77,49 @@
         "wrappedBy": "java.lang.AssertionError"
       }
     ]
+  },
+  {
+    "mutation": "fixed-self-equality-reuse",
+    "baseline": "622b49275a9060bd5fbb550c6caba13376d27f5b with FixedSelfIdentityTests",
+    "file": "src/cadenza/jit/nodes.kt",
+    "patch": "--- a/src/cadenza/jit/nodes.kt\n+++ b/src/cadenza/jit/nodes.kt\n@@ -190,7 +190,11 @@\n   @ExplodeLoop\n   fun buildFrame(arguments: Array<Any?>, local: VirtualFrame) {\n     val offset = if (hasEnvironment()) 2 else 1\n-    for ((slot, x) in argPreamble) FrameAccess.write(local, slot, resolveFixedArgument(arguments[x+offset]))\n+    for ((slot, x) in argPreamble) {\n+      val incoming = resolveFixedArgument(arguments[x+offset])\n+      if (incoming is Closure && local.isObject(slot) && incoming == local.getObject(slot)) continue\n+      FrameAccess.write(local, slot, incoming)\n+    }\n     if (hasEnvironment()) { // Closure receives its captured environment.\n       val env = arguments[1] as DataFrame\n       for ((slot, ix) in envPreamble) captureLayout!!.restore(env, ix, local, slot)\n",
+    "filter": "FixedSelfIdentityTests",
+    "rejectedByAssertion": true,
+    "baselineTests": 2,
+    "failures": [
+      {
+        "test": "FixedSelfIdentityTests.runtimeSplitPreservesChangingFixedSelfReferencesInItsOwnFrame()",
+        "type": "org.opentest4j.AssertionFailedError",
+        "message": "org.opentest4j.AssertionFailedError: incoming self was replaced at iteration 1 ==> expected: cadenza.data.Closure@6ea1bcdc<cadenza.data.Closure@8b719e28> but was: cadenza.data.Closure@759fad4<cadenza.data.Closure@8b719e28>"
+      },
+      {
+        "test": "FixedSelfIdentityTests.selfTailFrameReusePreservesEachIncomingFixedClosure()",
+        "type": "org.opentest4j.AssertionFailedError",
+        "message": "org.opentest4j.AssertionFailedError: incoming self was replaced at iteration 1 ==> expected: cadenza.data.Closure@24a1c17f<cadenza.data.Closure@c88523cd> but was: cadenza.data.Closure@56102e1c<cadenza.data.Closure@c88523cd>"
+      }
+    ]
+  },
+  {
+    "mutation": "flatten-nested-application-effects",
+    "baseline": "622b49275a9060bd5fbb550c6caba13376d27f5b with ApplicationEffectsTests",
+    "file": "src/cadenza/semantics/terms.kt",
+    "old": "      val wrator = trator.infer(ctx)",
+    "new": "      if (trator is TApp) return TApp(trator.trator, trator.trands + trands, loc).inferTerm(ctx)\n      val wrator = trator.infer(ctx)",
+    "filter": "ApplicationEffectsTests",
+    "rejectedByAssertion": true,
+    "baselineTests": 4,
+    "failures": [
+      {
+        "test": "ApplicationEffectsTests: ast: all lambda/application boundaries through numeric and capture histories",
+        "type": "org.opentest4j.AssertionFailedError",
+        "message": "org.opentest4j.AssertionFailedError: ast phase=0 lambdas=[1, 3] applications=[1, 3] capture=118 arguments=[3, 5, 7, 11] failArgument=0 failBody=0\nfactory: \\(captured : Nat) (failBody : Nat) -> \\(a : Nat) -> let entered : Nat = printId (plus captured 10001) in let checked : Nat = if eq failBody 1 then div 1 0 else 0 in \\(b : Nat) (c : Nat) (d : Nat) -> let entered : Nat = printId (plus captured 10004) in let checked : Nat = if eq failBody 4 then div 1 0 else 0 in plus captured (plus (mult 1000000 a) (plus (mult 10000 b) (plus (mult 100 c) d)))\napply: \\(f : Nat -> Nat -> Nat -> Nat -> Nat) (failArgument : Nat) (a : Nat) (b : Nat) (c : Nat) (d : Nat) -> ((f (if eq failArgument 1 then div (printId a) 0 else printId a)) (if eq failArgument 2 then div (printId b) 0 else printId b) (if eq failArgument 3 then div (printId c) 0 else printId c) (if eq failArgument 4 then div (printId d) 0 else printId d)) ==> expected: <[3, 10119, 5, 7, 11, 10122]> but was: <[3, 5, 7, 11, 10119, 10122]>"
+      },
+      {
+        "test": "ApplicationEffectsTests: ast: argument/body failure boundaries through partial and overapplication",
+        "type": "org.opentest4j.AssertionFailedError",
+        "message": "org.opentest4j.AssertionFailedError: ast immediate recovery lambdas=[1, 3] applications=[1, 3] capture=522 arguments=[2, 13, 17, 29] failArgument=0 failBody=0\nfactory: \\(captured : Nat) (failBody : Nat) -> \\(a : Nat) -> let entered : Nat = printId (plus captured 10001) in let checked : Nat = if eq failBody 1 then div 1 0 else 0 in \\(b : Nat) (c : Nat) (d : Nat) -> let entered : Nat = printId (plus captured 10004) in let checked : Nat = if eq failBody 4 then div 1 0 else 0 in plus captured (plus (mult 1000000 a) (plus (mult 10000 b) (plus (mult 100 c) d)))\napply: \\(f : Nat -> Nat -> Nat -> Nat -> Nat) (failArgument : Nat) (a : Nat) (b : Nat) (c : Nat) (d : Nat) -> ((f (if eq failArgument 1 then div (printId a) 0 else printId a)) (if eq failArgument 2 then div (printId b) 0 else printId b) (if eq failArgument 3 then div (printId c) 0 else printId c) (if eq failArgument 4 then div (printId d) 0 else printId d)) ==> expected: <[2, 10523, 13, 17, 29, 10526]> but was: <[2, 13, 17, 29, 10523, 10526]>"
+      }
+    ],
+    "scope": "Mutates AST TApp.inferTerm; the bytecode compiler path remains unchanged and its two cases pass."
   }
 ]
