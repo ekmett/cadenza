@@ -6,6 +6,7 @@ Run with the documented GraalVM `JAVA_HOME`, using the checked-in Gradle wrapper
 ./gradlew bench --args='-l'
 ./gradlew bench --args='cadenza.bench.(Add|Fib)\..* -wi 5 -i 5 -f 2'
 ./gradlew bench --args='cadenza.bench.AddLet.* -wi 5 -i 5 -f 2'
+./gradlew bench --args='cadenza.bench.Accumulate.* -wi 5 -i 5 -f 2'
 ./gradlew bench --args='cadenza.bench.CapturedClosure.* -prof gc'
 ./gradlew bench --args='cadenza.bench.NeutralNormalization.*'
 ./gradlew bench --args='cadenza.bench.ColdStart.*'
@@ -25,10 +26,14 @@ field and enter the guest through frame arguments, preventing constant folding
 of an entire closed benchmark program. `Add` and Kotlin both stop at the limit;
 the old Kotlin baseline performed one extra increment. `AddLet` measures
 recursive let independently because the reference interpreter does not support
-that construct.
+that construct. Its simple counter can be optimized nearly to returning the limit;
+do not interpret that workload as general interpreter throughput. `Accumulate`
+performs a modular sum on every recursive step to measure a loop with useful work.
 
 `CapturedClosure` measures escaping closure creation; use JMH's GC profiler to
-compare bytes allocated per operation as well as throughput. `NeutralNormalization`
+compare bytes allocated per operation as well as throughput. Its `base` parameter
+selects captures inside (`100`) and outside (`1000`) the JVM Integer cache; this
+matters when comparing primitive and boxed environments. `NeutralNormalization`
 measures the deliberately exceptional, temporary neutral-term path separately
 from ordinary execution. `ColdStart` includes fresh context creation, uncached
 source parsing, execution, and shutdown. Its single-shot timings are distinct
@@ -42,3 +47,6 @@ costs are intentionally excluded from the warm guest benchmark (it uses a
 rooted guest dispatch); cold timings include them. The Kotlin baseline may
 optimize the addition loop more aggressively; it is a reference computation,
 not a promise that the two implementations execute identical machine code.
+
+[Measured AST/bytecode and before/after results (2026-09-22)](results/2026-09-22/README.md)
+include raw JMH samples, allocation data, and reproducible settings.

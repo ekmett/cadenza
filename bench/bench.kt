@@ -112,6 +112,13 @@ open class AddLet : BackendBenchmark() {
   @Benchmark fun cadenza(): Any? = target.call(nextInput(size))
 }
 
+/** A loop with useful work in each step, preventing counter-to-limit simplification. */
+open class Accumulate : BackendBenchmark() {
+  @Param("1000") @JvmField var size: Int = 0
+  override val text = "\\(limit : Nat) -> let go : Nat -> Nat -> Nat = \\(x : Nat) (sum : Nat) -> if le limit x then sum else go (plus x 1) (mod (plus sum x) 65521) in go 0 0"
+  @Benchmark fun cadenza(): Any? = target.call(nextInput(size))
+}
+
 private fun fib(x: Int): Int = if (x <= 1) x else fib(x - 1) + fib(x - 2)
 
 open class Fib : ComparedBenchmark() {
@@ -126,8 +133,9 @@ open class Fib : ComparedBenchmark() {
 
 /** Returned closures escape to JMH's result consumer; use -prof gc for allocation. */
 open class CapturedClosure : BackendBenchmark() {
+  @Param("100", "1000") @JvmField var base: Int = 0
   override val text = "\\(x : Nat) -> \\(y : Nat) -> plus x y"
-  @Benchmark fun allocate(): Any? = target.call(nextInput(100))
+  @Benchmark fun allocate(): Any? = target.call(nextInput(base))
 }
 
 /** Measure the intentional exceptional neutral path separately from ordinary evaluation. */
