@@ -16,6 +16,7 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - run: ./gradlew build benchClasses
+      - run: ./tools/test-allocation-summary.sh
       - run: ./gradlew semanticSoak
         if: runner.os == 'Linux'
       - run: ./gradlew run --args='examples/fib.za'
