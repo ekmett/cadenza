@@ -186,8 +186,6 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
       return captureLayout!!.capture(frame, captures)
     }
 
-    // root to render capture steps opaque
-    override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java || tag == StandardTags.ExpressionTag::class.java
   }
 
 

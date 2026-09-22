@@ -13,6 +13,7 @@ import com.oracle.truffle.api.bytecode.BytecodeConfig
 import com.oracle.truffle.api.bytecode.BytecodeLocal
 import com.oracle.truffle.api.frame.FrameDescriptor
 import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.instrumentation.StandardTags.StatementTag
 import com.oracle.truffle.api.source.Source
 
 /**
@@ -31,17 +32,25 @@ class BytecodeCompiler(private val language: Language, private val source: Sourc
     // Use exactly the same type checker as the AST backend.
     term.infer(initialCtx)
     val body = lower(term, emptyMap(), initialCtx, true)
-    val target = build(body)
+    val target = build(body, bodyLoc = term.loc)
     return BytecodeEntryRoot(language, target, source).callTarget
   }
 
-  private fun build(body: Expression): RootCallTarget =
+  private fun build(body: Expression, rootLoc: Loc? = null, bodyLoc: Loc? = rootLoc): RootCallTarget =
     BytecodeRootGen.create(language, BytecodeConfig.DEFAULT) { b ->
+      val rootRange = rootLoc as? Loc.Range
+      val bodyRange = bodyLoc as? Loc.Range ?: rootRange
       b.beginSource(source)
-      b.beginSourceSection(0, source.length)
+      b.beginSourceSection(rootRange?.start ?: 0, rootRange?.length ?: source.length)
       b.beginRoot()
       b.beginReturn()
+      b.beginSourceSection(bodyRange?.start ?: 0, bodyRange?.length ?: source.length)
+      // A source expression is one statement; entering a closure again counts again,
+      // including the existing tail-call trampoline's re-entry into a bytecode root.
+      b.beginTag(StatementTag::class.java)
       body.emit(Emission(b))
+      b.endTag(StatementTag::class.java)
+      b.endSourceSection()
       b.endReturn()
       b.endRoot()
       b.endSourceSection()
@@ -116,7 +125,7 @@ class BytecodeCompiler(private val language: Language, private val source: Sourc
           ConsEnv(name, NameInfo(type, null), context)
         }
         val child = lower(term.body, childScope, childCtx, true)
-        val target = build(child)
+        val target = build(child, term.loc, term.body.loc)
         val type = term.infer(ctx).type
         val targetType = captures.fold(type) { result, _ -> Type.Arr(Type.Obj, result) }
         val template = BytecodeRoot.ClosureTemplate(target, term.names.size, targetType)

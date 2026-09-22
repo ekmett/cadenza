@@ -25,6 +25,9 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 
 /** Experimental concrete typed-core interpreter; the AST backend remains the default. */
 @GenerateBytecode(languageClass = Language.class, enableUncachedInterpreter = true,
+        enableTagInstrumentation = true,
+        // Shared tail-call exceptions bypass DSL tag exits; avoid misleading root profilers.
+        enableRootTagging = false, enableRootBodyTagging = false,
         boxingEliminationTypes = {int.class, boolean.class})
 @TypeSystemReference(DataTypes.class)
 public abstract class BytecodeRoot extends CadenzaRootNode implements BytecodeRootNode {

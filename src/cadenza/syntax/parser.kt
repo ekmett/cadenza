@@ -99,7 +99,7 @@ val Parse.grammar: Term get() = choice(
     choice(
       { parens { grammar }},
       {
-        val (a, loc) = spanned { token { ident } }
+        val (a, loc) = token { spanned { ident } }
         TVar(a, loc)
       },
       { token { lit }}

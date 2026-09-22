@@ -69,3 +69,6 @@ and bounded heaps, and distinguishes failed baseline workloads from speedups.
 
 [Rejected frame-recovery experiment](results/2026-09-22/frame-recovery.md) records
 why switching to per-frame slot kinds did not improve the warmed accumulator.
+
+[AST tooling performance gate](results/2026-09-22/tooling-ast.md) checks ordinary
+execution after adding invocation wrappers and statement tags.

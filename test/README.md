@@ -53,6 +53,19 @@ Only this test is skipped on a nonoptimizing Truffle runtime; the portable
 semantic tests still run. This provides targeted compiled-code coverage, not a
 claim that every regression test runs compiled.
 
+Frontend tests check independently constructed higher-order types and exact error
+locations, including shebangs and whitespace prefixes. Static rejection must occur
+before guest output, and the context must remain usable afterward.
+
+Tooling tests attach real Truffle listeners, inspect retained frames, and request
+unwind/re-entry to verify that argument setup runs again. Host lifecycle tests
+cancel an executing loop at an observable checkpoint and verify shared-engine
+isolation. Statement-limit tests exercise the public polyglot API on both
+backends, including infinite recursion with a bounded watchdog. Bytecode tests
+check that unsupported root events are absent rather than accepting unmatched
+entries as valid profiler data; ordinary statement returns and guest-error exits
+are checked separately from the documented tail-transfer limitation.
+
 Use the separate JMH workloads to measure allocation and throughput changes.
 
 ## Test sensitivity check, 2026-09-22

@@ -124,7 +124,7 @@ class Language : TruffleLanguage<Language.Context>() {
           val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd.build(), source)
           return rootNode.callTarget
         } catch (error: TypeError) {
-          throw TypeCheckError(error, source.createSection(0, source.length))
+          throw TypeCheckError(error, error.loc?.section(source) ?: source.createSection(0, source.length))
         }
       }
     }

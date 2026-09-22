@@ -22,9 +22,18 @@ data class CompileInfo(
 // terms can be checked and inferred. The result is an expression.
 @Suppress("MemberVisibilityCanBePrivate")
 sealed class Term {
+  abstract val loc: Loc?
   abstract fun fvs(): Set<String>
-  @Throws(TypeError::class) open fun check(ctx: Ctx, expectedType: Type): Witness = infer(ctx).match(expectedType)
-  @Throws(TypeError::class) abstract fun infer(ctx: Ctx): Witness
+  @Throws(TypeError::class) open fun check(ctx: Ctx, expectedType: Type): Witness =
+    located { infer(ctx).match(expectedType) }
+  @Throws(TypeError::class) fun infer(ctx: Ctx): Witness = located { inferTerm(ctx) }
+  @Throws(TypeError::class) protected abstract fun inferTerm(ctx: Ctx): Witness
+
+  // A nested failure keeps the most specific term; enclosing terms only supply a fallback.
+  private inline fun <T> located(action: () -> T): T = try { action() } catch (error: TypeError) {
+    if (error.loc == null) error.loc = loc
+    throw error
+  }
 
   // provides an expression with a given type in a given frame
   abstract class Witness internal constructor(val type: Type) {
@@ -35,10 +44,10 @@ sealed class Term {
       else throw TypeError("type mismatch", type, expectedType)
   }
 
-  class TVar(val name: String, val loc: Loc? = null): Term() {
+  class TVar(val name: String, override val loc: Loc? = null): Term() {
     override fun fvs() = arrayOf(name).toSet()
     @Throws(TypeError::class)
-    override fun infer(ctx: Ctx): Witness {
+    override fun inferTerm(ctx: Ctx): Witness {
       val info = ctx.lookup(name)
       return object : Witness(info.type) {
         override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
@@ -55,10 +64,10 @@ sealed class Term {
     }
   }
 
-  class TIf(val cond: Term, val thenTerm: Term, val elseTerm: Term, val loc: Loc? = null): Term() {
+  class TIf(val cond: Term, val thenTerm: Term, val elseTerm: Term, override val loc: Loc? = null): Term() {
     override fun fvs(): Set<String> = cond.fvs() + thenTerm.fvs() + elseTerm.fvs()
     @Throws(TypeError::class)
-    override fun infer(ctx: Ctx): Witness {
+    override fun inferTerm(ctx: Ctx): Witness {
       val condWitness = cond.check(ctx, Type.Bool)
       val thenWitness = thenTerm.infer(ctx)
       val actualType = thenWitness.type
@@ -71,14 +80,15 @@ sealed class Term {
     }
   }
 
-  class TApp(val trator: Term, val trands: Array<Term>, val loc: Loc? = null): Term() {
+  class TApp(val trator: Term, val trands: Array<Term>, override val loc: Loc? = null): Term() {
     override fun fvs(): Set<String> = trator.fvs() + trands.map { it.fvs() }.flatten()
     @Throws(TypeError::class)
-    override fun infer(ctx: Ctx): Witness {
+    override fun inferTerm(ctx: Ctx): Witness {
       val wrator = trator.infer(ctx)
       var currentType = wrator.type
-      val wrands = trands.map {
-        val arr = currentType as? Type.Arr ?: throw TypeError("not a function type", currentType)
+      val wrands = trands.mapIndexed { index, it ->
+        val arr = currentType as? Type.Arr ?: throw TypeError("not a function type", currentType,
+          loc = if (index == 0) trator.loc else it.loc)
         val out = it.check(ctx, arr.argument)
         currentType = arr.result
         out
@@ -103,9 +113,9 @@ sealed class Term {
     }
   }
 
-  class TLam(val names: Array<Pair<Name,Type>>, val body: Term, val loc: Loc? = null): Term() {
+  class TLam(val names: Array<Pair<Name,Type>>, val body: Term, override val loc: Loc? = null): Term() {
     override fun fvs(): Set<String> = body.fvs() - names.map { it.first }
-    override fun infer(ctx: Ctx): Witness {
+    override fun inferTerm(ctx: Ctx): Witness {
       val ctx2 = names.fold(ctx) { x, (n, ty) -> ConsEnv(n, NameInfo(ty, null), x) }
       val bodyw = body.infer(ctx2)
       val aty = names.foldRight(bodyw.type) { (_,ty), x -> Type.Arr(ty, x) }
@@ -161,9 +171,9 @@ sealed class Term {
     }
   }
 
-  class TLet(val name: Name, val type: Type, val value: Term, val body: Term, val loc: Loc? = null): Term() {
+  class TLet(val name: Name, val type: Type, val value: Term, val body: Term, override val loc: Loc? = null): Term() {
     override fun fvs(): Set<String> = (value.fvs() + body.fvs()) - name
-    override fun infer(ctx: Ctx): Witness {
+    override fun inferTerm(ctx: Ctx): Witness {
       val ctx2: Ctx = ConsEnv(name, NameInfo(type, null), ctx)
       val vw = value.check(ctx2, type)
       val bw = body.infer(ctx2)
@@ -179,9 +189,9 @@ sealed class Term {
     }
   }
 
-  class TLitNat(val it: Int, val loc: Loc? = null): Term () {
+  class TLitNat(val it: Int, override val loc: Loc? = null): Term () {
     override fun fvs(): Set<String> = HashSet()
-    override fun infer(ctx: Ctx): Witness {
+    override fun inferTerm(ctx: Ctx): Witness {
       val ty = Type.Nat
       ty.validate(it)
       return object : Witness(ty) {
@@ -192,9 +202,9 @@ sealed class Term {
     }
   }
 
-  class TLitBigNat(val it: BigInt, val loc: Loc? = null): Term() {
+  class TLitBigNat(val it: BigInt, override val loc: Loc? = null): Term() {
     override fun fvs(): Set<String> = emptySet()
-    override fun infer(ctx: Ctx): Witness {
+    override fun inferTerm(ctx: Ctx): Witness {
       Type.Nat.validate(it)
       return object : Witness(Type.Nat) {
         override fun compile(ci: CompileInfo, fd: FrameLayout): Code = Code.LitBigInt(it, loc)

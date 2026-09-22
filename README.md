@@ -92,6 +92,9 @@ programs checked against independent semantics on both backends. Run
 seed range with `./gradlew semanticSoak -PfuzzCases=1000 -PfuzzSeedOffset=10000`.
 See [test coverage and reproduction](test/README.md).
 
+See [Truffle tooling and execution limits](docs/tooling.md) for instrumentation
+events, source locations, and the statement units used by host resource limits.
+
 The runtime uses primitive-specialized indexed frame slots, immutable closure
 captures backed by Truffle StaticShape, bounded dispatch caches, and shared guest
 and polyglot calling conventions. Neutral terms deliberately use the exceptional

@@ -50,23 +50,43 @@ abstract class CadenzaRootNode(
 @TypeSystemReference(DataTypes::class)
 open class ProgramRootNode constructor(
   language: Language,
-  @field:Child private var body: Code,
+  body: Code,
   fd: FrameDescriptor,
   val source: Source
 ) : CadenzaRootNode(language, fd) {
-  @Child var tailCallLoop = TailCallLoop()
+  @Child private var body = ProgramBody(body)
 
   override fun isCloningAllowed() = true
-  override fun execute(frame: VirtualFrame): Any? {
-    return try {
-      body.executeAny(frame)
-    } catch (tailCall: TailCallException) {
-      tailCallLoop.execute(tailCall)
-    }
-  }
+  override fun execute(frame: VirtualFrame): Any? = body.execute(frame)
 
   override fun getSourceSection(): SourceSection = source.createSection(0, source.length)
   override fun getName() = "program root"
+}
+
+/** One statement unit for evaluating a complete source expression. */
+@GenerateWrapper
+open class ProgramBody private constructor(
+  @field:Child private var content: Code?,
+  private val wrappedSection: SourceSection?
+) : Node(), InstrumentableNode {
+  @Child private var tailCallLoop: TailCallLoop? = content?.let { TailCallLoop() }
+
+  constructor(content: Code) : this(content, null)
+  constructor(that: ProgramBody) : this(null, that.sourceSection)
+
+  open fun execute(frame: VirtualFrame): Any? {
+    return try {
+      content!!.executeAny(frame)
+    } catch (tailCall: TailCallException) {
+      tailCallLoop!!.execute(tailCall)
+    }
+  }
+
+  override fun isInstrumentable() = sourceSection != null
+  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = ProgramBodyWrapper(this, this, probe)
+  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java ||
+    tag == StandardTags.RootBodyTag::class.java || tag == StandardTags.StatementTag::class.java
+  override fun getSourceSection(): SourceSection? = wrappedSection ?: content?.sourceSection ?: rootNode?.sourceSection
 }
 
 class InlineCode(
@@ -77,16 +97,20 @@ class InlineCode(
 }
 
 @GenerateWrapper
-open class ClosureBody constructor(
-  @field:Child protected var content: Code?
+open class ClosureBody private constructor(
+  @field:Child protected var content: Code?,
+  private val wrappedSection: SourceSection?
 ) : Node(), InstrumentableNode {
-  constructor(@Suppress("UNUSED_PARAMETER") that: ClosureBody) : this(null as Code?)
+  constructor(content: Code?) : this(content, null)
+  constructor(that: ClosureBody) : this(null, that.sourceSection)
 
   open fun execute(frame: VirtualFrame): Any? = content!!.executeAny(frame)
   override fun isInstrumentable() = true
   override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = ClosureBodyWrapper(this, this, probe)
-  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootBodyTag::class.java
-  override fun getSourceSection(): SourceSection? = rootNode.sourceSection
+  // A function body is one statement unit on each evaluation, including self-tail iterations.
+  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootBodyTag::class.java ||
+    tag == StandardTags.StatementTag::class.java
+  override fun getSourceSection(): SourceSection? = wrappedSection ?: content?.sourceSection ?: rootNode?.sourceSection
 }
 
 // todo: should this get removed & always inline?
@@ -107,7 +131,35 @@ open class BuiltinRootNode(
   override fun getName() = "builtin"
 }
 
-// TODO: instrumentable body prelude node w/ RootTag?
+/** Instrument the whole invocation, including argument setup and all self-tail iterations. */
+@GenerateWrapper
+open class ClosureInvocation(body: ClosureBody?) : Node(), InstrumentableNode {
+  @Child private var selfTailCallLoopNode: SelfTailCallLoop? = body?.let { SelfTailCallLoop(it) }
+  private val tailCallProfile: BranchProfile = BranchProfile.create()
+
+  constructor(@Suppress("UNUSED_PARAMETER") that: ClosureInvocation) : this(null as ClosureBody?)
+
+  open fun execute(frame: VirtualFrame): Any? {
+    val root = rootNode as ClosureRootNode
+    frame.setLong(FrameLayout.BLOOM_FILTER, (frame.arguments[0] as Long) or root.mask)
+    root.buildFrame(frame.arguments, frame)
+    // Keep the peeled first iteration: constant recursive arguments can still fold.
+    return try {
+      selfTailCallLoopNode!!.executeOnce(frame)
+    } catch (e: TailCallException) {
+      tailCallProfile.enter()
+      if (!root.isSelfCall(e.fn)) throw e
+      root.buildFrame(e.args, frame)
+      selfTailCallLoopNode!!.execute(frame)
+    }
+  }
+
+  override fun isInstrumentable() = sourceSection != null
+  override fun createWrapper(probe: ProbeNode): InstrumentableNode.WrapperNode = ClosureInvocationWrapper(this, this, probe)
+  override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.RootTag::class.java
+  override fun getSourceSection(): SourceSection? = rootNode?.sourceSection
+}
+
 @TypeSystemReference(DataTypes::class)
 open class ClosureRootNode(
   private val language: Language,
@@ -127,8 +179,7 @@ open class ClosureRootNode(
   private val bodyIdentity = Any()
   override val hasTailCallFrame: Boolean = true
   val bloomFilterSlot: Int = FrameLayout.BLOOM_FILTER
-  @field:Child var selfTailCallLoopNode = SelfTailCallLoop(body)
-  private val tailCallProfile: BranchProfile = BranchProfile.create()
+  @Child private var invocation = ClosureInvocation(body)
 
   @Suppress("NOTHING_TO_INLINE")
   inline fun hasEnvironment() = envPreamble.isNotEmpty()
@@ -146,26 +197,7 @@ open class ClosureRootNode(
     }
   }
 
-  @ExplodeLoop
-  private fun preamble(frame: VirtualFrame): VirtualFrame {
-    val local = frame
-    local.setLong(bloomFilterSlot, (frame.arguments[0] as Long) or mask)
-    buildFrame(frame.arguments, local)
-    return local
-  }
-
-  override fun execute(oldFrame: VirtualFrame): Any? {
-    val local = preamble(oldFrame)
-    // force loop peeling: this allows constant folding if recursive calls have const arguments
-    return try {
-      selfTailCallLoopNode.executeOnce(local)
-    } catch (e: TailCallException) {
-      tailCallProfile.enter()
-      if (!isSelfCall(e.fn)) { throw e }
-      buildFrame(e.args, local)
-      selfTailCallLoopNode.execute(local)
-    }
-  }
+  override fun execute(frame: VirtualFrame): Any? = invocation.execute(frame)
 
   override fun getSourceSection(): SourceSection? = loc?.let { source.section(it) }
   override fun isInstrumentable() = loc !== null

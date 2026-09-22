@@ -29,11 +29,34 @@ the existing trampoline, so recursive bytecode functions have bounded Java stack
 `boolean`. The generated interpreter provides quickening, typed stack/local storage, and lazy source
 metadata. Function applications force the cached tier because the shared guest dispatch nodes need
 adopted cache state. The compiler constructs constants and nested function targets once, making its
-builder parser safe to replay when Truffle requests source metadata.
+builder parser safe to replay when Truffle requests source metadata or instrumentation tags.
+
+Both backends expose statement units at the top-level expression and each execution of a closure
+body, including every tail-recursive iteration. Creating a partial application does not enter its
+body. The bytecode backend emits an explicit `StatementTag` around each source body; the entry
+trampoline and dispatch helpers are not source statements. Closure root sections identify their
+own lambda, and statement sections identify the body expression. Tags remain lazy until an
+instrument requests them.
+
+One tooling limitation remains around the shared tail-call trampoline: a tail call leaves a
+bytecode root through `ControlFlowException`, which the generated interpreter propagates before
+running tag-exit handlers. A three-step countdown diagnostic observed five statement entries but
+only two returns on bytecode; AST reported the remaining three tail exits. Ordinary success and
+guest-error exits work correctly. Automatic bytecode `RootTag` and `RootBodyTag` emission is disabled
+to avoid misleading root profilers. Use the AST backend for root-based profiling and debugger work.
+Bytecode statement entry events support budgets, but tools must not assume balanced statement
+return/exception events for tail calls yet.
+
+Polyglot `ResourceLimits.statementLimit` therefore bounds these units on both backends. It counts
+closure entries rather than arithmetic operands, so it is not a wall-clock time limit or a bound on
+the cost of a single large integer operation. Exceeding a limit cancels that context; other contexts
+sharing the engine retain their own budgets. `BytecodeInstrumentationTests` checks real instrument
+events, source ranges, late instrumentation, and cancellation through the public Polyglot API.
 
 The prototype targets **closed terms with concrete runtime values**. Normalization of open terms
 and neutral values remains an AST feature; its `SlowPathException` mechanism is unchanged. Bytecode
-debugger/instrumentation tags are not implemented yet. Captured values currently travel in the
+root, root-body, expression, and call tags, and debugger scope customization, remain future work.
+Captured values currently travel in the
 closure's partial-argument array; the AST backend uses the Static Object Model capture layout.
 Arithmetic follows the AST builtins: integer literals have arbitrary precision, and addition,
 subtraction, multiplication, division, remainder, and comparisons support `BigInt`. Overflow

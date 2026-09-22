@@ -1,5 +1,6 @@
 package cadenza.semantics
 
+import cadenza.Loc
 import cadenza.data.BigInt
 import cadenza.data.Closure
 import cadenza.todo
@@ -12,7 +13,8 @@ import com.oracle.truffle.api.nodes.ExplodeLoop
 class TypeError(
   message: String,
   val actual: Type? = null,
-  val expected: Type? = null
+  val expected: Type? = null,
+  var loc: Loc? = null
 ) : Exception(message) {
   constructor(message: String, cause: Exception?, actual: Type? = null, expected: Type? = null) : this(message, actual, expected) {
     initCause(cause)
