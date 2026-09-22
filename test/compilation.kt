@@ -8,10 +8,11 @@ import org.junit.jupiter.api.Assumptions.assumeTrue
 /** Only tests explicitly requesting compilation depend on these runtime-only public APIs. */
 internal object CompilationTestSupport {
   fun requireOptimizingRuntime() {
+    val runtime = Truffle.getRuntime()
     val runtimeType = runCatching {
       Class.forName("com.oracle.truffle.runtime.OptimizedTruffleRuntime")
     }.getOrNull()
-    assumeTrue(runtimeType?.isInstance(Truffle.getRuntime()) == true, "Requires the optimizing Graal runtime")
+    assumeTrue(runtimeType?.isInstance(runtime) == true, "Requires the optimizing Graal runtime")
   }
 
   fun context(): Context = Context.newBuilder("cadenza").allowExperimentalOptions(true)

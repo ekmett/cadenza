@@ -1,0 +1,32 @@
+[[[Graal compilation failure]]]
+Thread[#4,TruffleCompilerThread-39,5,main]: Compilation of ClosureRootNode@60be9fdf failed:
+jdk.graal.compiler.asm.BranchTargetOutOfBoundsException: Branch target 1129788 out of bounds
+	at LibGraalClassLoader//jdk.graal.compiler.asm.aarch64.AArch64MacroAssembler.patchJumpTarget(AArch64MacroAssembler.java:2124)
+	at LibGraalClassLoader//jdk.graal.compiler.asm.Label.bind(Label.java:83)
+	at LibGraalClassLoader//jdk.graal.compiler.asm.Assembler.bind(Assembler.java:263)
+	at LibGraalClassLoader//jdk.graal.compiler.asm.aarch64.AArch64MacroAssembler.bind(AArch64MacroAssembler.java:104)
+	at LibGraalClassLoader//jdk.graal.compiler.hotspot.aarch64.AArch64HotSpotBackend$HotSpotFrameContext.lambda$emitNmethodEntryBarrier$0(AArch64HotSpotBackend.java:354)
+	at LibGraalClassLoader//jdk.graal.compiler.lir.LIRInstruction$LIRInstructionSlowPath.emitSlowPathCode(LIRInstruction.java:79)
+	at LibGraalClassLoader//jdk.graal.compiler.lir.asm.CompilationResultBuilder.emitSlowPath(CompilationResultBuilder.java:657)
+	at LibGraalClassLoader//jdk.graal.compiler.lir.asm.CompilationResultBuilder.emitLIR(CompilationResultBuilder.java:613)
+	at LibGraalClassLoader//jdk.graal.compiler.hotspot.aarch64.AArch64HotSpotBackend.emitCodeBody(AArch64HotSpotBackend.java:513)
+	at LibGraalClassLoader//jdk.graal.compiler.hotspot.aarch64.AArch64HotSpotBackend.emitCodeHelper(AArch64HotSpotBackend.java:437)
+	at LibGraalClassLoader//jdk.graal.compiler.hotspot.aarch64.AArch64HotSpotBackend.emitCode(AArch64HotSpotBackend.java:424)
+	at LibGraalClassLoader//jdk.graal.compiler.core.gen.LIRCompilerBackend.emitCode(LIRCompilerBackend.java:227)
+	at LibGraalClassLoader//jdk.graal.compiler.core.gen.LIRCompilerBackend.emitBackEnd(LIRCompilerBackend.java:89)
+	at LibGraalClassLoader//jdk.graal.compiler.core.target.Backend.emitBackEnd(Backend.java:252)
+	at LibGraalClassLoader//jdk.graal.compiler.core.GraalCompiler.compile(GraalCompiler.java:153)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl.compilePEGraph(TruffleCompilerImpl.java:659)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl.compileAST(TruffleCompilerImpl.java:521)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl$TruffleCompilationWrapper.performCompilation(TruffleCompilerImpl.java:814)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl$TruffleCompilationWrapper.performCompilation(TruffleCompilerImpl.java:728)
+	at LibGraalClassLoader//jdk.graal.compiler.core.CompilationWrapper.run(CompilationWrapper.java:236)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl.doCompile(TruffleCompilerImpl.java:246)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl.doCompile(TruffleCompilerImpl.java:213)
+	at LibGraalClassLoader//jdk.graal.compiler.libgraal.truffle.LibGraalTruffleEntryPoints.doCompile(LibGraalTruffleEntryPoints.java:207)
+Options: {CompilationExpirationPeriod=100.0, DoNotMoveAllocationsWithOOMEHandlers=false, compiler.DiagnoseFailure=true}
+If in an environment where setting system properties is possible, the following
+properties are available to change compilation failure reporting:
+- To disable compilation failure notifications, set CompilationFailureAction to Silent (e.g., -Djdk.graal.CompilationFailureAction=Silent).
+- To print a message for a compilation failure without retrying the compilation, set CompilationFailureAction to Print (e.g., -Djdk.graal.CompilationFailureAction=Print).
+Retrying compilation of ClosureRootNode@60be9fdf

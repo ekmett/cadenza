@@ -1,0 +1,88 @@
+--- a/src/cadenza/jit/code.kt
++++ b/src/cadenza/jit/code.kt
+@@ -22,6 +22,7 @@
+ import com.oracle.truffle.api.interop.UnsupportedMessageException
+ import com.oracle.truffle.api.library.ExportLibrary
+ import com.oracle.truffle.api.nodes.*
++import com.oracle.truffle.api.profiles.BranchProfile
+ import com.oracle.truffle.api.profiles.ConditionProfile
+ import com.oracle.truffle.api.source.SourceSection
+ 
+@@ -38,11 +39,23 @@
+ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+   constructor(that: Code) : this(that.loc)
+ 
++  @CompilerDirectives.CompilationFinal
++  private var neutralProfile = BranchProfile.create()
++
++  protected fun enterNeutralPath() { neutralProfile.enter() }
++
++  override fun copy(): Node = (super.copy() as Code).also { copy ->
++    copy.neutralProfile = BranchProfile.create()
++  }
++
+   @Throws(NeutralException::class)
+   abstract fun execute(frame: VirtualFrame): Any?
+ 
+   open fun executeAny(frame: VirtualFrame): Any? =
+-    try { execute(frame) } catch (e: NeutralException) { e.get() }
++    try { execute(frame) } catch (e: NeutralException) {
++      enterNeutralPath()
++      e.get()
++    }
+ 
+   @Throws(UnexpectedResultException::class, NeutralException::class)
+   open fun executeClosure(frame: VirtualFrame): Closure = DataTypesGen.expectClosure(execute(frame))
+@@ -96,6 +109,7 @@
+       } catch (e: UnexpectedResultException) {
+         panic("closure expected, got ${e.result}", e)
+       } catch (e: NeutralException) {
++        enterNeutralPath()
+         e.apply(executeRands(frame))
+       }
+       return throwIfNeutralValue(executeFn(frame, fn))
+@@ -146,6 +160,7 @@
+       } catch (e: UnexpectedResultException) {
+         panic("non-boolean branch", e)
+       } catch (e: NeutralException) {
++        enterNeutralPath()
+         neutral(type, Neutral.NIf(e.term, normalizeBranch(frame, thenNode), normalizeBranch(frame, elseNode)))
+       }
+ 
+@@ -237,6 +252,14 @@
+     @field:Children internal var args: Array<Code>,
+     loc: Loc? = null
+   ) : Code(loc) {
++    @CompilerDirectives.CompilationFinal(dimensions = 1)
++    private var argumentNeutralProfiles = Array(args.size) { BranchProfile.create() }
++
++    override fun copy(): Node = (super.copy() as CallBuiltin).also { copy ->
++      // Arrays are shallow-copied; each split must learn its own argument history.
++      copy.argumentNeutralProfiles = Array(args.size) { BranchProfile.create() }
++    }
++
+     @ExplodeLoop
+     private fun executeArgs(frame: VirtualFrame): Pair<Array<Any?>,Boolean> {
+       var neutral = false
+@@ -245,6 +268,7 @@
+         vals[ix] = try {
+           x.execute(frame)
+         } catch (n: NeutralException) {
++          argumentNeutralProfiles[ix].enter()
+           neutral = true
+           n.get()
+         }
+--- a/src/cadenza/data/NeutralException.kt
++++ b/src/cadenza/data/NeutralException.kt
+@@ -1,9 +1,9 @@
+ package cadenza.data
+ 
+ import cadenza.semantics.Type
+-import com.oracle.truffle.api.nodes.SlowPathException
++import com.oracle.truffle.api.nodes.ControlFlowException
+ 
+-class NeutralException(val type: Type, val term: Neutral) : SlowPathException() {
++class NeutralException(val type: Type, val term: Neutral) : ControlFlowException() {
+   fun get() = NeutralValue(type, term)
+ 
+   fun apply(rands: Array<out Any?>): Nothing = neutral(

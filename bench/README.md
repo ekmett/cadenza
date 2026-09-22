@@ -117,6 +117,37 @@ it does not disable the JVM's own JIT. Compare it separately from `Fib.cadenza`,
 which retains the normal Graal guest-compilation settings. The inherited `kotlin`
 and reference `interpreter` methods do not measure the Truffle guest interpreter.
 
+`NeutralTracing.evaluate` is AST-only, with three bounded workloads (`arithmetic`,
+`conditional`, `higherOrder`) and five input histories (`concrete`, `neutral`,
+`mixed`, `neutralThenConcrete`, `compiledThenNeutralThenConcrete`). Sixteen inputs
+vary through the same parsed call site; mixed mode supplies one symbolic input per sixteen calls, rotating the
+symbolic identity between blocks. Residuals escape to JMH. A separate setup AST
+checks concrete answers, residual shapes and four independent host substitutions,
+so validation does not expose the measured concrete body to neutral values.
+The measured body then receives only its selected history; neutralThenConcrete
+supplies one symbolic call before concrete setup checks and measurement. The
+conditional includes useful non-tail branch continuations, and higherOrder checks
+both flat and nested applications of a symbolic binary function.
+
+`compiledThenNeutralThenConcrete` first warms the measured target with 64 concrete
+calls and explicitly verifies installed last-tier code. It then runs 32 symbolic
+calls across all sixteen inputs before returning to concrete setup checks and the
+ordinary JMH warmup. This mode requires the optimizing Graal runtime; a compilation
+failure fails setup. Both history modes time steady concrete execution after
+recovery, rather than the first neutral call's transition or compilation latency.
+The independent oracle still runs on a separate AST.
+
+Prioritize `concrete` and both concrete-recovery histories alongside any symbolic
+speedup; neutral handling must not impose a hidden ordinary-execution cost. For a
+diagnostic runtime ablation that cannot evaluate neutrals, the setup-only JVM
+property `-Dcadenza.bench.concreteOnly=true` skips symbolic oracle calls and is
+rejected unless `mode=concrete`. Apply it identically to every runtime in that
+comparison. It does not change timed code; default full validation remains
+mandatory for neutral, mixed and history measurements.
+
+[Neutral-path experiments](results/2026-09-22/neutral-tracing.md) compare symbolic
+speedups against ordinary evaluator overhead and preserve the rejected candidates.
+
 [Direct argument-array filling](results/2026-09-22/argument-array.md) reduces
 guest-interpreter allocation, with matched compiled and fresh-context controls.
 

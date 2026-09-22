@@ -1,0 +1,14 @@
+--- a/src/cadenza/data/NeutralException.kt
++++ b/src/cadenza/data/NeutralException.kt
+@@ -1,9 +1,9 @@
+ package cadenza.data
+ 
+ import cadenza.semantics.Type
+-import com.oracle.truffle.api.nodes.SlowPathException
++import com.oracle.truffle.api.nodes.ControlFlowException
+ 
+-class NeutralException(val type: Type, val term: Neutral) : SlowPathException() {
++class NeutralException(val type: Type, val term: Neutral) : ControlFlowException() {
+   fun get() = NeutralValue(type, term)
+ 
+   fun apply(rands: Array<out Any?>): Nothing = neutral(

@@ -1,0 +1,261 @@
+--- a/src/cadenza/jit/code.kt
++++ b/src/cadenza/jit/code.kt
+@@ -22,6 +22,7 @@
+ import com.oracle.truffle.api.interop.UnsupportedMessageException
+ import com.oracle.truffle.api.library.ExportLibrary
+ import com.oracle.truffle.api.nodes.*
++import com.oracle.truffle.api.profiles.BranchProfile
+ import com.oracle.truffle.api.profiles.ConditionProfile
+ import com.oracle.truffle.api.source.SourceSection
+ 
+@@ -38,11 +39,35 @@
+ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+   constructor(that: Code) : this(that.loc)
+ 
++  @CompilerDirectives.CompilationFinal
++  private var neutralProfile = BranchProfile.create()
++  @CompilerDirectives.CompilationFinal
++  private var neutralProducerProfile = BranchProfile.create()
++
++  protected fun enterNeutralPath() { neutralProfile.enter() }
++  protected fun enterNeutralProducerPath() { neutralProducerProfile.enter() }
++
++  protected fun <T> throwIfNeutralResult(value: T): T {
++    if (value is NeutralValue) {
++      enterNeutralProducerPath()
++      value.raise()
++    }
++    return value
++  }
++
++  override fun copy(): Node = (super.copy() as Code).also { copy ->
++    copy.neutralProfile = BranchProfile.create()
++    copy.neutralProducerProfile = BranchProfile.create()
++  }
++
+   @Throws(NeutralException::class)
+   abstract fun execute(frame: VirtualFrame): Any?
+ 
+   open fun executeAny(frame: VirtualFrame): Any? =
+-    try { execute(frame) } catch (e: NeutralException) { e.get() }
++    try { execute(frame) } catch (e: NeutralException) {
++      enterNeutralPath()
++      e.get()
++    }
+ 
+   @Throws(UnexpectedResultException::class, NeutralException::class)
+   open fun executeClosure(frame: VirtualFrame): Closure = DataTypesGen.expectClosure(execute(frame))
+@@ -96,9 +121,11 @@
+       } catch (e: UnexpectedResultException) {
+         panic("closure expected, got ${e.result}", e)
+       } catch (e: NeutralException) {
++        enterNeutralPath()
++        enterNeutralProducerPath()
+         e.apply(executeRands(frame))
+       }
+-      return throwIfNeutralValue(executeFn(frame, fn))
++      return throwIfNeutralResult(executeFn(frame, fn))
+     }
+ 
+     override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.CallTag::class.java || super.hasTag(tag)
+@@ -109,7 +136,7 @@
+   @NodeInfo(shortName = "Arg")
+   class Arg(private val index: Int, loc: Loc) : Code(loc) {
+     @Throws(NeutralException::class)
+-    override fun execute(frame: VirtualFrame): Any? = throwIfNeutralValue(frame.arguments[index])
++    override fun execute(frame: VirtualFrame): Any? = throwIfNeutralResult(frame.arguments[index])
+     override fun executeAny(frame: VirtualFrame): Any? = frame.arguments[index]
+     override fun isAdoptable() = false
+   }
+@@ -146,6 +173,8 @@
+       } catch (e: UnexpectedResultException) {
+         panic("non-boolean branch", e)
+       } catch (e: NeutralException) {
++        enterNeutralPath()
++        enterNeutralProducerPath()
+         neutral(type, Neutral.NIf(e.term, normalizeBranch(frame, thenNode), normalizeBranch(frame, elseNode)))
+       }
+ 
+@@ -210,7 +239,7 @@
+     }
+ 
+     @Throws(NeutralException::class)
+-    override fun execute(frame: VirtualFrame): Any? = throwIfNeutralValue(read(frame))
++    override fun execute(frame: VirtualFrame): Any? = throwIfNeutralResult(read(frame))
+     override fun executeAny(frame: VirtualFrame): Any? = read(frame)
+   }
+ 
+@@ -237,6 +266,14 @@
+     @field:Children internal var args: Array<Code>,
+     loc: Loc? = null
+   ) : Code(loc) {
++    @CompilerDirectives.CompilationFinal(dimensions = 1)
++    private var argumentNeutralProfiles = Array(args.size) { BranchProfile.create() }
++
++    override fun copy(): Node = (super.copy() as CallBuiltin).also { copy ->
++      // Arrays are shallow-copied; each split must learn its own argument history.
++      copy.argumentNeutralProfiles = Array(args.size) { BranchProfile.create() }
++    }
++
+     @ExplodeLoop
+     private fun executeArgs(frame: VirtualFrame): Pair<Array<Any?>,Boolean> {
+       var neutral = false
+@@ -245,6 +282,7 @@
+         vals[ix] = try {
+           x.execute(frame)
+         } catch (n: NeutralException) {
++          argumentNeutralProfiles[ix].enter()
+           neutral = true
+           n.get()
+         }
+@@ -255,6 +293,7 @@
+     override fun executeAny(frame: VirtualFrame): Any? {
+       val (vals,neutral) = executeArgs(frame)
+       if (neutral) {
++        enterNeutralProducerPath()
+         return NeutralValue(type, Neutral.NCallBuiltin(builtin, vals))
+       } else {
+         return builtin.run(frame, vals)
+@@ -265,9 +304,10 @@
+     override fun execute(frame: VirtualFrame): Any? {
+       val (vals,neutral) = executeArgs(frame)
+       if (neutral) {
++        enterNeutralProducerPath()
+         neutral(type, Neutral.NCallBuiltin(builtin, vals))
+       } else {
+-        return throwIfNeutralValue(builtin.run(frame, vals))
++        return throwIfNeutralResult(builtin.run(frame, vals))
+       }
+     }
+ 
+@@ -275,6 +315,7 @@
+     override fun executeInteger(frame: VirtualFrame): Int {
+       val (vals,neutral) = executeArgs(frame)
+       if (neutral) {
++        enterNeutralProducerPath()
+         neutral(type, Neutral.NCallBuiltin(builtin, vals))
+       } else {
+         return builtin.runInteger(frame, vals)
+@@ -285,6 +326,7 @@
+     override fun executeUnit(frame: VirtualFrame) {
+       val (vals,neutral) = executeArgs(frame)
+       if (neutral) {
++        enterNeutralProducerPath()
+         neutral(type, Neutral.NCallBuiltin(builtin, vals))
+       } else {
+         return builtin.runUnit(frame, vals)
+@@ -295,6 +337,7 @@
+     override fun executeBoolean(frame: VirtualFrame): Boolean {
+       val (vals,neutral) = executeArgs(frame)
+       if (neutral) {
++        enterNeutralProducerPath()
+         neutral(type, Neutral.NCallBuiltin(builtin, vals))
+       } else {
+         return builtin.runBoolean(frame, vals)
+--- a/src/cadenza/jit/builtin.kt
++++ b/src/cadenza/jit/builtin.kt
+@@ -13,21 +13,37 @@
+ import com.oracle.truffle.api.dsl.*
+ import com.oracle.truffle.api.frame.VirtualFrame
+ import com.oracle.truffle.api.nodes.*
++import com.oracle.truffle.api.profiles.BranchProfile
+ import java.io.Serializable
+ 
+ @TypeSystemReference(DataTypes::class)
+ @ReportPolymorphism
+ abstract class Builtin(@Suppress("unused") open val type: Type, val arity: Int) : Node(), Serializable {
++  @CompilerDirectives.CompilationFinal
++  private var neutralResultProfile = BranchProfile.create()
++
++  protected fun <T> throwIfNeutralResult(value: T): T {
++    if (value is NeutralValue) {
++      neutralResultProfile.enter()
++      value.raise()
++    }
++    return value
++  }
++
++  override fun copy(): Node = (super.copy() as Builtin).also { copy ->
++    copy.neutralResultProfile = BranchProfile.create()
++  }
++
+   @Throws(NeutralException::class)
+   abstract fun run(frame: VirtualFrame, args: Array<Any?>): Any?
+   @Throws(NeutralException::class)
+-  open fun runUnit(frame: VirtualFrame, args: Array<Any?>) { throwIfNeutralValue(run(frame, args)) }
+-  @Throws(NeutralException::class)
+-  open fun runClosure(frame: VirtualFrame, args: Array<Any?>): Closure = DataTypesGen.expectClosure(throwIfNeutralValue(run(frame, args)))
+-  @Throws(NeutralException::class)
+-  open fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean = DataTypesGen.expectBoolean(throwIfNeutralValue(run(frame, args)))
+-  @Throws(NeutralException::class)
+-  open fun runInteger(frame: VirtualFrame, args: Array<Any?>): Int = DataTypesGen.expectInteger(throwIfNeutralValue(run(frame, args)))
++  open fun runUnit(frame: VirtualFrame, args: Array<Any?>) { throwIfNeutralResult(run(frame, args)) }
++  @Throws(NeutralException::class)
++  open fun runClosure(frame: VirtualFrame, args: Array<Any?>): Closure = DataTypesGen.expectClosure(throwIfNeutralResult(run(frame, args)))
++  @Throws(NeutralException::class)
++  open fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean = DataTypesGen.expectBoolean(throwIfNeutralResult(run(frame, args)))
++  @Throws(NeutralException::class)
++  open fun runInteger(frame: VirtualFrame, args: Array<Any?>): Int = DataTypesGen.expectInteger(throwIfNeutralResult(run(frame, args)))
+ }
+ 
+ 
+@@ -35,16 +51,16 @@
+   @Throws(NeutralException::class)
+   abstract fun execute(left: Any?, right: Any?): Any?
+   @Throws(NeutralException::class)
+-  open fun executeBoolean(left: Any?, right: Any?): Boolean = DataTypesGen.expectBoolean(throwIfNeutralValue(execute(left, right)))
+-  @Throws(NeutralException::class)
+-  open fun executeClosure(left: Any?, right: Any?): Closure = DataTypesGen.expectClosure(throwIfNeutralValue(execute(left, right)))
+-  @Throws(NeutralException::class)
+-  open fun executeInteger(left: Any?, right: Any?): Int = DataTypesGen.expectInteger(throwIfNeutralValue(execute(left, right)))
++  open fun executeBoolean(left: Any?, right: Any?): Boolean = DataTypesGen.expectBoolean(throwIfNeutralResult(execute(left, right)))
++  @Throws(NeutralException::class)
++  open fun executeClosure(left: Any?, right: Any?): Closure = DataTypesGen.expectClosure(throwIfNeutralResult(execute(left, right)))
++  @Throws(NeutralException::class)
++  open fun executeInteger(left: Any?, right: Any?): Int = DataTypesGen.expectInteger(throwIfNeutralResult(execute(left, right)))
+ 
+   @Throws(NeutralException::class)
+   override fun run(frame: VirtualFrame, args: Array<Any?>): Any? { return execute(args[0], args[1]) }
+   @Throws(NeutralException::class)
+-  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { throwIfNeutralValue(execute(args[0], args[1])) }
++  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { throwIfNeutralResult(execute(args[0], args[1])) }
+   @Throws(NeutralException::class)
+   override fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean { return executeBoolean(args[0], args[1]) }
+   @Throws(NeutralException::class)
+@@ -57,16 +73,16 @@
+   @Throws(NeutralException::class)
+   abstract fun execute(x: Any?): Any?
+   @Throws(NeutralException::class)
+-  open fun executeBoolean(x: Any?): Boolean = DataTypesGen.expectBoolean(throwIfNeutralValue(execute(x)))
+-  @Throws(NeutralException::class)
+-  open fun executeClosure(x: Any?): Closure = DataTypesGen.expectClosure(throwIfNeutralValue(execute(x)))
+-  @Throws(NeutralException::class)
+-  open fun executeInteger(x: Any?): Int = DataTypesGen.expectInteger(throwIfNeutralValue(execute(x)))
++  open fun executeBoolean(x: Any?): Boolean = DataTypesGen.expectBoolean(throwIfNeutralResult(execute(x)))
++  @Throws(NeutralException::class)
++  open fun executeClosure(x: Any?): Closure = DataTypesGen.expectClosure(throwIfNeutralResult(execute(x)))
++  @Throws(NeutralException::class)
++  open fun executeInteger(x: Any?): Int = DataTypesGen.expectInteger(throwIfNeutralResult(execute(x)))
+ 
+   @Throws(NeutralException::class)
+   override fun run(frame: VirtualFrame, args: Array<Any?>): Any? { return execute(args[0]) }
+   @Throws(NeutralException::class)
+-  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { throwIfNeutralValue(execute(args[0])) }
++  override fun runUnit(frame: VirtualFrame, args: Array<Any?>) { throwIfNeutralResult(execute(args[0])) }
+   @Throws(NeutralException::class)
+   override fun runBoolean(frame: VirtualFrame, args: Array<Any?>): Boolean { return executeBoolean(args[0]) }
+   @Throws(NeutralException::class)
+--- a/src/cadenza/data/NeutralException.kt
++++ b/src/cadenza/data/NeutralException.kt
+@@ -1,9 +1,9 @@
+ package cadenza.data
+ 
+ import cadenza.semantics.Type
+-import com.oracle.truffle.api.nodes.SlowPathException
++import com.oracle.truffle.api.nodes.ControlFlowException
+ 
+-class NeutralException(val type: Type, val term: Neutral) : SlowPathException() {
++class NeutralException(val type: Type, val term: Neutral) : ControlFlowException() {
+   fun get() = NeutralValue(type, term)
+ 
+   fun apply(rands: Array<out Any?>): Nothing = neutral(

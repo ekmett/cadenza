@@ -1,0 +1,20 @@
+[[[Graal compilation failure]]]
+Thread[#4,TruffleCompilerThread-42,5,main]: Compilation of ClosureRootNode@55d98bbb failed:
+jdk.vm.ci.code.BailoutException: Code installation failed: code is too large
+	at LibGraalClassLoader//jdk.vm.ci.hotspot.HotSpotCodeCacheProvider.installCode(HotSpotCodeCacheProvider.java:149)
+	at LibGraalClassLoader//jdk.graal.compiler.core.target.Backend.createInstalledCode(Backend.java:182)
+	at LibGraalClassLoader//jdk.graal.compiler.hotspot.aarch64.AArch64HotSpotBackend.createInstalledCode(AArch64HotSpotBackend.java:176)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl.compilePEGraph(TruffleCompilerImpl.java:682)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl.compileAST(TruffleCompilerImpl.java:521)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl$TruffleCompilationWrapper.performCompilation(TruffleCompilerImpl.java:814)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl$TruffleCompilationWrapper.performCompilation(TruffleCompilerImpl.java:728)
+	at LibGraalClassLoader//jdk.graal.compiler.core.CompilationWrapper.run(CompilationWrapper.java:236)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl.doCompile(TruffleCompilerImpl.java:246)
+	at LibGraalClassLoader//jdk.graal.compiler.truffle.TruffleCompilerImpl.doCompile(TruffleCompilerImpl.java:213)
+	at LibGraalClassLoader//jdk.graal.compiler.libgraal.truffle.LibGraalTruffleEntryPoints.doCompile(LibGraalTruffleEntryPoints.java:207)
+Options: {CompilationExpirationPeriod=100.0, DoNotMoveAllocationsWithOOMEHandlers=false, compiler.DiagnoseFailure=true}
+If in an environment where setting system properties is possible, the following
+properties are available to change compilation failure reporting:
+- To disable compilation failure notifications, set CompilationFailureAction to Silent (e.g., -Djdk.graal.CompilationFailureAction=Silent).
+- To print a message for a compilation failure without retrying the compilation, set CompilationFailureAction to Print (e.g., -Djdk.graal.CompilationFailureAction=Print).
+Retrying compilation of ClosureRootNode@55d98bbb

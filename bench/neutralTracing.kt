@@ -1,0 +1,248 @@
+package cadenza.bench
+
+import cadenza.Language
+import cadenza.data.BigInt
+import cadenza.data.Closure
+import cadenza.data.Neutral
+import cadenza.data.NeutralValue
+import cadenza.jit.*
+import cadenza.semantics.Type
+import com.oracle.truffle.api.CallTarget
+import com.oracle.truffle.api.frame.VirtualFrame
+import com.oracle.truffle.api.nodes.Node.Child
+import com.oracle.truffle.api.source.Source
+import org.openjdk.jmh.annotations.*
+import java.math.BigInteger
+import java.util.Collections
+import java.util.IdentityHashMap
+
+private class NeutralTracingApplyRoot(language: Language, private val function: Closure, arity: Int) :
+  CadenzaRootNode(language, FrameLayout().build()) {
+  @Child private var dispatch = DispatchNodeGen.create(arity, false)
+  override fun execute(frame: VirtualFrame): Any? = dispatch.executeDispatch(frame, function, frame.arguments)
+}
+
+/** Same source and call site in every mode; only input representation/history changes. */
+open class NeutralTracing : GuestBenchmark() {
+  @Param("arithmetic", "conditional", "higherOrder") @JvmField var workload = "arithmetic"
+  @Param("concrete", "neutral", "mixed", "neutralThenConcrete", "compiledThenNeutralThenConcrete")
+  @JvmField var mode = "concrete"
+  private lateinit var concrete: Array<Any?>
+  private lateinit var symbolic: Array<NeutralValue>
+  private var invocation = 0
+
+  override val text: String get() = when (workload) {
+    "arithmetic" -> """
+      \(x : Nat) ->
+        let a : Nat = plus (mult x 3) 17 in
+        let b : Nat = minus (mult a 5) x in
+        let c : Nat = plus (mod b 97) (div (plus b 7) 3) in
+        minus (mult c 11) (mod x 13)
+    """.trimIndent()
+    "conditional" -> """
+      \(x : Nat) ->
+        let sum : Nat -> Nat -> Nat = \(n : Nat) (acc : Nat) ->
+          if le n 0 then acc else sum (minus n 1) (plus acc n)
+        in plus 7 (if le x 1007 then plus 3 (sum 8 x) else minus (sum 11 x) 5)
+    """.trimIndent()
+    "higherOrder" -> "\\(f : Nat -> Nat -> Nat) -> plus (f 3 5) ((f 7) 11)"
+    else -> error("Unknown neutral workload $workload")
+  }
+
+  private fun parsedTarget(program: String, name: String, arity: Int): CallTarget {
+    val language = Language.currentLanguage()
+    val function = language.parse(Source.newBuilder("cadenza", program, name).cached(false).build()).call() as Closure
+    return NeutralTracingApplyRoot(language, function, arity).callTarget
+  }
+
+  private data class Substitution(val x: BigInteger, val scale: BigInteger, val bias: BigInteger)
+  private data class HostFunction(val scale: BigInteger, val bias: BigInteger) {
+    fun apply(arguments: List<BigInteger>): BigInteger {
+      check(arguments.size == 2) { "Residual function lost or duplicated an argument: $arguments" }
+      return arguments[0] * scale + bias - arguments[1]
+    }
+  }
+
+  private fun small(value: Int) = BigInteger.valueOf(value.toLong())
+  private fun input(index: Int) = Substitution(small(1000 + index), small(3 + index), small(1000 + index))
+
+  private fun expected(input: Substitution): BigInteger = when (workload) {
+    "arithmetic" -> {
+      val a = input.x * small(3) + small(17)
+      val b = a * small(5) - input.x
+      val c = b.remainder(small(97)) + (b + small(7)).divide(small(3))
+      c * small(11) - input.x.remainder(small(13))
+    }
+    // sum(1..8)=36 and sum(1..11)=66; guest recursion is not reused as an oracle.
+    "conditional" -> input.x + small(if (input.x <= small(1007)) 46 else 68)
+    "higherOrder" -> small(10) * input.scale + small(2) * input.bias - small(16)
+    else -> error(workload)
+  }
+
+  private fun operation(builtin: Builtin): String = when (builtin) {
+    is Plus -> "plus"
+    is Minus -> "minus"
+    is Mult -> "mult"
+    is Div -> "div"
+    is Mod -> "mod"
+    is Le -> "le"
+    else -> error("Unexpected residual operation ${builtin.javaClass.name}")
+  }
+
+  /** Interpret residual data with host arithmetic; never run a guest builtin or closure. */
+  private fun substitute(value: Any?, marker: Neutral, input: Substitution): Any = when (value) {
+    is Int -> small(value)
+    is BigInt -> value.value
+    is Boolean -> value
+    is NeutralValue -> term(value.term, marker, input).also {
+      check(value.type == if (it is Boolean) Type.Bool else Type.Nat)
+    }
+    else -> error("Unexpected residual value ${value?.javaClass?.name}")
+  }
+
+  private fun term(value: Neutral, marker: Neutral, input: Substitution): Any {
+    if (value === marker) return if (workload == "higherOrder") HostFunction(input.scale, input.bias) else input.x
+    return when (value) {
+      is Neutral.NIf -> substitute(if (term(value.body, marker, input) as Boolean)
+        value.thenValue else value.elseValue, marker, input)
+      is Neutral.NApp -> {
+        val function = term(value.rator, marker, input) as HostFunction
+        function.apply(value.rands.map { substitute(it, marker, input) as BigInteger })
+      }
+      is Neutral.NCallBuiltin -> {
+        check(value.args.size == 2)
+        val left = substitute(value.args[0], marker, input) as BigInteger
+        val right = substitute(value.args[1], marker, input) as BigInteger
+        when (operation(value.builtin)) {
+          "plus" -> left + right
+          "minus" -> left - right
+          "mult" -> left * right
+          "div" -> left.divide(right)
+          "mod" -> left.remainder(right)
+          "le" -> left <= right
+          else -> error("Unreachable operation")
+        }
+      }
+    }
+  }
+
+  private fun checkShape(result: NeutralValue, marker: Neutral) {
+    check(result.type == Type.Nat)
+    val seen: MutableSet<Neutral> = Collections.newSetFromMap(IdentityHashMap())
+    val observed = mutableSetOf<String>()
+    fun visit(value: Any?) {
+      val node = when (value) { is NeutralValue -> value.term; is Neutral -> value; else -> return }
+      if (!seen.add(node)) return
+      if (node === marker) { observed += "input"; return }
+      when (node) {
+        is Neutral.NCallBuiltin -> { observed += operation(node.builtin); node.args.forEach { visit(it) } }
+        is Neutral.NIf -> {
+          observed += "if"
+          visit(node.body)
+          visit(node.thenValue)
+          visit(node.elseValue)
+        }
+        is Neutral.NApp -> {
+          observed += "app"
+          check(node.rands.size == 2)
+          visit(node.rator)
+          node.rands.forEach { visit(it) }
+        }
+      }
+    }
+    visit(result)
+    val required = when (workload) {
+      "arithmetic" -> setOf("input", "plus", "minus", "mult", "mod", "div")
+      "conditional" -> setOf("input", "plus", "minus", "le", "if")
+      else -> setOf("input", "app", "plus")
+    }
+    check(observed == required) { "$workload residual shape expected=$required observed=$observed" }
+  }
+
+  private fun validate(result: Any?, index: Int, isSymbolic: Boolean) {
+    if (!isSymbolic) {
+      check(result !is NeutralValue) { "$workload failed to recover concrete evaluation" }
+      check(substitute(result, symbolic[index].term, input(index)) == expected(input(index)))
+      return
+    }
+    check(result is NeutralValue) { "$workload returned a concrete result for a symbolic input" }
+    checkShape(result, symbolic[index].term)
+    val alternatives = listOf(input(index), Substitution(small(0), small(7), small(11)),
+      Substitution(small(1008), small(2), small(23)),
+      Substitution(BigInteger.ONE.shiftLeft(80), BigInteger.ONE.shiftLeft(65), small(101)))
+    for (replacement in alternatives) {
+      check(substitute(result, symbolic[index].term, replacement) == expected(replacement)) {
+        "$workload residual mismatch at input=$index substitution=$replacement"
+      }
+    }
+  }
+
+  private fun establishCompiledConcreteHistory() {
+    repeat(64) { iteration ->
+      val index = iteration and 15
+      validate(target.call(concrete[index]), index, false)
+    }
+    // This mode requires the optimizing runtime and an actual installed last tier.
+    // A failed installation is a failed setup, never an unmeasured/skipped history.
+    val targetType = Class.forName("com.oracle.truffle.runtime.OptimizedCallTarget")
+    check(targetType.isInstance(target)) { "Compiled neutral history requires the optimizing Graal runtime" }
+    val waitForCompilation = targetType.getMethod("waitForCompilation")
+    // The benchmark keeps normal background compilation enabled. Finish any
+    // earlier task, then await this explicit last-tier request before checking it.
+    waitForCompilation.invoke(target)
+    targetType.getMethod("compile", Boolean::class.javaPrimitiveType).invoke(target, true)
+    waitForCompilation.invoke(target)
+    check(targetType.getMethod("isValidLastTier").invoke(target) == true) {
+      "Concrete last-tier code must be installed before the neutral burst"
+    }
+    repeat(32) { iteration ->
+      val index = iteration and 15
+      validate(target.call(symbolic[index]), index, true)
+    }
+  }
+
+  override fun prepareBaseline() {
+    check(mode in setOf("concrete", "neutral", "mixed", "neutralThenConcrete", "compiledThenNeutralThenConcrete"))
+    val concreteOnly = System.getProperty("cadenza.bench.concreteOnly", "false").toBooleanStrict()
+    check(!concreteOnly || mode == "concrete") {
+      "cadenza.bench.concreteOnly is a setup diagnostic restricted to mode=concrete"
+    }
+    val argumentType = if (workload == "higherOrder") Type.Arr(Type.Nat, Type.Arr(Type.Nat, Type.Nat)) else Type.Nat
+    // Sealed Neutral has no variable node; identity-recognized empty calls are leaf markers only.
+    symbolic = Array(16) { NeutralValue(argumentType, Neutral.NCallBuiltin(PlusNodeGen.create(), emptyArray())) }
+    concrete = if (workload == "higherOrder") {
+      val factory = parsedTarget("\\(scale : Nat) (bias : Nat) -> \\(a : Nat) -> \\(b : Nat) -> " +
+        "plus (mult a scale) (minus bias b)", "neutral-function-inputs.za", 2)
+      Array<Any?>(16) { factory.call(3 + it, 1000 + it) }
+    } else Array<Any?>(16) { 1000 + it }
+
+    // Validate every input representation on a fresh AST. The concrete measurement
+    // target must not see an exotic value merely because its oracle was checked.
+    val oracleTarget = parsedTarget(text, "neutral-oracle.za", 1)
+    repeat(16) { index ->
+      validate(oracleTarget.call(concrete[index]), index, false)
+      if (!concreteOnly) {
+        validate(oracleTarget.call(symbolic[index]), index, true)
+        validate(oracleTarget.call(concrete[index]), index, false)
+      }
+    }
+    if (mode == "neutralThenConcrete") validate(target.call(symbolic[0]), 0, true)
+    if (mode == "compiledThenNeutralThenConcrete") establishCompiledConcreteHistory()
+    // Establish only the requested representation history on the actual measured body.
+    repeat(16) { index ->
+      val symbolicCall = mode == "neutral" || mode == "mixed" && index == 0
+      validate(target.call(if (symbolicCall) symbolic[index] else concrete[index]), index, symbolicCall)
+    }
+    invocation = 0
+    println("NEUTRAL_SETUP_CHECK workload=$workload mode=$mode inputs=16 concreteOnly=$concreteOnly passed")
+  }
+
+  @Benchmark fun evaluate(): Any? {
+    val sequence = invocation++
+    val index = sequence and 15
+    val isSymbolic = mode == "neutral" || mode == "mixed" && index == 0
+    // Mixed calls use one symbolic value per 16 calls, rotating its identity between blocks.
+    val symbolicIndex = if (mode == "mixed") (sequence ushr 4) and 15 else index
+    return target.call(if (isSymbolic) symbolic[symbolicIndex] else concrete[index])
+  }
+}

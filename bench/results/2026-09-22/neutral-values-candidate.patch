@@ -1,0 +1,120 @@
+diff --git a/src/cadenza/jit/code.kt b/src/cadenza/jit/code.kt
+index 5ac3c7c..a63a4fe 100644
+--- a/src/cadenza/jit/code.kt
++++ b/src/cadenza/jit/code.kt
+@@ -84,21 +84,26 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+       // TODO: think about how foreign calltargets should work with nbe
+       return try {
+         dispatch.executeDispatch(frame, fn, executeRands(frame))
++      } catch (neutral: NeutralException) {
++        // Foreign/legacy roots can still use the typed exception convention.
++        neutral.get()
+       } catch (error: RuntimeError) {
+         throw error.at(sourceSection)
+       }
+     }
+ 
+     @Throws(NeutralException::class)
+-    override fun execute(frame: VirtualFrame): Any? {
++    override fun execute(frame: VirtualFrame): Any? = throwIfNeutralValue(executeAny(frame))
++
++    override fun executeAny(frame: VirtualFrame): Any? {
++      val value = rator.executeAny(frame)
++      if (value is NeutralValue) return value.apply(executeRands(frame))
+       val fn = try {
+-        rator.executeClosure(frame)
++        DataTypesGen.expectClosure(value)
+       } catch (e: UnexpectedResultException) {
+         panic("closure expected, got ${e.result}", e)
+-      } catch (e: NeutralException) {
+-        e.apply(executeRands(frame))
+       }
+-      return throwIfNeutralValue(executeFn(frame, fn))
++      return executeFn(frame, fn)
+     }
+ 
+     override fun hasTag(tag: Class<out Tag>?) = tag == StandardTags.CallTag::class.java || super.hasTag(tag)
+@@ -154,6 +159,20 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+       if (branch(frame)) thenNode.execute(frame)
+       else elseNode.execute(frame)
+ 
++    override fun executeAny(frame: VirtualFrame): Any? {
++      val condition = condNode.executeAny(frame)
++      if (condition is NeutralValue) {
++        return NeutralValue(type, Neutral.NIf(condition.term,
++          normalizeBranch(frame, thenNode), normalizeBranch(frame, elseNode)))
++      }
++      val selected = try {
++        conditionProfile.profile(DataTypesGen.expectBoolean(condition))
++      } catch (e: UnexpectedResultException) {
++        panic("non-boolean branch", e)
++      }
++      return if (selected) thenNode.executeAny(frame) else elseNode.executeAny(frame)
++    }
++
+     @Throws(UnexpectedResultException::class, NeutralException::class)
+     override fun executeInteger(frame: VirtualFrame): Int =
+       if (branch(frame)) thenNode.executeInteger(frame)
+@@ -228,7 +247,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+   }
+ 
+   // a fully saturated call to a builtin
+-// invariant: builtins themselves do not return neutral values, other than through evaluating their argument
++  // Builtins may return a neutral from a guest call even when their arguments are concrete.
+   @Suppress("unused")
+   class CallBuiltin(
+     // type of whole application
+@@ -242,12 +261,9 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+       var neutral = false
+       val vals: Array<Any?> = arrayOfNulls(args.size)
+       args.forEachIndexed { ix, x ->
+-        vals[ix] = try {
+-          x.execute(frame)
+-        } catch (n: NeutralException) {
+-          neutral = true
+-          n.get()
+-        }
++        val value = x.executeAny(frame)
++        vals[ix] = value
++        if (value is NeutralValue) neutral = true
+       }
+       return Pair(vals, neutral)
+     }
+@@ -257,7 +273,12 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+       if (neutral) {
+         return NeutralValue(type, Neutral.NCallBuiltin(builtin, vals))
+       } else {
+-        return builtin.run(frame, vals)
++        return try {
++          builtin.run(frame, vals)
++        } catch (legacy: NeutralException) {
++          // Builtins may call a foreign/legacy root using the typed convention.
++          legacy.get()
++        }
+       }
+     }
+ 
+@@ -310,10 +331,12 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+     loc: Loc?,
+     val recursive: Boolean = true
+   ): Code(loc) {
+-    override fun execute(frame: VirtualFrame): Any? {
++    override fun execute(frame: VirtualFrame): Any? = throwIfNeutralValue(executeAny(frame))
++
++    override fun executeAny(frame: VirtualFrame): Any? {
+       if (!recursive) {
+         FrameAccess.write(frame, slot, value.executeAny(frame))
+-        return body.execute(frame)
++        return body.executeAny(frame)
+       }
+       val indir = Indirection()
+       // Capturing a recursive binding copies its cell; ordinary reads force the cell.
+@@ -322,7 +345,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
+       FrameAccess.write(frame, slot, x)
+       indir.value = x
+       indir.set = true
+-      return body.execute(frame)
++      return body.executeAny(frame)
+     }
+   }
+ 

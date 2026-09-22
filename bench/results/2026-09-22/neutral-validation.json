@@ -1,0 +1,98 @@
+{
+  "final": {
+    "test": {
+      "tests": 382,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "semanticSoak": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "values": {
+    "test": {
+      "tests": 383,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "semanticSoak": {
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "smoke": {
+    "forks": 1,
+    "warmup": "1x100ms",
+    "measurement": "1x100ms",
+    "performanceEvidence": false,
+    "cases": [
+      {
+        "workload": "arithmetic",
+        "mode": "concrete"
+      },
+      {
+        "workload": "conditional",
+        "mode": "concrete"
+      },
+      {
+        "workload": "higherOrder",
+        "mode": "concrete"
+      },
+      {
+        "workload": "arithmetic",
+        "mode": "neutral"
+      },
+      {
+        "workload": "conditional",
+        "mode": "neutral"
+      },
+      {
+        "workload": "higherOrder",
+        "mode": "neutral"
+      },
+      {
+        "workload": "arithmetic",
+        "mode": "mixed"
+      },
+      {
+        "workload": "conditional",
+        "mode": "mixed"
+      },
+      {
+        "workload": "higherOrder",
+        "mode": "mixed"
+      },
+      {
+        "workload": "arithmetic",
+        "mode": "neutralThenConcrete"
+      },
+      {
+        "workload": "conditional",
+        "mode": "neutralThenConcrete"
+      },
+      {
+        "workload": "higherOrder",
+        "mode": "neutralThenConcrete"
+      },
+      {
+        "workload": "arithmetic",
+        "mode": "compiledThenNeutralThenConcrete"
+      },
+      {
+        "workload": "conditional",
+        "mode": "compiledThenNeutralThenConcrete"
+      },
+      {
+        "workload": "higherOrder",
+        "mode": "compiledThenNeutralThenConcrete"
+      }
+    ]
+  }
+}

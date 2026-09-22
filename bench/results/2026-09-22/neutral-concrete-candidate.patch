@@ -1,0 +1,184 @@
+--- a/src/cadenza/data/NeutralException.kt
++++ b/src/cadenza/data/NeutralException.kt
+@@ -19,4 +19,4 @@
+ 
+ fun NeutralValue.raise() : Nothing = throw NeutralException(type, term)
+ 
+-fun <T> throwIfNeutralValue(x: T): T = if (x !is NeutralValue) x else x.raise()
+\ No newline at end of file
++fun <T> throwIfNeutralValue(x: T): T = x
+\ No newline at end of file
+--- a/src/cadenza/jit/code.kt
++++ b/src/cadenza/jit/code.kt
+@@ -41,8 +41,7 @@
+   @Throws(NeutralException::class)
+   abstract fun execute(frame: VirtualFrame): Any?
+ 
+-  open fun executeAny(frame: VirtualFrame): Any? =
+-    try { execute(frame) } catch (e: NeutralException) { e.get() }
++  open fun executeAny(frame: VirtualFrame): Any? = execute(frame)
+ 
+   @Throws(UnexpectedResultException::class, NeutralException::class)
+   open fun executeClosure(frame: VirtualFrame): Closure = DataTypesGen.expectClosure(execute(frame))
+@@ -95,8 +94,6 @@
+         rator.executeClosure(frame)
+       } catch (e: UnexpectedResultException) {
+         panic("closure expected, got ${e.result}", e)
+-      } catch (e: NeutralException) {
+-        e.apply(executeRands(frame))
+       }
+       return throwIfNeutralValue(executeFn(frame, fn))
+     }
+@@ -122,31 +119,12 @@
+     loc: Loc? = null
+   ) : Code(loc) {
+     private val conditionProfile = ConditionProfile.createBinaryProfile()
+-    @Child private var neutralTailCallLoop: TailCallLoop? = null
+-
+-    // These branches are tail positions during ordinary execution, but each is a
+-    // separate computation while constructing NIf. Keep its tail calls contained.
+-    private fun normalizeBranch(frame: VirtualFrame, branch: Code): Any? =
+-      try {
+-        branch.executeAny(frame)
+-      } catch (call: TailCallException) {
+-        if (neutralTailCallLoop == null) {
+-          CompilerDirectives.transferToInterpreterAndInvalidate()
+-          atomic(Runnable {
+-            if (neutralTailCallLoop == null) neutralTailCallLoop = insert(TailCallLoop())
+-          })
+-        }
+-        neutralTailCallLoop!!.execute(call)
+-      }
+-
+     @Throws(NeutralException::class)
+     private fun branch(frame: VirtualFrame): Boolean =
+       try {
+         conditionProfile.profile(condNode.executeBoolean(frame))
+       } catch (e: UnexpectedResultException) {
+         panic("non-boolean branch", e)
+-      } catch (e: NeutralException) {
+-        neutral(type, Neutral.NIf(e.term, normalizeBranch(frame, thenNode), normalizeBranch(frame, elseNode)))
+       }
+ 
+     @Throws(NeutralException::class)
+@@ -227,79 +205,26 @@
+     override fun executeClosure(frame: VirtualFrame): Closure = body.executeClosure(frame)
+   }
+ 
+-  // a fully saturated call to a builtin
+-// invariant: builtins themselves do not return neutral values, other than through evaluating their argument
++  // A fully saturated call to a builtin, without neutral bookkeeping in this diagnostic.
+   @Suppress("unused")
+   class CallBuiltin(
+-    // type of whole application
+     val type: Type,
+     @field:Child private var builtin: Builtin,
+     @field:Children internal var args: Array<Code>,
+     loc: Loc? = null
+   ) : Code(loc) {
+     @ExplodeLoop
+-    private fun executeArgs(frame: VirtualFrame): Pair<Array<Any?>,Boolean> {
+-      var neutral = false
++    private fun executeArgs(frame: VirtualFrame): Array<Any?> {
+       val vals: Array<Any?> = arrayOfNulls(args.size)
+-      args.forEachIndexed { ix, x ->
+-        vals[ix] = try {
+-          x.execute(frame)
+-        } catch (n: NeutralException) {
+-          neutral = true
+-          n.get()
+-        }
+-      }
+-      return Pair(vals, neutral)
+-    }
+-
+-    override fun executeAny(frame: VirtualFrame): Any? {
+-      val (vals,neutral) = executeArgs(frame)
+-      if (neutral) {
+-        return NeutralValue(type, Neutral.NCallBuiltin(builtin, vals))
+-      } else {
+-        return builtin.run(frame, vals)
+-      }
+-    }
+-
+-    @Throws(NeutralException::class)
+-    override fun execute(frame: VirtualFrame): Any? {
+-      val (vals,neutral) = executeArgs(frame)
+-      if (neutral) {
+-        neutral(type, Neutral.NCallBuiltin(builtin, vals))
+-      } else {
+-        return throwIfNeutralValue(builtin.run(frame, vals))
+-      }
+-    }
+-
+-    @Throws(NeutralException::class)
+-    override fun executeInteger(frame: VirtualFrame): Int {
+-      val (vals,neutral) = executeArgs(frame)
+-      if (neutral) {
+-        neutral(type, Neutral.NCallBuiltin(builtin, vals))
+-      } else {
+-        return builtin.runInteger(frame, vals)
+-      }
+-    }
+-
+-    @Throws(NeutralException::class)
+-    override fun executeUnit(frame: VirtualFrame) {
+-      val (vals,neutral) = executeArgs(frame)
+-      if (neutral) {
+-        neutral(type, Neutral.NCallBuiltin(builtin, vals))
+-      } else {
+-        return builtin.runUnit(frame, vals)
+-      }
+-    }
+-
+-    @Throws(NeutralException::class)
+-    override fun executeBoolean(frame: VirtualFrame): Boolean {
+-      val (vals,neutral) = executeArgs(frame)
+-      if (neutral) {
+-        neutral(type, Neutral.NCallBuiltin(builtin, vals))
+-      } else {
+-        return builtin.runBoolean(frame, vals)
+-      }
+-    }
++      args.forEachIndexed { ix, x -> vals[ix] = x.execute(frame) }
++      return vals
++    }
++
++    override fun executeAny(frame: VirtualFrame): Any? = builtin.run(frame, executeArgs(frame))
++    override fun execute(frame: VirtualFrame): Any? = builtin.run(frame, executeArgs(frame))
++    override fun executeInteger(frame: VirtualFrame): Int = builtin.runInteger(frame, executeArgs(frame))
++    override fun executeUnit(frame: VirtualFrame) = builtin.runUnit(frame, executeArgs(frame))
++    override fun executeBoolean(frame: VirtualFrame): Boolean = builtin.runBoolean(frame, executeArgs(frame))
+   }
+ 
+   class LetRec(
+--- a/src/cadenza/jit/dispatch.kt
++++ b/src/cadenza/jit/dispatch.kt
+@@ -84,7 +84,6 @@
+     if (hasEnv) { args[1] = fn.env }
+     val y = callerNode.call(frame, args, false)
+     val zs = ys.copyOfRange(arity, argsSize)
+-    if (y is NeutralValue) return y.apply(zs)
+     return dispatch.executeDispatch(frame, y as Closure, zs)
+   }
+ 
+@@ -146,7 +145,6 @@
+         }
+         val result = caller.call(frame, function.callTarget, args, false)
+         offset += count
+-        if (result is NeutralValue) return result.apply(arguments.copyOfRange(offset, arguments.size))
+         function = result as Closure
+       }
+     }
+--- a/src/cadenza/jit/nodes.kt
++++ b/src/cadenza/jit/nodes.kt
+@@ -121,9 +121,6 @@
+ ) : CadenzaRootNode(language, FrameLayout().build()) {
+   override fun execute(frame: VirtualFrame): Any? {
+     val arguments = drop(1, frame.arguments)
+-    if (arguments.any { it is NeutralValue }) {
+-      return NeutralValue(builtin.type.after(builtin.arity), Neutral.NCallBuiltin(builtin, arguments))
+-    }
+     return builtin.run(frame, arguments)
+   }
+ 
