@@ -1,0 +1,72 @@
+diff --git a/src/cadenza/jit/frame_layout.kt b/src/cadenza/jit/frame_layout.kt
+index 190a27a..ca11887 100644
+--- a/src/cadenza/jit/frame_layout.kt
++++ b/src/cadenza/jit/frame_layout.kt
+@@ -1,6 +1,5 @@
+ package cadenza.jit
+ 
+-import com.oracle.truffle.api.CompilerDirectives
+ import com.oracle.truffle.api.frame.Frame
+ import com.oracle.truffle.api.frame.FrameDescriptor
+ import com.oracle.truffle.api.frame.FrameSlotKind
+@@ -10,11 +9,11 @@ class FrameLayout private constructor(
+   private val builder: FrameDescriptor.Builder,
+   private val locals: MutableMap<String, Int>
+ ) {
+-  constructor() : this(FrameDescriptor.newBuilder(), mutableMapOf()) {
+-    builder.addSlot(FrameSlotKind.Long, "<TCO Bloom Filter>", null)
+-    builder.addSlot(FrameSlotKind.Object, "<TCO Result>", null)
+-    builder.addSlot(FrameSlotKind.Object, "<TCO Function>", null)
+-    builder.addSlot(FrameSlotKind.Object, "<TCO Arguments>", null)
++  constructor() : this(FrameDescriptor.newBuilder().useSlotKinds(false), mutableMapOf()) {
++    builder.addSlot(FrameSlotKind.Illegal, "<TCO Bloom Filter>", null)
++    builder.addSlot(FrameSlotKind.Illegal, "<TCO Result>", null)
++    builder.addSlot(FrameSlotKind.Illegal, "<TCO Function>", null)
++    builder.addSlot(FrameSlotKind.Illegal, "<TCO Arguments>", null)
+   }
+ 
+   /** A lexical child sees existing bindings but cannot replace them in its parent. */
+@@ -39,35 +38,22 @@ class FrameLayout private constructor(
+   }
+ }
+ 
+-/** Primitive locals widen once when an exceptional value needs object storage. */
++/** Storage follows each frame's current value without widening shared descriptor metadata. */
+ object FrameAccess {
+   fun read(frame: Frame, slot: Int): Any? = frame.getValue(slot)
+ 
+   fun write(frame: Frame, slot: Int, value: Any?) {
+-    val descriptor = frame.frameDescriptor
+-    val kind = descriptor.getSlotKind(slot)
+-    when {
+-      value is Int && (kind == FrameSlotKind.Int || kind == FrameSlotKind.Illegal) -> {
+-        if (kind == FrameSlotKind.Illegal) {
+-          CompilerDirectives.transferToInterpreterAndInvalidate()
+-          descriptor.setSlotKind(slot, FrameSlotKind.Int)
+-        }
++    when (value) {
++      is Int -> {
++        // Primitive setters update the tag but leave the separate object storage intact.
++        if (frame.isObject(slot)) frame.setObject(slot, null)
+         frame.setInt(slot, value)
+       }
+-      value is Boolean && (kind == FrameSlotKind.Boolean || kind == FrameSlotKind.Illegal) -> {
+-        if (kind == FrameSlotKind.Illegal) {
+-          CompilerDirectives.transferToInterpreterAndInvalidate()
+-          descriptor.setSlotKind(slot, FrameSlotKind.Boolean)
+-        }
++      is Boolean -> {
++        if (frame.isObject(slot)) frame.setObject(slot, null)
+         frame.setBoolean(slot, value)
+       }
+-      else -> {
+-        if (kind != FrameSlotKind.Object) {
+-          CompilerDirectives.transferToInterpreterAndInvalidate()
+-          descriptor.setSlotKind(slot, FrameSlotKind.Object)
+-        }
+-        frame.setObject(slot, value)
+-      }
++      else -> frame.setObject(slot, value)
+     }
+   }
+ }

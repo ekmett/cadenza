@@ -69,16 +69,18 @@ class Closure (
   @ExportMessage
   @ExplodeLoop
   @Throws(ArityException::class, UnsupportedTypeException::class)
-  fun execute(arguments: Array<Any?>, @Cached(value = "createInteropDispatch()", uncached = "getUncachedInteropDispatch()", neverDefault = true) dispatch: InteropDispatch): Any? {
+  fun execute(arguments: Array<Any?>,
+              @Cached(value = "createArgumentImporter()", uncached = "getUncachedArgumentImporter()", neverDefault = true) importer: ImportArgumentsNode,
+              @Cached(value = "createInteropDispatch()", uncached = "getUncachedInteropDispatch()", neverDefault = true) dispatch: InteropDispatch): Any? {
     val maxArity = type.arity
     val len = arguments.size
     if (len > maxArity) throw ArityException.create(0, maxArity, len)
-    arguments.fold(type) { t, it -> (t as Arr).apply { argument.validate(it) }.result }
-    @Suppress("UNCHECKED_CAST")
-    return dispatch.execute(this, arguments)
+    return dispatch.execute(this, importer.execute(type, arguments))
   }
 
   companion object {
+    @JvmStatic fun createArgumentImporter(): ImportArgumentsNode = ImportArgumentsNodeGen.create()
+    @JvmStatic fun getUncachedArgumentImporter(): ImportArgumentsNode = ImportArgumentsNodeGen.getUncached()
     @JvmStatic fun createInteropDispatch(): InteropDispatch = InteropDispatchNodeGen.create()
     @JvmStatic fun getUncachedInteropDispatch(): InteropDispatch = InteropDispatchNodeGen.getUncached()
   }

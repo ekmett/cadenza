@@ -84,6 +84,14 @@ parser, type checker, closure calling convention, and tail-call trampoline.
 See [benchmark methodology](bench/README.md) for warm, cold, allocation, and
 neutral-path benchmarks, runtime-varying inputs, and GC profiling.
 
+## Tests
+
+`./gradlew test` runs regression tests and a deterministic sample of generated
+programs checked against independent semantics on both backends. Run
+`./gradlew semanticSoak` for 10,000 generated programs, or choose a reproducible
+seed range with `./gradlew semanticSoak -PfuzzCases=1000 -PfuzzSeedOffset=10000`.
+See [test coverage and reproduction](test/README.md).
+
 The runtime uses primitive-specialized indexed frame slots, immutable closure
 captures backed by Truffle StaticShape, bounded dispatch caches, and shared guest
 and polyglot calling conventions. Neutral terms deliberately use the exceptional

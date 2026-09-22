@@ -2,7 +2,9 @@ package cadenza.data
 
 import cadenza.jit.Builtin
 import cadenza.semantics.Type
+import cadenza.semantics.after
 import com.oracle.truffle.api.CompilerDirectives
+import com.oracle.truffle.api.dsl.Cached
 import com.oracle.truffle.api.interop.ArityException
 import com.oracle.truffle.api.interop.InteropLibrary
 import com.oracle.truffle.api.interop.TruffleObject
@@ -44,16 +46,19 @@ class NeutralValue(val type: Type, val term : Neutral) : TruffleObject {
 
   @ExportMessage
   @Throws(ArityException::class, UnsupportedMessageException::class, UnsupportedTypeException::class)
-  fun execute(vararg arguments: Any?): NeutralValue {
+  fun execute(arguments: Array<Any?>,
+              @Cached(value = "createArgumentImporter()", uncached = "getUncachedArgumentImporter()", neverDefault = true) importer: ImportArgumentsNode): NeutralValue {
     if (!isExecutable()) throw UnsupportedMessageException.create()
     if (arguments.size > type.arity) throw ArityException.create(0, type.arity, arguments.size)
-    var resultType = type
-    for (argument in arguments) {
-      val functionType = resultType as Type.Arr
-      functionType.argument.validate(argument)
-      resultType = functionType.result
-    }
-    return NeutralValue(resultType, term.apply(arguments))
+    val imported = importer.execute(type, arguments)
+    // Residual terms retain their arguments after this interop call has returned.
+    val snapshot = if (imported === arguments) arguments.copyOf() else imported
+    return NeutralValue(type.after(arguments.size), term.apply(snapshot))
+  }
+
+  companion object {
+    @JvmStatic fun createArgumentImporter(): ImportArgumentsNode = ImportArgumentsNodeGen.create()
+    @JvmStatic fun getUncachedArgumentImporter(): ImportArgumentsNode = ImportArgumentsNodeGen.getUncached()
   }
 
   // assumes this has been built legally. fails via unchecked null pointer exception

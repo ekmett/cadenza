@@ -1,0 +1,47 @@
+[
+  {
+    "mutation": "signed-remainder",
+    "file": "src/cadenza/jit/builtin.kt",
+    "old": "return BigInt(x.value.remainder(y.value))",
+    "new": "return BigInt(x.value.mod(y.value.abs()))",
+    "filter": "NumericPropertyTests.signedDivisionAndRemainderReconstructTheDividendAfterErrorsAndOverflow",
+    "rejectedByAssertion": true,
+    "failures": [
+      {
+        "test": "NumericPropertyTests.signedDivisionAndRemainderReconstructTheDividendAfterErrorsAndOverflow()",
+        "type": "org.opentest4j.AssertionFailedError",
+        "message": "org.opentest4j.AssertionFailedError: remainder: ast seed=18930584915958337 case=25 Operands(left=-4294967296, right=4294967295) ==> expected: <-1> but was: <4294967294>"
+      }
+    ]
+  },
+  {
+    "mutation": "negative-byte-boundary",
+    "file": "src/cadenza/data/BigInt.kt",
+    "old": "fun fitsInByte() = value.bitLength() < 8",
+    "new": "fun fitsInByte() = value.abs().bitLength() < 8",
+    "filter": "NumericPropertyTests.signedGuestResultsExposeExactIntegralInteropRanges",
+    "rejectedByAssertion": true,
+    "failures": [
+      {
+        "test": "NumericPropertyTests.signedGuestResultsExposeExactIntegralInteropRanges()",
+        "type": "org.opentest4j.AssertionFailedError",
+        "message": "org.opentest4j.AssertionFailedError: ast forceBig=true integer=-128 ==> expected: <true> but was: <false>"
+      }
+    ]
+  },
+  {
+    "mutation": "argument-evaluation-order",
+    "file": "src/cadenza/jit/code.kt",
+    "old": "private fun executeRands(frame: VirtualFrame): Array<Any?> = rands.map { it.executeAny(frame) }.toTypedArray()",
+    "new": "private fun executeRands(frame: VirtualFrame): Array<Any?> = rands.reversed().map { it.executeAny(frame) }.reversed().toTypedArray()",
+    "filter": "EvaluationOrderTests.applicationEvaluatesItsFunctionThenArgumentsBeforeEnteringTheBody",
+    "rejectedByAssertion": true,
+    "failures": [
+      {
+        "test": "EvaluationOrderTests.applicationEvaluatesItsFunctionThenArgumentsBeforeEnteringTheBody()",
+        "type": "org.opentest4j.AssertionFailedError",
+        "message": "org.opentest4j.AssertionFailedError: ast ==> expected: <10\n20\n22\n30\n> but was: <10\n22\n20\n30\n>"
+      }
+    ]
+  }
+]

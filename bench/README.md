@@ -62,3 +62,10 @@ capture regression fix and fixed-point allocation reductions.
 [AST calling follow-up](results/2026-09-22/ast-calls.md) measures direct fixed-point
 calls, split-root self loops, and partial-application allocation with matched,
 bounded-heap runs.
+
+[Restoration-to-current comparison](results/2026-09-22/restoration-comparison.md)
+measures the total change since the restored old runtime, with identical workloads
+and bounded heaps, and distinguishes failed baseline workloads from speedups.
+
+[Rejected frame-recovery experiment](results/2026-09-22/frame-recovery.md) records
+why switching to per-frame slot kinds did not improve the warmed accumulator.

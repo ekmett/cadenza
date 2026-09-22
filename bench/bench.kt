@@ -2,6 +2,7 @@ package cadenza.bench
 
 import cadenza.Language
 import cadenza.data.Closure
+import cadenza.data.BigInt
 import cadenza.data.Neutral
 import cadenza.data.NeutralValue
 import cadenza.interpreter.Callable
@@ -22,6 +23,7 @@ import com.oracle.truffle.api.source.Source
 import org.graalvm.polyglot.Context
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.TimeUnit
+import java.math.BigInteger
 
 /** Read benchmark arguments from a call frame, so PE cannot fold a closed program. */
 private class BenchmarkApplyRoot(language: Language, private val function: Closure) :
@@ -203,5 +205,83 @@ open class ColdStart {
     val source = org.graalvm.polyglot.Source.newBuilder("cadenza",
       "plus $argument 1", "cold.za").cached(false).build()
     context.eval(source).asInt()
+  }
+}
+
+private class FrameRecoveryApplyRoot(language: Language, private val function: Closure) :
+  CadenzaRootNode(language, FrameLayout().build()) {
+  @Child private var dispatch = DispatchNodeGen.create(2, false)
+  override fun execute(frame: VirtualFrame): Any? =
+    dispatch.executeDispatch(frame, function, frame.arguments)
+}
+
+/** A single exotic argument must not permanently box all subsequent ordinary loop locals. */
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@Warmup(iterations = 5)
+@Measurement(iterations = 5)
+@Fork(2)
+@State(Scope.Thread)
+open class PoisonedFrame {
+  @Param("clean", "bigint", "neutral") @JvmField var history: String = "clean"
+  @Param("1000") @JvmField var size: Int = 1000
+  private lateinit var context: Context
+  private lateinit var target: CallTarget
+  private var cursor = 0
+
+  @Setup(Level.Trial)
+  fun openContext() {
+    context = Context.newBuilder("cadenza").allowExperimentalOptions(true)
+      .option("cadenza.Backend", "ast").build()
+    context.enter()
+    try {
+      context.initialize("cadenza")
+      val language = Language.currentLanguage()
+      val source = Source.newBuilder("cadenza", """
+        let go : Nat -> Nat -> Nat = \(remaining : Nat) (acc : Nat) ->
+          if le remaining 0 then acc
+          else go (minus remaining 1) (mod (plus acc remaining) 65521)
+        in go
+      """.trimIndent(), "frame-recovery.za").build()
+      val function = language.parse(source).call() as Closure
+      target = FrameRecoveryApplyRoot(language, function).callTarget
+      check(target.call(0, 1000) == 1000)
+      // Zero iterations isolate frame history from arithmetic specializations. Poison once,
+      // then warm and measure ordinary calls on this exact closure and call site.
+      when (history) {
+        "clean" -> Unit
+        "bigint" -> {
+          val big = BigInt(BigInteger.ONE.shiftLeft(100))
+          check(target.call(0, big) === big)
+        }
+        "neutral" -> {
+          val symbolic = NeutralValue(Type.Nat,
+            Neutral.NCallBuiltin(PlusNodeGen.create(), emptyArray()))
+          val result = target.call(0, symbolic) as NeutralValue
+          check(result.type == Type.Nat && result.term === symbolic.term)
+        }
+        else -> error("Unknown frame history: $history")
+      }
+      repeat(16) { offset ->
+        var expected = 1000
+        for (remaining in size + offset downTo 1) expected = (expected + remaining) % 65521
+        check(target.call(size + offset, 1000) == expected)
+      }
+    } catch (failure: Throwable) {
+      context.leave()
+      context.close()
+      throw failure
+    }
+  }
+
+  @TearDown(Level.Trial)
+  fun closeContext() {
+    try { context.leave() } finally { context.close() }
+  }
+
+  @Benchmark fun accumulate(): Any? {
+    val remaining = size + cursor
+    cursor = (cursor + 1) and 15
+    return target.call(remaining, 1000)
   }
 }

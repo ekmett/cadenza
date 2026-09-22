@@ -43,6 +43,11 @@ inline fun <T>T.tok(x : String): String where T : Parse {
 
 /** The language entry consumes one complete source; grammar also serves nested expressions. */
 val Parse.program: Term get() {
+  // A Unix script header is only meaningful at the beginning of the original source.
+  // Advance the cursor rather than removing text, preserving every later source offset.
+  if (pos == 0 && characters.length >= 2 && characters[0] == '#' && characters[1] == '!') {
+    while (pos < characters.length && characters[pos] != '\n' && characters[pos] != '\r') pos++
+  }
   space
   val result = grammar
   eof

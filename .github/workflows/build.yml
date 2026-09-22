@@ -16,4 +16,13 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - run: ./gradlew build benchClasses
+      - run: ./gradlew semanticSoak
+        if: runner.os == 'Linux'
       - run: ./gradlew run --args='examples/fib.za'
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results-${{ runner.os }}
+          path: |
+            build/reports/tests/
+            build/test-results/

@@ -1,18 +1,13 @@
 package cadenza
 
-import cadenza.jit.Code
 import cadenza.jit.FrameLayout
-import cadenza.jit.InlineCode
 import cadenza.jit.ProgramRootNode
 import cadenza.jit.initialCtx
 import cadenza.jit.GenericInteropApplyRootNode
 import cadenza.bytecode.BytecodeCompiler
 import cadenza.bytecode.BytecodeOptions
 import cadenza.semantics.CompileInfo
-import cadenza.semantics.Term
-import cadenza.semantics.Type
 import cadenza.semantics.TypeError
-import cadenza.semantics.Type.Nat
 import cadenza.syntax.*
 import com.oracle.truffle.api.*
 import com.oracle.truffle.api.TruffleLanguage.ContextPolicy
@@ -36,7 +31,9 @@ const val LANGUAGE_EXTENSION = "za"
 
 @Suppress("unused")
 private val LANGUAGE_BUILTIN_SOURCE by lazy { org.graalvm.polyglot.Source.newBuilder(LANGUAGE_ID, "", "[cadenza builtin]").buildLiteral()!! }
-private val LANGUAGE_SHEBANG_REGEXP by lazy { Pattern.compile("^#! ?/usr/bin/(env +cadenza|cadenza).*")!! }
+private val LANGUAGE_SHEBANG_REGEXP by lazy {
+  Pattern.compile("""^#![ \t]*(?:/(?:[^ \t]+/)?cadenza|/usr/bin/env[ \t]+(?:-S[ \t]+)?cadenza)(?:[ \t].*)?$""")
+}
 
 @Suppress("unused")
 private fun lookupNodeInfo(clazz: Class<*>?): NodeInfo? =
@@ -62,7 +59,7 @@ class Language : TruffleLanguage<Language.Context>() {
     override fun findEncoding(@Suppress("UNUSED_PARAMETER") file: TruffleFile): Charset = StandardCharsets.UTF_8
     override fun findMimeType(file: TruffleFile): String? {
       val name = file.name ?: return null
-      if (name.endsWith(LANGUAGE_EXTENSION)) return LANGUAGE_MIME_TYPE
+      if (name.endsWith(".$LANGUAGE_EXTENSION")) return LANGUAGE_MIME_TYPE
       try {
         file.newBufferedReader(StandardCharsets.UTF_8).use { fileContent ->
           val firstLine = fileContent.readLine()
@@ -103,13 +100,6 @@ class Language : TruffleLanguage<Language.Context>() {
     return true
   }
 
-
-  // stubbed: for now inline parsing requests just return 'const'
-  override fun parse(request: InlineParsingRequest?): InlineCode {
-    val body = k(Nat, Nat)
-    return InlineCode(this, body)
-  }
-
   override fun parse(request: ParsingRequest): CallTarget {
     val source = request.source
     // todo: request.argumentNames
@@ -139,17 +129,6 @@ class Language : TruffleLanguage<Language.Context>() {
       }
     }
   }
-
-  @Suppress("UNUSED_PARAMETER")
-  private fun s(tx: Type, ty: Type, tz: Type): Code = todo
-  private fun k(tx: Type, ty: Type) = binary({ x, _ -> x }, tx, ty)
-  private fun i(tx: Type) = unary({ x -> x }, tx)
-
-  @Suppress("UNUSED_PARAMETER")
-  inline fun unary(f: (x: Term) -> Term, argument: Type): Code = todo
-
-  @Suppress("UNUSED_PARAMETER")
-  inline fun binary(f: (x: Term, y: Term) -> Term, tx: Type, ty: Type): Code = todo
 
   companion object {
     private val REFERENCE = LanguageReference.create(Language::class.java)

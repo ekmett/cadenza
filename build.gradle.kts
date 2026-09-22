@@ -56,6 +56,20 @@ tasks.test {
   testLogging { events("failed", "skipped") }
 }
 
+tasks.register<Test>("semanticSoak") {
+  group = "verification"
+  description = "Check generated programs against independent semantics (configurable fuzzCases/fuzzSeedOffset)."
+  testClassesDirs = sourceSets.test.get().output.classesDirs
+  classpath = sourceSets.test.get().runtimeClasspath
+  useJUnitPlatform()
+  jvmArgs(application.applicationDefaultJvmArgs)
+  maxHeapSize = "768m"
+  filter { includeTestsMatching("DifferentialTests") }
+  systemProperty("cadenza.fuzz.cases", providers.gradleProperty("fuzzCases").getOrElse("10000"))
+  systemProperty("cadenza.fuzz.seedOffset", providers.gradleProperty("fuzzSeedOffset").getOrElse("0"))
+  testLogging { events("failed", "skipped") }
+}
+
 tasks.register<JavaExec>("bench") {
   group = "verification"
   description = "Run JMH benchmarks (use --args to select benchmarks and options)."
