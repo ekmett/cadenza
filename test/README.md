@@ -11,7 +11,7 @@ an independent evaluator using immutable lexical maps, Kotlin closures, and
 they share the parser, type checker, and calling convention, so they can share bugs.
 Failures include the deterministic case index, seed, and guest source.
 The random language is deliberately pure and total: it excludes output, recursive
-initializers, neutral terms, and division by zero. Its application oracle evaluates
+initializers, neutral syntax, and division by zero. Its application oracle evaluates
 each flat group of arguments before invoking a body. Effects and failures use the
 separate trace and runtime-transition tests below.
 For a generated failure, the diagnostic also searches up to 64 smaller, closed,
@@ -36,6 +36,16 @@ retained partial applications. Weighted result terms make each input observably
 relevant even when a random subexpression ignores it. Two of those bodies have a
 separate Graal-specific test that verifies installed last-tier code before numeric
 and captured-environment transitions. This does not compile every soak program.
+
+A separate 120-case AST-only sample supplies internal symbolic Nat/Bool arguments.
+It excludes function-valued conditionals, so residuals need only scalar builtin
+calls and conditionals. An independent substitution oracle recognizes distinct
+input/capture markers, uses host arithmetic, and selects residual branches; it
+never executes guest closures or builtins. Retained residuals and partials are
+replayed after small, symbolic, large, and small inputs on the same body target.
+Concrete recovery must return concrete values. The sample checks that every
+supported scalar residual operation was exercised and leaves the deliberate
+neutral exception mechanism unchanged.
 
 The regular suite samples 160 generated programs. A larger run is a separate
 Gradle task, with its own results and bounded test heap:
@@ -89,6 +99,13 @@ check recursive results, captures and retained partials through concurrent
 specialization changes. Workers and failure cleanup are bounded so a broken
 runtime cannot indefinitely block the test JVM.
 
+The regular test task builds `installDist`. On Linux and macOS, launcher tests
+execute its actual script and packaged JARs from a temporary directory with spaces,
+using a source filename beginning with `--`. Both backends must print a large
+integer, display a closure without executing it, and return a nonzero status with
+the source filename for a guest error. These subprocesses use the selected Java
+toolchain and a timeout; they do not inherit Gradle's test classpath.
+
 Use the separate JMH workloads to measure allocation and throughput changes.
 
 ## Test sensitivity check, 2026-09-22
@@ -114,3 +131,9 @@ compatible caused this test to reject the first bytecode context executing AST
 code. The older test called `Language.parse` directly and bypassed this cache;
 the replacement checks the public path that hosts actually use. This fourth
 mutation was also built only in an isolated temporary copy.
+
+A fifth isolated mutation swapped the branches stored in a neutral conditional,
+leaving concrete conditionals unchanged. The generated neutral-history test
+compiled and rejected it when replaying a retained partial: seed `1325428639`,
+captured value `0`, input `0`, and choice `true` expected `false` but received
+`true`. This checks the independent residual oracle rather than backend agreement.

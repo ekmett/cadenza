@@ -59,5 +59,23 @@
         "message": "org.opentest4j.AssertionFailedError: cached source executed the wrong backend in context 1 ==> expected: <true> but was: <false>"
       }
     ]
+  },
+  {
+    "mutation": "neutral-conditional-branches",
+    "baseline": "a694baa6d31af700dc0952b785cb6d221edf2877 with generated scalar-neutral history test",
+    "file": "src/cadenza/jit/code.kt",
+    "old": "neutral(type, Neutral.NIf(e.term, normalizeBranch(frame, thenNode), normalizeBranch(frame, elseNode)))",
+    "new": "neutral(type, Neutral.NIf(e.term, normalizeBranch(frame, elseNode), normalizeBranch(frame, thenNode)))",
+    "filter": "DifferentialTests.generatedScalarNeutralsPreserveSemanticsThroughCaptureAndPartialHistories",
+    "rejectedByAssertion": true,
+    "failures": [
+      {
+        "test": "DifferentialTests.generatedScalarNeutralsPreserveSemanticsThroughCaptureAndPartialHistories()",
+        "type": "org.opentest4j.AssertionFailedError",
+        "message": "org.opentest4j.AssertionFailedError: replayed partial: ScalarInputs(captured=0, x=0, choose=true) ==> expected: <false> but was: <true>",
+        "diagnostic": "java.lang.AssertionError: Substitution/replay failed for ScalarInputs(captured=0, x=0, choose=true): neutral seed=1325428639",
+        "wrappedBy": "java.lang.AssertionError"
+      }
+    ]
   }
 ]

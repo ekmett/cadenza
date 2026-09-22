@@ -1,6 +1,18 @@
 import cadenza.Language
 import cadenza.data.BigInt
 import cadenza.data.Closure
+import cadenza.data.Neutral
+import cadenza.data.NeutralValue
+import cadenza.jit.Div
+import cadenza.jit.Eq
+import cadenza.jit.InteropApplyRootNode
+import cadenza.jit.Le
+import cadenza.jit.Minus
+import cadenza.jit.Mod
+import cadenza.jit.Mult
+import cadenza.jit.Plus
+import cadenza.jit.PlusNodeGen
+import cadenza.semantics.Type
 import com.oracle.truffle.api.interop.InteropLibrary
 import com.oracle.truffle.api.source.Source
 import org.graalvm.polyglot.Context
@@ -11,8 +23,9 @@ import java.math.BigInteger
 import java.util.Random
 
 /** Independent, simply typed, pure and total source generator; no production evaluator.
- * No print, recursive let, neutral term, or zero divisor is generated. Observable effects
- * and failures have separate oracles in EvaluationOrderTests and RuntimeTransitionTests.
+ * No print, recursive let, neutral syntax, or zero divisor is generated. A restricted
+ * internal AST test supplies symbolic scalar inputs. Observable effects and failures
+ * have separate oracles in EvaluationOrderTests and RuntimeTransitionTests.
  */
 class DifferentialTests {
   private sealed interface Ty {
@@ -67,7 +80,11 @@ class DifferentialTests {
       .firstOrNull { mismatch(context, it)?.signature == failure.signature } ?: original
   }
 
-  private class Generator(seed: Long, smallLiterals: Boolean = false) {
+  private class Generator(
+    seed: Long,
+    smallLiterals: Boolean = false,
+    private val scalarConditionalsOnly: Boolean = false
+  ) {
     private val random = Random(seed)
     private var nextName = 0
     private val numbers = (if (smallLiterals) listOf("0", "1", "2", "3") else
@@ -193,7 +210,11 @@ class DifferentialTests {
             else expression(Ty.Nat, depth - 1, scope)
           groupedApply(builtin(operation), listOf(left, right))
         }
-        2 -> {
+        2 -> if (scalarConditionalsOnly && type is Ty.Arrow) {
+          // Symbolic scalar conditions must not choose between functions: that would
+          // create NApp terms whose independent interpretation needs function residuals.
+          lambda(type, depth - 1, scope)
+        } else {
           val condition = expression(Ty.Bool, depth - 1, scope)
           val yes = expression(type, depth - 1, scope)
           val no = expression(type, depth - 1, scope)
@@ -404,6 +425,171 @@ class DifferentialTests {
           assertEquals(program.expected(base), integer(call(original, historyArgument(base.x), historyArgument(base.y))),
             program.location(base))
         }
+      } finally {
+        context.leave()
+      }
+    }
+  }
+
+  private data class ScalarInputs(val captured: BigInteger, val x: BigInteger, val choose: Boolean) {
+    val environment get() = mapOf<String, Any>("captured" to captured, "x" to x, "choose" to choose)
+  }
+
+  private class NeutralProgram(val seed: Long, val type: Ty, val yes: Expression, val no: Expression) {
+    // Every case consumes both symbolic scalar inputs even when its random subterms
+    // happen to be constant. Function-valued conditionals are absent throughout.
+    private val body = if (type == Ty.Nat)
+      "if choose then plus (${yes.source}) (minus x captured) else minus (${no.source}) (plus x captured)"
+    else "if choose then (if le x captured then ${yes.source} else ${no.source}) " +
+      "else (if eq x captured then ${no.source} else ${yes.source})"
+    val source = "\\(captured : Nat) -> \\(x : Nat) (choose : Bool) -> $body"
+    val location get() = "neutral seed=$seed\n$source"
+
+    fun expected(input: ScalarInputs): Any {
+      val env = input.environment
+      return if (type == Ty.Nat) {
+        if (input.choose) (yes.eval(env) as BigInteger) + input.x - input.captured
+        else (no.eval(env) as BigInteger) - input.x - input.captured
+      } else {
+        val branch = if (input.choose) {
+          if (input.x <= input.captured) yes else no
+        } else {
+          if (input.x == input.captured) no else yes
+        }
+        branch.eval(env)
+      }
+    }
+  }
+
+  /** Interpret residual data only; never execute a guest closure or production builtin. */
+  private class ResidualOracle {
+    // Neutral is sealed. These otherwise-invalid zero-argument calls are distinct leaf
+    // markers, recognized by identity before interpreting any actual residual operation.
+    private fun variable(type: Type) = NeutralValue(type, Neutral.NCallBuiltin(PlusNodeGen.create(), emptyArray()))
+    val x = variable(Type.Nat)
+    val captured = variable(Type.Nat)
+    val choose = variable(Type.Bool)
+    val observed = mutableSetOf<String>()
+
+    fun substitute(value: Any?, input: ScalarInputs): Any = when (value) {
+      is Int -> BigInteger.valueOf(value.toLong())
+      is BigInt -> value.value
+      is Boolean -> value
+      is NeutralValue -> interpretTerm(value.term, input).also { result ->
+        assertEquals(if (result is Boolean) Type.Bool else Type.Nat, value.type)
+      }
+      else -> error("Unexpected residual value ${value?.javaClass?.name}: $value")
+    }
+
+    private fun interpretTerm(term: Neutral, input: ScalarInputs): Any = when {
+      term === x.term -> input.x.also { observed += "x" }
+      term === captured.term -> input.captured.also { observed += "captured" }
+      term === choose.term -> input.choose.also { observed += "choose" }
+      term is Neutral.NIf -> {
+        observed += "if"
+        val condition = interpretTerm(term.body, input) as Boolean
+        substitute(if (condition) term.thenValue else term.elseValue, input)
+      }
+      term is Neutral.NCallBuiltin -> {
+        assertEquals(2, term.args.size)
+        val left = substitute(term.args[0], input) as BigInteger
+        val right = substitute(term.args[1], input) as BigInteger
+        // The class identifies the residual instruction, but arithmetic and comparison
+        // semantics come solely from host BigInteger operations.
+        when (term.builtin) {
+          is Plus -> { observed += "plus"; left.add(right) }
+          is Minus -> { observed += "minus"; left.subtract(right) }
+          is Mult -> { observed += "mult"; left.multiply(right) }
+          is Div -> { observed += "div"; left.divide(right) }
+          is Mod -> { observed += "mod"; left.remainder(right) }
+          is Eq -> { observed += "eq"; left == right }
+          is Le -> { observed += "le"; left <= right }
+          else -> error("Unexpected residual builtin ${term.builtin.javaClass.name}")
+        }
+      }
+      else -> error("Function residuals are outside this generator's domain: $term")
+    }
+  }
+
+  @Test fun generatedScalarNeutralsPreserveSemanticsThroughCaptureAndPartialHistories() {
+    data class Saved(val program: NeutralProgram, val partial: Closure, val residual: NeutralValue,
+      val fixedCapture: BigInteger?)
+    val oracle = ResidualOracle()
+    val retained = mutableListOf<Saved>()
+    val ordinaryCapture = BigInteger.valueOf(7)
+    val replacements = listOf(
+      ScalarInputs(BigInteger.ZERO, BigInteger.ZERO, true),
+      ScalarInputs(BigInteger.valueOf(3), BigInteger.valueOf(7), false),
+      ScalarInputs(historyHuge, BigInteger.ONE, true),
+      ScalarInputs(BigInteger.valueOf(11), historyHuge, false),
+      ScalarInputs(historyHuge + BigInteger.ONE, historyHuge, true),
+      ScalarInputs(BigInteger.valueOf(7), BigInteger.TWO, false)
+    )
+    context("ast").use { context ->
+      context.initialize("cadenza")
+      context.enter()
+      try {
+        val language = Language.currentLanguage()
+        // Shared application sites see all generated targets, so retained PAPs are
+        // revisited after both specialization changes and dispatch-cache saturation.
+        val applyOne = InteropApplyRootNode(language, 1).callTarget
+        val applyTwo = InteropApplyRootNode(language, 2).callTarget
+        fun apply(function: Closure, argument: Any): Any? = applyOne.call(function, arrayOf<Any?>(argument))
+        fun concrete(function: Closure, program: NeutralProgram, input: ScalarInputs) {
+          val result = applyTwo.call(function, arrayOf<Any?>(historyArgument(input.x), input.choose))
+          assertTrue(if (program.type == Ty.Nat) result is Int || result is BigInt else result is Boolean,
+            "Concrete execution must not leak a residual: $input\n${program.location}")
+          assertEquals(program.expected(input), oracle.substitute(result, input), "$input\n${program.location}")
+        }
+        repeat(120) { index ->
+          val seed = 0x4E_42_4500L + index * 104729L
+          val type = if (index % 2 == 0) Ty.Nat else Ty.Bool
+          val generator = Generator(seed, smallLiterals = true, scalarConditionalsOnly = true)
+          val scope = mapOf("captured" to Ty.Nat, "x" to Ty.Nat, "choose" to Ty.Bool)
+          val program = NeutralProgram(seed, type, generator.expression(type, 3 + index % 2, scope),
+            generator.expression(type, 3 + index % 2, scope))
+          try {
+            val factory = language.parse(Source.newBuilder("cadenza", program.source, "neutral-$seed.za").build())
+              .call() as Closure
+            val ordinary = apply(factory, historyArgument(ordinaryCapture)) as Closure
+            concrete(ordinary, program, ScalarInputs(ordinaryCapture, BigInteger.valueOf(3), false))
+            val partial = apply(ordinary, oracle.x) as Closure
+            val residual = apply(partial, oracle.choose) as NeutralValue
+            retained += Saved(program, partial, residual, ordinaryCapture)
+
+            val symbolicCapture = apply(factory, oracle.captured) as Closure
+            assertSame(ordinary.callTarget, symbolicCapture.callTarget)
+            val symbolicPartial = apply(symbolicCapture, oracle.x) as Closure
+            retained += Saved(program, symbolicPartial, apply(symbolicPartial, oracle.choose) as NeutralValue, null)
+
+            val largeCapture = apply(factory, BigInt(historyHuge)) as Closure
+            assertSame(ordinary.callTarget, largeCapture.callTarget)
+            concrete(largeCapture, program, ScalarInputs(historyHuge, historyHuge + BigInteger.ONE, true))
+            concrete(ordinary, program, ScalarInputs(ordinaryCapture, historyHuge, false))
+            val restored = apply(factory, historyArgument(ordinaryCapture)) as Closure
+            assertSame(ordinary.callTarget, restored.callTarget)
+            concrete(restored, program, ScalarInputs(ordinaryCapture, BigInteger.valueOf(5), true))
+          } catch (failure: Throwable) {
+            throw AssertionError("Construction/history failed: ${program.location}", failure)
+          }
+        }
+        for ((program, partial, residual, fixedCapture) in retained.reversed()) {
+          for (replacement in replacements) {
+            val input = if (fixedCapture == null) replacement else replacement.copy(captured = fixedCapture)
+            try {
+              val expected = program.expected(input)
+              assertEquals(expected, oracle.substitute(residual, input), "retained residual: $input")
+              // A saved PAP still contains its own symbolic x/capture after unrelated
+              // targets have replaced the application site's direct cache entries.
+              val replay = apply(partial, input.choose)
+              assertEquals(expected, oracle.substitute(replay, input), "replayed partial: $input")
+            } catch (failure: Throwable) {
+              throw AssertionError("Substitution/replay failed for $input: ${program.location}", failure)
+            }
+          }
+        }
+        assertEquals(setOf("x", "captured", "choose", "if", "plus", "minus", "mult", "div", "mod", "eq", "le"),
+          oracle.observed, "The fixed sample must actually exercise each supported scalar residual operation")
       } finally {
         context.leave()
       }

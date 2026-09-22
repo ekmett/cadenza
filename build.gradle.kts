@@ -51,6 +51,10 @@ application {
 }
 
 tasks.test {
+  dependsOn(tasks.installDist)
+  val distribution = layout.buildDirectory.dir("install/cadenza")
+  inputs.dir(distribution).withPropertyName("installedDistribution")
+  systemProperty("cadenza.test.distribution", distribution.get().asFile.absolutePath)
   useJUnitPlatform()
   jvmArgs(application.applicationDefaultJvmArgs)
   testLogging { events("failed", "skipped") }
