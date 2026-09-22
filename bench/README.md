@@ -50,3 +50,6 @@ not a promise that the two implementations execute identical machine code.
 
 [Measured AST/bytecode and before/after results (2026-09-22)](results/2026-09-22/README.md)
 include raw JMH samples, allocation data, and reproducible settings.
+
+[First AST allocation follow-up](results/2026-09-22/ast-followup.md) records the
+capture regression fix and fixed-point allocation reductions.

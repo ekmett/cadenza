@@ -16,10 +16,10 @@ class TailCheck : Node() {
 
   fun tailCheck(frame: VirtualFrame, fn: RootCallTarget, args: Array<Any?>) {
     val root = rootNode
-    if (root !is ClosureRootNode) {
+    if (root !is CadenzaRootNode || !root.hasTailCallFrame) {
       throw TailCallException(fn, args)
     }
-    val mask = frame.getLong((root as ClosureRootNode).bloomFilterSlot)
+    val mask = frame.getLong(FrameLayout.BLOOM_FILTER)
     if (fn.rootNode !is CadenzaRootNode) {
       throw Exception("calling non-canedza rootNode w/ wrong convention!")
     }

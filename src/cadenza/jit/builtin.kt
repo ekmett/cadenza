@@ -149,25 +149,46 @@ abstract class FixNatF : Builtin(Type.Arr(natFF, natF), 2) {
       CompilerDirectives.transferToInterpreterAndInvalidate()
       fixedTarget = FixApplyRootNode(Language.currentLanguage(this)).callTarget
     }
-    return Closure(null, arrayOf(f), 1, type, fixedTarget!!)
+    return FixedFunction(f, fixedTarget!!).self
   }
 }
 
-/** The recursive function is an ordinary partial application of this shared body. */
+/**
+ * The knot is tied once, before this value becomes visible outside its constructor.
+ * Both fields are immutable; recursive calls reuse the same closure and capture array.
+ */
+private class FixedFunction(val function: Closure, target: RootCallTarget) {
+  val self = Closure(null, arrayOf(this), 1, fixedFunctionType, target)
+
+  // Match the structural equality of the former partial application of function.
+  // In particular, never compare self: that would follow the recursive knot.
+  override fun equals(other: Any?): Boolean = other is FixedFunction && function == other.function
+  override fun hashCode(): Int = function.hashCode()
+
+  companion object {
+    private val fixedFunctionType = Type.Arr(Type.Obj, natF)
+  }
+}
+
+/** The recursive function partially applies this shared body to its immutable knot. */
 class FixApplyRootNode(language: Language) : CadenzaRootNode(language, FrameLayout().build()) {
+  override val hasTailCallFrame = true
   @Child private var dispatch: Dispatch = DispatchNodeGen.create(2, true)
   override fun execute(frame: VirtualFrame): Any? {
-    val f = frame.arguments[1] as Closure
-    val self = Closure(null, arrayOf(f), 1, Type.Arr(natFF, natF), callTarget)
-    return dispatch.executeDispatch(frame, f, arrayOf(self, frame.arguments[2]))
+    frame.setLong(FrameLayout.BLOOM_FILTER, (frame.arguments[0] as Long) or mask)
+    val fixed = frame.arguments[1] as FixedFunction
+    return dispatch.executeDispatch(frame, fixed.function, arrayOf(fixed.self, frame.arguments[2]))
   }
   override fun getName() = "fixNatF"
 }
 
 
 class PrintId : Builtin1(natF) {
+  @CompilerDirectives.TruffleBoundary
   override fun execute(x: Any?): Any? {
-    println(x)
+    val output = Language.currentContext(this).env.out()
+    output.write("$x\n".toByteArray(Charsets.UTF_8))
+    output.flush()
     return x
   }
 }

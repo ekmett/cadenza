@@ -11,6 +11,7 @@ import cadenza.bytecode.BytecodeOptions
 import cadenza.semantics.CompileInfo
 import cadenza.semantics.Term
 import cadenza.semantics.Type
+import cadenza.semantics.TypeError
 import cadenza.semantics.Type.Nat
 import cadenza.syntax.*
 import com.oracle.truffle.api.*
@@ -124,14 +125,18 @@ class Language : TruffleLanguage<Language.Context>() {
         throw SyntaxError(result)
       }
       is Success -> {
-        if (CONTEXT.get(null).env.options[BytecodeOptions.BACKEND] == "bytecode") {
-          return BytecodeCompiler(this, source).compile(result.value)
+        try {
+          if (CONTEXT.get(null).env.options[BytecodeOptions.BACKEND] == "bytecode") {
+            return BytecodeCompiler(this, source).compile(result.value)
+          }
+          val ci = CompileInfo(source, this)
+          val fd = FrameLayout()
+          val witness = result.value.infer(initialCtx)
+          val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd.build(), source)
+          return rootNode.callTarget
+        } catch (error: TypeError) {
+          throw TypeCheckError(error, source.createSection(0, source.length))
         }
-        val ci = CompileInfo(source, this)
-        val fd = FrameLayout()
-        val witness = result.value.infer(initialCtx)
-        val rootNode = ProgramRootNode(this, witness.compile(ci, fd), fd.build(), source)
-        return rootNode.callTarget
       }
     }
   }
@@ -150,6 +155,7 @@ class Language : TruffleLanguage<Language.Context>() {
   companion object {
     private val REFERENCE = LanguageReference.create(Language::class.java)
     private val CONTEXT = ContextReference.create(Language::class.java)
+    fun currentContext(node: com.oracle.truffle.api.nodes.Node? = null): Context = CONTEXT.get(node)
     fun currentLanguage(node: com.oracle.truffle.api.nodes.Node? = null): Language = REFERENCE.get(node)
 
   }

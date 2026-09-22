@@ -64,7 +64,10 @@ class StorageTests {
         assertEquals(42, original.getInteger(0))
         assertEquals(true, original.getValue(1))
         assertSame(reference, original.getObject(2))
-        assertThrows(FrameSlotTypeException::class.java) { original.getObject(0) }
+        val primitiveMismatch = assertThrows(FrameSlotTypeException::class.java) { original.getObject(0) }
+        assertEquals(0, primitiveMismatch.slot)
+        assertEquals(FrameSlotKind.Object, primitiveMismatch.expectedKind)
+        assertEquals(FrameSlotKind.Int, primitiveMismatch.actualKind)
 
         val big = BigInt(BigInteger.ONE.shiftLeft(100))
         val neutral = NeutralValue(Type.Bool, Neutral.NCallBuiltin(PlusNodeGen.create(), emptyArray()))
@@ -76,7 +79,10 @@ class StorageTests {
         assertSame(big, exotic.getObject(0))
         assertSame(neutral, exotic.getValue(1))
         assertNull(exotic.getObject(2))
-        assertThrows(FrameSlotTypeException::class.java) { exotic.getInteger(0) }
+        val objectMismatch = assertThrows(FrameSlotTypeException::class.java) { exotic.getInteger(0) }
+        assertEquals(0, objectMismatch.slot)
+        assertEquals(FrameSlotKind.Int, objectMismatch.expectedKind)
+        assertEquals(FrameSlotKind.Object, objectMismatch.actualKind)
         assertEquals(42, original.getInteger(0))
         assertEquals(true, original.getValue(1))
         assertSame(reference, original.getObject(2))
@@ -90,6 +96,44 @@ class StorageTests {
     Context.create("cadenza").use { context ->
       val value = context.eval("cadenza", "(\\(x : Nat) -> (\\(y : Nat) -> plus x y) 1) (plus 2147483647 1)")
       assertEquals(BigInteger.valueOf(2147483649L), value.asBigInteger())
+    }
+  }
+
+  @Test fun captureLayoutsRemainIndependentAcrossRepeatedContexts() {
+    repeat(3) {
+      Context.create("cadenza").use { context ->
+        // Both inner lambdas capture a Nat, but their layouts and values are distinct.
+        val first = context.eval("cadenza", "(\\(x : Nat) -> \\(y : Nat) -> plus x y) 1000")
+        val second = context.eval("cadenza", "(\\(x : Nat) -> \\(y : Nat) -> plus x y) 2000")
+        assertEquals(1042, first.execute(42).asInt())
+        assertEquals(2042, second.execute(42).asInt())
+        assertEquals(1043, first.execute(43).asInt())
+      }
+    }
+  }
+
+  @Test fun captureLayoutKeepsMixedPrimitiveAndObjectFieldsSeparate() {
+    Context.create("cadenza").use { context ->
+      context.initialize("cadenza")
+      context.enter()
+      try {
+        val types = Array(24) { when (it % 3) { 0 -> Type.Nat; 1 -> Type.Bool; else -> Type.Obj } }
+        val captures = CaptureLayout(Language.currentLanguage(), types)
+        val layout = FrameLayout()
+        val slots = Array(types.size) { layout.slot("capture$it") }
+        val frame = Truffle.getRuntime().createVirtualFrame(emptyArray(), layout.build())
+        val values = Array<Any?>(types.size) { when (it % 3) { 0 -> 1000 + it; 1 -> it % 2 == 0; else -> Any() } }
+        for (index in slots.indices) FrameAccess.write(frame, slots[index], values[index])
+        val environment = captures.capture(frame, slots)
+        for (index in slots.indices) {
+          assertEquals(values[index], environment.getValue(index))
+          assertEquals(values[index], captures.read(environment, index))
+          FrameAccess.write(frame, slots[index], null)
+        }
+        for (index in slots.indices) assertEquals(values[index], environment.getValue(index))
+      } finally {
+        context.leave()
+      }
     }
   }
 

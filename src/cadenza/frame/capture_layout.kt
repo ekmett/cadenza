@@ -4,6 +4,7 @@ import cadenza.Language
 import cadenza.jit.FrameAccess
 import cadenza.semantics.Type
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal
+import com.oracle.truffle.api.frame.FrameSlotKind
 import com.oracle.truffle.api.frame.FrameSlotTypeException
 import com.oracle.truffle.api.frame.VirtualFrame
 import com.oracle.truffle.api.nodes.ExplodeLoop
@@ -16,24 +17,24 @@ class CaptureLayout(language: Language, types: Array<Type>) {
   private val fields = Array(types.size) { CaptureField(it, types[it]) }
   private val shape = StaticShape.newBuilder(language).also { builder ->
     fields.forEach { it.register(builder) }
-  }.build()
+  }.build(CapturedFrame::class.java, CapturedFrameFactory::class.java)
 
   @ExplodeLoop
   fun capture(frame: VirtualFrame, sourceSlots: Array<Int>): DataFrame {
     check(sourceSlots.size == fields.size)
-    val storage = shape.factory.create()
-    for (index in fields.indices) fields[index].initialize(storage, FrameAccess.read(frame, sourceSlots[index]))
-    return CapturedFrame(this, storage)
+    val environment = shape.factory.create(this)
+    for (index in fields.indices) fields[index].initialize(environment, FrameAccess.read(frame, sourceSlots[index]))
+    return environment
   }
 
   /** Read with the lambda's constant layout so property offsets fold during compilation. */
   fun read(environment: DataFrame, slot: Int): Any? {
     val captured = environment as CapturedFrame
     assert(captured.layout === this)
-    return fields[slot].read(captured.storage)
+    return fields[slot].read(captured)
   }
 
-  private class CaptureField(index: Int, val type: Type) {
+  private class CaptureField(private val index: Int, val type: Type) {
     private val objectValue = DefaultStaticProperty("capture_${index}_object")
     private val primitiveValue = DefaultStaticProperty("capture_${index}_primitive")
     private val hasPrimitive = DefaultStaticProperty("capture_${index}_tag")
@@ -64,32 +65,46 @@ class CaptureLayout(language: Language, types: Array<Type>) {
 
     fun isInt(storage: Any) = type == Type.Nat && hasPrimitive.getBoolean(storage)
     fun isObject(storage: Any) = !isPrimitive || !hasPrimitive.getBoolean(storage)
+    fun kind(storage: Any): FrameSlotKind = when {
+      isObject(storage) -> FrameSlotKind.Object
+      type == Type.Nat -> FrameSlotKind.Int
+      else -> FrameSlotKind.Boolean
+    }
     fun read(storage: Any): Any? = when {
       !isPrimitive || !hasPrimitive.getBoolean(storage) -> objectValue.getObject(storage)
       type == Type.Nat -> primitiveValue.getInt(storage)
       else -> primitiveValue.getBoolean(storage)
     }
     fun readInt(storage: Any): Int {
-      if (!isInt(storage)) throw FrameSlotTypeException()
+      if (!isInt(storage)) throw FrameSlotTypeException.create(index, FrameSlotKind.Int, kind(storage))
       return primitiveValue.getInt(storage)
     }
     fun readObject(storage: Any): Any? {
-      if (!isObject(storage)) throw FrameSlotTypeException()
+      if (!isObject(storage)) throw FrameSlotTypeException.create(index, FrameSlotKind.Object, kind(storage))
       return objectValue.getObject(storage)
     }
   }
 
-  private class CapturedFrame(val layout: CaptureLayout, val storage: Any) : DataFrame {
-    override fun getValue(slot: Slot): Any? = layout.fields[slot].read(storage)
-    override fun getInteger(slot: Slot): Int = layout.fields[slot].readInt(storage)
-    override fun isInteger(slot: Slot) = layout.fields[slot].isInt(storage)
-    override fun getObject(slot: Slot): Any? = layout.fields[slot].readObject(storage)
-    override fun isObject(slot: Slot) = layout.fields[slot].isObject(storage)
-    override fun getDouble(slot: Slot): Double = throw FrameSlotTypeException()
+  /** Public for Truffle's generated subclasses; each instance is its own property storage. */
+  open class CapturedFrame(val layout: CaptureLayout) : DataFrame {
+    override fun getValue(slot: Slot): Any? = layout.fields[slot].read(this)
+    override fun getInteger(slot: Slot): Int = layout.fields[slot].readInt(this)
+    override fun isInteger(slot: Slot) = layout.fields[slot].isInt(this)
+    override fun getObject(slot: Slot): Any? = layout.fields[slot].readObject(this)
+    override fun isObject(slot: Slot) = layout.fields[slot].isObject(this)
+    override fun getDouble(slot: Slot): Double = throw wrongKind(slot, FrameSlotKind.Double)
     override fun isDouble(slot: Slot) = false
-    override fun getFloat(slot: Slot): Float = throw FrameSlotTypeException()
+    override fun getFloat(slot: Slot): Float = throw wrongKind(slot, FrameSlotKind.Float)
     override fun isFloat(slot: Slot) = false
-    override fun getLong(slot: Slot): Long = throw FrameSlotTypeException()
+    override fun getLong(slot: Slot): Long = throw wrongKind(slot, FrameSlotKind.Long)
     override fun isLong(slot: Slot) = false
+
+    private fun wrongKind(slot: Slot, expected: FrameSlotKind): FrameSlotTypeException =
+      FrameSlotTypeException.create(slot, expected, layout.fields[slot].kind(this))
+  }
+
+  /** Constructor signatures must match the custom StaticShape superclass. */
+  interface CapturedFrameFactory {
+    fun create(layout: CaptureLayout): CapturedFrame
   }
 }

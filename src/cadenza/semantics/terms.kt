@@ -77,7 +77,7 @@ sealed class Term {
       val wrator = trator.infer(ctx)
       var currentType = wrator.type
       val wrands = trands.map {
-        val arr = currentType as Type.Arr? ?: throw TypeError("not a fun type")
+        val arr = currentType as? Type.Arr ?: throw TypeError("not a function type", currentType)
         val out = it.check(ctx, arr.argument)
         currentType = arr.result
         out
@@ -164,14 +164,15 @@ sealed class Term {
     override fun fvs(): Set<String> = (value.fvs() + body.fvs()) - name
     override fun infer(ctx: Ctx): Witness {
       val ctx2: Ctx = ConsEnv(name, NameInfo(type, null), ctx)
-      val vw = value.infer(ctx2)
+      val vw = value.check(ctx2, type)
       val bw = body.infer(ctx2)
       return object : Witness(bw.type) {
         override fun compile(ci: CompileInfo, fd: FrameLayout): Code {
-          val slot = fd.slot(name)
-          val vc = vw.compile(ci, fd)
-          val bc = bw.compile(ci, fd)
-          return Code.LetRec(slot, type, vc, bc, loc)
+          val scope = fd.scope()
+          val slot = scope.bind(name)
+          val vc = vw.compile(ci, scope)
+          val bc = bw.compile(ci, scope)
+          return Code.LetRec(slot, type, vc, bc, loc, name in value.fvs())
         }
       }
     }

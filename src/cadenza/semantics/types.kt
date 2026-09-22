@@ -18,7 +18,8 @@ class TypeError(
     initCause(cause)
   }
 
-  override fun toString(): String = "$message, got $actual but expected $expected"
+  override fun toString(): String = if (actual != null && expected != null)
+    "$message: expected $expected, got $actual" else message.orEmpty()
 
 
   companion object {
@@ -47,6 +48,7 @@ abstract class Type protected constructor() {
 
   @CompilerDirectives.ValueType
   data class Arr(val argument: Type, val result: Type) : Type() {
+    override fun toString(): String = "${if (argument is Arr) "($argument)" else argument} -> $result"
     override val arity: Int = result.arity + 1
     @Throws(UnsupportedTypeException::class)
     // TODO: support for builtins? or native functions?
@@ -60,11 +62,13 @@ abstract class Type protected constructor() {
   // IO actions represented ML-style as nullary functions
   @CompilerDirectives.ValueType
   data class IO(val result: Type) : Type() {
+    override fun toString(): String = "IO ($result)"
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) = todo
   }
 
   object Bool : Type() {
+    override fun toString(): String = "Bool"
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) { if (t !is Boolean) unsupported("expected boolean", t)
     }
@@ -72,16 +76,19 @@ abstract class Type protected constructor() {
 
   @Suppress("unused")
   object Obj : Type() {
+    override fun toString(): String = "Obj"
     override fun validate(@Suppress("UNUSED_PARAMETER") t: Any?) {}
   }
 
   object UnitTy : Type() {
+    override fun toString(): String = "Unit"
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) { if (Unit != t) unsupported("expected unit", t)
     }
   }
 
   object Nat : Type() {
+    override fun toString(): String = "Nat"
     @Throws(UnsupportedTypeException::class)
     override fun validate(t: Any?) {
       if (!(t is Int && t >= 0 || t is BigInt && t.isNatural())) unsupported("expected nat", t)

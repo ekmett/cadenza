@@ -6,15 +6,23 @@ import com.oracle.truffle.api.frame.FrameDescriptor
 import com.oracle.truffle.api.frame.FrameSlotKind
 
 /** Allocate indexed slots during compilation, then freeze the descriptor for execution. */
-class FrameLayout {
-  private val builder = FrameDescriptor.newBuilder()
-  private val locals = mutableMapOf<String, Int>()
-
-  init {
+class FrameLayout private constructor(
+  private val builder: FrameDescriptor.Builder,
+  private val locals: MutableMap<String, Int>
+) {
+  constructor() : this(FrameDescriptor.newBuilder(), mutableMapOf()) {
     builder.addSlot(FrameSlotKind.Long, "<TCO Bloom Filter>", null)
     builder.addSlot(FrameSlotKind.Object, "<TCO Result>", null)
     builder.addSlot(FrameSlotKind.Object, "<TCO Function>", null)
     builder.addSlot(FrameSlotKind.Object, "<TCO Arguments>", null)
+  }
+
+  /** A lexical child sees existing bindings but cannot replace them in its parent. */
+  fun scope(): FrameLayout = FrameLayout(builder, locals.toMutableMap())
+
+  /** Every binder owns a new slot, even when it shadows a name in this scope. */
+  fun bind(name: String): Int = builder.addSlot(FrameSlotKind.Illegal, name, null).also {
+    locals[name] = it
   }
 
   fun slot(name: String): Int = locals.getOrPut(name) {

@@ -24,8 +24,6 @@ import com.oracle.truffle.api.profiles.BranchProfile
 import com.oracle.truffle.api.source.Source
 import com.oracle.truffle.api.source.SourceSection
 
-internal val noArguments = arrayOf<Any>()
-
 // code and statements, and other things with source locations that aren't root or root-like
 abstract class LocatedNode(val loc: Loc? = null) : Node(), InstrumentableNode {
   override fun getSourceSection(): SourceSection? = loc?.let { rootNode?.sourceSection?.source?.section(it) }
@@ -36,6 +34,8 @@ abstract class CadenzaRootNode(
   language: Language,
   fd: FrameDescriptor
 ) : RootNode(language, fd) {
+  /** True only for roots that initialize FrameLayout.BLOOM_FILTER on every entry. */
+  open val hasTailCallFrame: Boolean = false
   open val mask: Long = hashCode().run {
     1L shl and(0x3f) or
       (1L shl (shr(6) and 0x3f)) or
@@ -121,18 +121,19 @@ open class ClosureRootNode(
   private val captureLayout: CaptureLayout? = null
 ) : CadenzaRootNode(language, frameDescriptor) {
 
+  override val hasTailCallFrame: Boolean = true
   val bloomFilterSlot: Int = FrameLayout.BLOOM_FILTER
   @field:Child var selfTailCallLoopNode = SelfTailCallLoop(body)
   private val tailCallProfile: BranchProfile = BranchProfile.create()
 
   @Suppress("NOTHING_TO_INLINE")
-  inline fun isSuperCombinator() = envPreamble.isNotEmpty()
+  inline fun hasEnvironment() = envPreamble.isNotEmpty()
 
   @ExplodeLoop
   fun buildFrame(arguments: Array<Any?>, local: VirtualFrame) {
-    val offset = if (isSuperCombinator()) 2 else 1
+    val offset = if (hasEnvironment()) 2 else 1
     for ((slot, x) in argPreamble) FrameAccess.write(local, slot, arguments[x+offset])
-    if (isSuperCombinator()) { // supercombinator, given environment
+    if (hasEnvironment()) { // Closure receives its captured environment.
       val env = arguments[1] as DataFrame
       for ((slot, ix) in envPreamble) FrameAccess.write(local, slot, captureLayout!!.read(env, ix))
     }
@@ -170,28 +171,6 @@ class Indirection {
   var set: Boolean = false
   var value: Any? = null
 }
-
-// used for let rec
-open class ReadIndirectionRootNode(
-  val language: Language
-): CadenzaRootNode(language, FrameLayout().build()) {
-//  override val mask: Long = 0L
-
-  override fun execute(frame: VirtualFrame): Any? {
-    val indir = frame.arguments[1] as Indirection
-    if (CompilerDirectives.isPartialEvaluationConstant(indir) && CompilerDirectives.inCompiledCode()) {
-
-    }
-
-    if (!indir.set) {
-      CompilerDirectives.transferToInterpreter()
-      throw Exception("let rec loop (demanded variable while evaluating it)")
-    }
-    return indir.value
-  }
-}
-
-
 
 /** Host calls enter the same rooted dispatcher and trampoline as guest calls. */
 class InteropApplyRootNode(language: Language, argsSize: Int) :

@@ -2,6 +2,7 @@ package cadenza.jit
 
 import cadenza.Language
 import cadenza.Loc
+import cadenza.RuntimeError
 import cadenza.data.*
 import cadenza.frame.CaptureLayout
 import cadenza.frame.DataFrame
@@ -26,8 +27,8 @@ import com.oracle.truffle.api.source.SourceSection
 
 // utility
 @Suppress("NOTHING_TO_INLINE")
-private inline fun isSuperCombinator(callTarget: RootCallTarget) =
-  callTarget.rootNode.let { it is ClosureRootNode && it.isSuperCombinator() }
+private inline fun hasEnvironment(callTarget: RootCallTarget) =
+  callTarget.rootNode.let { it is ClosureRootNode && it.hasEnvironment() }
 
 @ReportPolymorphism
 @Suppress("NOTHING_TO_INLINE","unused")
@@ -154,17 +155,17 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     loc: Loc? = null
   ) : Code(loc) {
     // do we need to capture an environment?
-    private inline fun isSuperCombinator() = captureLayout != null
+    private inline fun hasEnvironment() = captureLayout != null
 
     // TODO: statically allocate the Closure when possible (when no env)
     // split between capturing Lam and not?
     // might help escape analysis w/ App
-    override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), arrayOf(), arity, type, callTarget)
-    override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), arrayOf(), arity, type, callTarget)
+    override fun execute(frame: VirtualFrame) = Closure(captureEnv(frame), noPapArguments, arity, type, callTarget)
+    override fun executeClosure(frame: VirtualFrame): Closure = Closure(captureEnv(frame), noPapArguments, arity, type, callTarget)
 
     @ExplodeLoop
     private fun captureEnv(frame: VirtualFrame): DataFrame? {
-      if (!isSuperCombinator()) return null
+      if (!hasEnvironment()) return null
       return captureLayout!!.capture(frame, captures)
     }
 
@@ -175,9 +176,19 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
 
   @NodeInfo(shortName = "Read")
   class Var(private val slot: Int, loc: Loc? = null) : Code(loc) {
+    private fun read(frame: VirtualFrame): Any? {
+      val value = FrameAccess.read(frame, slot)
+      if (value !is Indirection) return value
+      if (!value.set) {
+        CompilerDirectives.transferToInterpreter()
+        throw RuntimeError("recursive binding read before initialization")
+      }
+      return value.value
+    }
+
     @Throws(NeutralException::class)
-    override fun execute(frame: VirtualFrame): Any? = throwIfNeutralValue(FrameAccess.read(frame, slot))
-    override fun executeAny(frame: VirtualFrame): Any? = FrameAccess.read(frame, slot)
+    override fun execute(frame: VirtualFrame): Any? = throwIfNeutralValue(read(frame))
+    override fun executeAny(frame: VirtualFrame): Any? = read(frame)
   }
 
   @Suppress("unused")
@@ -273,24 +284,18 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     val type: Type,
     @field:Child var value: Code,
     @field:Child var body: Code,
-    loc: Loc?
+    loc: Loc?,
+    val recursive: Boolean = true
   ): Code(loc) {
-    @CompilerDirectives.CompilationFinal var readTarget: RootCallTarget? = null
-
     override fun execute(frame: VirtualFrame): Any? {
-      if (readTarget === null) {
-        CompilerDirectives.transferToInterpreterAndInvalidate()
-        val language = Language.currentLanguage(this)
-        readTarget = ReadIndirectionRootNode(language).callTarget
+      if (!recursive) {
+        FrameAccess.write(frame, slot, value.executeAny(frame))
+        return body.execute(frame)
       }
-
       val indir = Indirection()
-      val clos = Closure(null, arrayOf(indir), 0, Type.Arr(Type.Obj,type), readTarget!!)
-      // need to set it here in case a lambda in value captures it
-      FrameAccess.write(frame, slot, clos)
+      // Capturing a recursive binding copies its cell; ordinary reads force the cell.
+      FrameAccess.write(frame, slot, indir)
       val x = value.executeAny(frame)
-      // ... but if not, we can avoid the indirection
-      // and need to set it here anyways in case value shadows us with a let
       FrameAccess.write(frame, slot, x)
       indir.value = x
       indir.set = true
@@ -348,7 +353,7 @@ abstract class Code(val loc: Loc?) : Node(), InstrumentableNode {
     fun lam(captureLayout: CaptureLayout?, captures: Array<Int>, arity: Int, callTarget: RootCallTarget, type: Type, loc: Loc? = null): Lam {
       assert(arity > 0)
       val hasCaptureSteps = captures.isNotEmpty()
-      assert(hasCaptureSteps == isSuperCombinator(callTarget)) { "mismatched calling convention" }
+      assert(hasCaptureSteps == hasEnvironment(callTarget)) { "mismatched calling convention" }
       return Lam(
         if (!hasCaptureSteps) null else requireNotNull(captureLayout),
         captures,

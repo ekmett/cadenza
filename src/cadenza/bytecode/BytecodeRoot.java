@@ -85,7 +85,7 @@ public abstract class BytecodeRoot extends CadenzaRootNode implements BytecodeRo
         @Specialization
         public static Object read(Indirection cell) {
             if (!cell.getSet()) {
-                throw new IllegalStateException("recursive binding read before initialization");
+                throw new cadenza.RuntimeError("recursive binding read before initialization");
             }
             return cell.getValue();
         }

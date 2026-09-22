@@ -40,7 +40,7 @@ class Closure (
     // should we have a different Lam or like expectCallTarget for them?
 //    assert(callTarget.rootNode is ClosureRootNode) { "not a function body" }
     if (callTarget.rootNode is ClosureRootNode) {
-      assert(env != null == (callTarget.rootNode as ClosureRootNode).isSuperCombinator()) { "calling convention mismatch" }
+      assert(env != null == (callTarget.rootNode as ClosureRootNode).hasEnvironment()) { "calling convention mismatch" }
       assert(arity + papArgs.size == (callTarget.rootNode as ClosureRootNode).arity)
     } else {
       assert(env == null)
