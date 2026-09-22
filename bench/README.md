@@ -97,3 +97,7 @@ to partial evaluation, with a useful-work loop and ordinary calling controls.
 warmed JFR sampling, an explicit recording-start weight correction, and an isolated
 array-size probe. It identifies surviving call arrays before further optimization;
 Fibonacci setup also checks its varying inputs against an independent host oracle.
+
+[Rejected fixed-self identity profiling](results/2026-09-22/fixed-self-profile.md)
+records an experiment that preserved allocation and slowed small Fibonacci calls;
+the candidate patch is retained as evidence but is not applied to the runtime.
