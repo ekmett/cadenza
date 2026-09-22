@@ -51,3 +51,10 @@ The [final three-checkpoint comparison](final-comparison.md) uses the same
 independently checked harness on restoration, goal start and final runtime. Its
 fresh measurements supersede cross-session endpoint timing estimates for these
 three workloads. The exact harness and raw samples are retained alongside it.
+
+The final CI cleanup updates [checkout](https://github.com/actions/checkout/releases/tag/v7.0.1)
+and [artifact upload](https://github.com/actions/upload-artifact/releases/tag/v7.0.1)
+to their released 7.0.1 versions, which declare the Node 24 runtime. This removes
+the checkout Node 20 deprecation observed in the preceding successful CI run.
+The workflow uses ordinary `push`/`pull_request` events, so checkout's new
+restrictions for privileged fork workflows do not require an opt-in here.
