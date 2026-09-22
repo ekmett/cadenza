@@ -92,3 +92,8 @@ workload and controls for the Integer cache, other loops, and escaping closures.
 [Fixed-point self binding](results/2026-09-22/fixed-self-binding.md) measures the
 remaining construction allocation after exposing the private recursive binding
 to partial evaluation, with a useful-work loop and ordinary calling controls.
+
+[Fibonacci allocation attribution](results/2026-09-22/fib-allocation.md) combines
+warmed JFR sampling, an explicit recording-start weight correction, and an isolated
+array-size probe. It identifies surviving call arrays before further optimization;
+Fibonacci setup also checks its varying inputs against an independent host oracle.

@@ -181,6 +181,22 @@ open class Fib : ComparedBenchmark() {
   @Param("10", "15") @JvmField var size: Int = 0
   override val text = "fixNatF (\\(f : Nat -> Nat) (x : Nat) -> if le x 1 then x else plus (f (minus x 1)) (f (minus x 2)))"
 
+  override fun prepareBaseline() {
+    super.prepareBaseline()
+    repeat(4) { offset ->
+      val input = size + offset
+      var previous = BigInteger.ZERO
+      var current = BigInteger.ONE
+      repeat(input) {
+        val next = previous + current
+        previous = current
+        current = next
+      }
+      val actual = InteropLibrary.getUncached().asBigInteger(target.call(input))
+      check(actual == previous) { "Fib setup input=$input expected=$previous actual=$actual" }
+    }
+  }
+
   // Keep the varying range small: each extra Fibonacci level nearly doubles the work.
   @Benchmark fun cadenza(): Any? = target.call(size + (nextInput(0) and 3))
   @Benchmark fun interpreter(): Any = interpreted.call(arrayOf(size + (nextInput(0) and 3)))
